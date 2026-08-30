@@ -1,3 +1,6 @@
+**v2.25 (2026-08-30)**
+- Minor code adjustments
+
 **v2.24 (2026-08-21)**
 - Added: Gold Display - A small movable display with a gold border shows the current gold and today's change with selectable coin detail, adaptive width, and a clickable translucent Aurarium logo
 
