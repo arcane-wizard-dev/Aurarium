@@ -8,6 +8,13 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
+			"Minor code adjustments"
+		}
+	},
+	{
+		version = "v2.24",
+		date = "2026-08-21",
+		entries = {
 			"Added: Gold Display - A small movable display with a gold border shows the current gold and today's change with selectable coin detail, adaptive width, and a clickable translucent Aurarium logo"
 		}
 	},
@@ -73,16 +80,6 @@ AUR.CHANGELOG = {
 		date = "2026-07-06",
 		entries = {
 			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility"
-		}
-	},
-	{
-		version = "v2.15",
-		date = "2026-07-04",
-		entries = {
-			"Added: TOC version for patch 12.1.0 [retail]",
-			"Added: TOC version for patch 2.5.6 [burning crusade - classic anniversary edition]",
-			"Removed: TOC version for patch 12.0.5 [retail]",
-			"Minor code adjustments"
 		}
 	}
 }
