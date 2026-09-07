@@ -8,21 +8,30 @@ Aurarium is a World of Warcraft addon that provides a detailed insight into weal
 
 > ⚠️ **Important!** This addon requires **Arcane Wizard: Library**. See Installation & Quick Start for installation details.
 
-**Key Feature**
+**Key Features**
 
-* **Gold Display** - Shows your current gold and today's change in a compact movable display, with selectable coin detail and quick access to the full overview.
-* **Gold and Currency Overview** - Displays a comprehensive overview of your gold and currencies across your entire account.
+**Gold Display** - Shows your current gold and today's change in a compact movable display, with selectable coin detail and quick access to the full overview.
+
+**Gold and Currency Overview** - Displays a comprehensive overview of your gold and currencies across your entire account.
 
 ## Features
 
-* Gold and currency overview with a daily and monthly view*.
-* Individual saving and view for each character.
-* Separate display of character and warband currencies**.
-* Display of the sum of all currencies across all characters.
-* Hiding of days without balance changes.
-* Supports an account profile and character profiles.
+Individual features and display options can be configured in the addon settings. Aurarium supports an account profile and character profiles.
 
-*\* In Classic, Burning Crusade - Classic Anniversary Edition, and Mists of Pandaria - Classic, only gold is tracked.*
+### Gold Display
+
+* Show or hide the compact gold display independently of balance tracking.
+* Choose which coins are shown in the gold display.
+
+### Gold and Currency Overview
+
+* View gold and currency balances by day and month*.
+* Save and view balances individually for each character.
+* View character and warband currencies separately**.
+* View the sum of all currencies across all characters.
+* Hide days without balance changes.
+
+*\* In Classic and Burning Crusade - Classic Anniversary Edition, only gold is tracked.*
 
 *\*\* Warband currencies are only available in Retail.*
 
@@ -36,6 +45,7 @@ Aurarium is a World of Warcraft addon that provides a detailed insight into weal
 > **Required Dependency:** This addon requires the **Arcane Wizard: Library**. If you install Aurarium via the CurseForge client, the library will be downloaded automatically. If you install the addon manually, via Wago, or through another third-party updater that does not resolve dependencies, you must download and enable the library separately.
 
 To manage the addon, use the following commands in your chat and press enter:
+
 * Type `/aur` or `/aurarium` to access the addon options menu.
 * Type `/aur changelog` or `/aurarium changelog` to open the changelog.
 * Type `/aur overview` or `/aurarium overview` to manually display the Gold and Currency Overview.
