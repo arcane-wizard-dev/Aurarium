@@ -8,7 +8,7 @@ Aurarium is a World of Warcraft addon that provides a detailed insight into weal
 
 > ⚠️ **Important!** This addon requires **Arcane Wizard: Library**. See Installation & Quick Start for installation details.
 
-**Key Features**
+## Key Features
 
 **Gold Display** - Shows your current gold and today's change in a compact movable display, with selectable coin detail and quick access to the full overview.
 
