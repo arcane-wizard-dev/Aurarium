@@ -8,6 +8,13 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
+			"Updated: GitHub links following the organization rename to 'arcane-wizard-dev'"
+		}
+	},
+	{
+		version = "v2.26",
+		date = "2026-09-06",
+		entries = {
 			"Added: TOC version for patch 12.1.5 [retail]"
 		}
 	},
@@ -73,13 +80,6 @@ AUR.CHANGELOG = {
 			"Added: Wago project page buttona",
 			"Removed: TOC version for patch 5.5.3 [mists of pandaria - classic]",
 			"Removed: TOC version for patch 2.5.5 [burning crusade - classic anniversary edition]"
-		}
-	},
-	{
-		version = "v2.17",
-		date = "2026-07-09",
-		entries = {
-			"Minor code adjustments"
 		}
 	}
 }
