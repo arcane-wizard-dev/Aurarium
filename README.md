@@ -1,6 +1,6 @@
 # Aurarium
 
-[![GitHub Release](https://img.shields.io/github/v/release/wow-addon-dev/Aurarium?color=blue&logo=github&cacheSeconds=600)](https://github.com/wow-addon-dev/Aurarium/releases) [![GitHub Release Date](https://img.shields.io/github/release-date/wow-addon-dev/Aurarium?color=blue&logo=github&cacheSeconds=600)](https://github.com/wow-addon-dev/Aurarium/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/arcane-wizard-dev/Aurarium?color=blue&logo=github&cacheSeconds=600)](https://github.com/arcane-wizard-dev/Aurarium/releases) [![GitHub Release Date](https://img.shields.io/github/release-date/arcane-wizard-dev/Aurarium?color=blue&logo=github&cacheSeconds=600)](https://github.com/arcane-wizard-dev/Aurarium/releases)
 
 _Track your gold & currencies. Know your worth._
 
