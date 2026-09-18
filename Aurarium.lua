@@ -9,6 +9,9 @@ local Options = AUR.Modules.Options
 local Overview = AUR.Modules.Overview
 local Utils = AUR.Modules.Utils
 
+-- Variables
+local isInitialized = false
+
 --------------
 --- Frames ---
 --------------
@@ -30,16 +33,9 @@ local function UpdateDateHistory(today)
 	table.sort(dates)
 end
 
-local function SaveCharacterMetadata(char, realm)
-	local classFilename = UnitClassBase("player")
-	local englishFaction = UnitFactionGroup("player")
-
-	AUR.Data.character[realm][char] = {class = classFilename, faction = englishFaction}
-end
-
-local function TrackGoldBalance(char, realm, today)
-	local characterHistory = AUR.Data.balance[realm][char]
-	AUR.Data.balance[realm][char][today] = AUR.Data.balance[realm][char][today] or {}
+local function TrackGoldBalance(characterGUID, today)
+	local characterHistory = AUR.Data.balance[characterGUID]
+	AUR.Data.balance[characterGUID][today] = AUR.Data.balance[characterGUID][today] or {}
 
 	local newGold = Utils:GetGold()
 	local prevGold = 0
@@ -53,16 +49,16 @@ local function TrackGoldBalance(char, realm, today)
 	end
 
 	if newGold ~= prevGold then
-		AUR.Data.balance[realm][char][today]["gold"] = newGold
+		AUR.Data.balance[characterGUID][today]["gold"] = newGold
 		return true
 	else
-		AUR.Data.balance[realm][char][today]["gold"] = nil
+		AUR.Data.balance[characterGUID][today]["gold"] = nil
 		return false
 	end
 end
 
-local function TrackCharacterCurrencies(char, realm, today)
-	local characterHistory = AUR.Data.balance[realm][char]
+local function TrackCharacterCurrencies(characterGUID, today)
+	local characterHistory = AUR.Data.balance[characterGUID]
 	local changed = false
 
 	for _, currencies in pairs(AUR.CHARACTER_CURRENCIES) do
@@ -83,10 +79,10 @@ local function TrackCharacterCurrencies(char, realm, today)
 				end
 
 				if newQty ~= prevQty then
-					AUR.Data.balance[realm][char][today][key] = newQty
+					AUR.Data.balance[characterGUID][today][key] = newQty
 					changed = true
 				else
-					AUR.Data.balance[realm][char][today][key] = nil
+					AUR.Data.balance[characterGUID][today][key] = nil
 				end
 			end
 		end
@@ -128,36 +124,39 @@ local function TrackWarbandCurrencies(today)
 end
 
 local function SaveBalance()
-	local char, realm = AWL.Utils:GetCharacterAndRealm()
+	local characterGUID = AWL.Utils:GetCharacterGUID()
 	local today = Utils:GetToday()
 
+	if not AUR.Data.character[characterGUID] or not AUR.Data.balance[characterGUID] then
+		if not Utils:InitializeDatabase() then return end
+	end
+
 	UpdateDateHistory(today)
-	SaveCharacterMetadata(char, realm)
 
 	if AWL.GAME_TYPE_MISTS then
-		local goldChanged = TrackGoldBalance(char, realm, today)
-		local charCurChanged = TrackCharacterCurrencies(char, realm, today)
+		local goldChanged = TrackGoldBalance(characterGUID, today)
+		local charCurChanged = TrackCharacterCurrencies(characterGUID, today)
 
 		if not (goldChanged or charCurChanged) then
-			AUR.Data.balance[realm][char][today] = nil
+			AUR.Data.balance[characterGUID][today] = nil
 		end
 	elseif AWL.GAME_TYPE_MAINLINE then
-		local goldChanged = TrackGoldBalance(char, realm, today)
-		local charCurChanged = TrackCharacterCurrencies(char, realm, today)
+		local goldChanged = TrackGoldBalance(characterGUID, today)
+		local charCurChanged = TrackCharacterCurrencies(characterGUID, today)
 		local warbandChanged = TrackWarbandCurrencies(today)
 
 		if not (goldChanged or charCurChanged) then
-			AUR.Data.balance[realm][char][today] = nil
+			AUR.Data.balance[characterGUID][today] = nil
 		end
 
 		if not warbandChanged then
 			AUR.Data.balance["Warband"][today] = nil
 		end
 	else
-		local goldChanged = TrackGoldBalance(char, realm, today)
+		local goldChanged = TrackGoldBalance(characterGUID, today)
 
 		if not goldChanged then
-			AUR.Data.balance[realm][char][today] = nil
+			AUR.Data.balance[characterGUID][today] = nil
 		end
 	end
 
@@ -169,6 +168,8 @@ local function SaveBalance()
 end
 
 local function SlashCommand(msg)
+	if not isInitialized then return end
+
 	local command = strtrim(msg or "")
 
 	if command == "" then
@@ -191,21 +192,29 @@ function AurariumFrame:OnEvent(event, ...)
 end
 
 function AurariumFrame:ADDON_LOADED(_, addOnName)
-	if addOnName == addonName then
-		local dbInit = Utils:InitializeDatabase()
-		Utils:InitializeMinimapButton()
-		Options:Initialize()
-		GoldDisplay:Initialize()
-		Overview:Initialize()
+	if addOnName ~= addonName or isInitialized then return end
 
-		Utils:OpenSettingsOnLoading()
+	local dbInit = Utils:InitializeDatabase(true)
 
-		Utils:PrintDebug(string.format(
-			"InitializeDatabase: key=%s, createdProfile=%s, createdProfileKey=%s, activeProfile=%s",
-			tostring(dbInit.characterRealmKey), tostring(dbInit.createdProfile), tostring(dbInit.createdProfileKey), tostring(dbInit.activeProfile)
-		))
-		Utils:PrintDebug("Addon fully loaded.")
+	if not dbInit then
+		AWL:GetAddon(addonName):AbortInitialization(self)
+		return
 	end
+
+	Utils:InitializeMinimapButton()
+	Options:Initialize()
+	GoldDisplay:Initialize()
+	Overview:Initialize()
+
+	Utils:OpenSettingsOnLoading()
+
+	isInitialized = true
+
+	Utils:PrintDebug(string.format(
+		"InitializeDatabase: key=%s, createdProfile=%s, createdProfileKey=%s, activeProfile=%s",
+		tostring(dbInit.characterGUID), tostring(dbInit.createdProfile), tostring(dbInit.createdProfileKey), tostring(dbInit.activeProfile)
+	))
+	Utils:PrintDebug("Addon fully loaded.")
 end
 
 function AurariumFrame:PLAYER_ENTERING_WORLD(_, isInitialLogin, isReloadingUi)

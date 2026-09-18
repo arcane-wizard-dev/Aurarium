@@ -14,14 +14,12 @@ local Overview = AUR.Modules.Overview
 local Utils = AUR.Modules.Utils
 
 -- Variables
+local selectedCharacterKey
 local currentMonthOffset = {}
 local selectedCurrency = {}
 selectedCurrency[1] = "gold"
 selectedCurrency[2] = "gold"
 selectedCurrency[3] = "w-2032"
-local selectedChar
-local selectedRealm
-selectedChar, selectedRealm = AWL.Utils:GetCharacterAndRealm()
 
 --------------
 --- Frames ---
@@ -169,122 +167,29 @@ local function BuildGenericHistoryLookup(rawData, currencyKey)
 	return entries
 end
 
-local function BuildCharacterHistory(char, realm, currencyKey)
-	if not realm or not char or not AUR.Data.balance[realm] or not AUR.Data.balance[realm][char] then
-		return {}
-	end
-
-	return BuildGenericHistory(AUR.Data.balance[realm][char], currencyKey)
+local function BuildCharacterHistory(characterKey, currencyKey)
+	local entry = Utils:GetCharacterEntry(characterKey)
+	return entry and BuildGenericHistory(entry.history, currencyKey) or {}
 end
 
-local function BuildCharacterHistoryLookup(char, realm, currencyKey)
-	if not realm or not char or not AUR.Data.balance[realm] or not AUR.Data.balance[realm][char] then
-		return {}
-	end
-
-	return BuildGenericHistoryLookup(AUR.Data.balance[realm][char], currencyKey)
-end
-
-local function HasCharacterData(char, realm)
-	return realm and char and AUR.Data.balance[realm] and AUR.Data.balance[realm][char]
-end
-
-local function IsCurrentCharacter(char, realm)
-	if not realm or not char then
-		return false
-	end
-
-	local currentChar, currentRealm = AWL.Utils:GetCharacterAndRealm()
-
-	return char == currentChar and realm == currentRealm
-end
-
-local function GetSortedCharacters()
-	local characters = {}
-
-	for realm, realmData in pairs(AUR.Data.balance) do
-		if realm ~= "Warband" then
-			for char, _ in pairs(realmData) do
-				table.insert(characters, {realm = realm, char = char})
-			end
-		end
-	end
-
-	table.sort(characters, function(a, b)
-		if a.realm == b.realm then
-			return a.char < b.char
-		end
-
-		return a.realm < b.realm
-	end)
-
-	return characters
+local function IsCurrentCharacter(characterKey)
+	return characterKey ~= nil and characterKey == AWL.Utils:GetCharacterGUID()
 end
 
 local function SelectFallbackCharacter()
-	if HasCharacterData(selectedChar, selectedRealm) then
+	if Utils:GetCharacterEntry(selectedCharacterKey) then
 		return true
 	end
 
-	local currentChar, currentRealm = AWL.Utils:GetCharacterAndRealm()
-
-	if HasCharacterData(currentChar, currentRealm) then
-		selectedChar = currentChar
-		selectedRealm = currentRealm
+	local currentGUID = AWL.Utils:GetCharacterGUID()
+	if Utils:GetCharacterEntry(currentGUID) then
+		selectedCharacterKey = currentGUID
 		return true
 	end
 
-	local characters = GetSortedCharacters()
-	local firstCharacter = characters[1]
-
-	if firstCharacter then
-		selectedRealm = firstCharacter.realm
-		selectedChar = firstCharacter.char
-		return true
-	end
-
-	selectedRealm = nil
-	selectedChar = nil
-
-	return false
-end
-
-local function DeleteCharacterData(char, realm)
-	if not realm or not char then
-		return false, "invalid-target"
-	end
-
-	if IsCurrentCharacter(char, realm) then
-		return false, "current-character"
-	end
-
-	local removed = false
-
-	if AUR.Data.balance[realm] and AUR.Data.balance[realm][char] then
-		AUR.Data.balance[realm][char] = nil
-
-		if not next(AUR.Data.balance[realm]) then
-			AUR.Data.balance[realm] = nil
-		end
-
-		removed = true
-	end
-
-	if AUR.Data.character[realm] and AUR.Data.character[realm][char] then
-		AUR.Data.character[realm][char] = nil
-
-		if not next(AUR.Data.character[realm]) then
-			AUR.Data.character[realm] = nil
-		end
-
-		removed = true
-	end
-
-	if removed then
-		return true
-	end
-
-	return false, "not-found"
+	local firstCharacter = Utils:GetSortedCharacters()[1]
+	selectedCharacterKey = firstCharacter and firstCharacter.key or nil
+	return selectedCharacterKey ~= nil
 end
 
 local function BuildWarbandHistory(currencyKey)
@@ -296,13 +201,9 @@ local function BuildAccountHistory(currencyKey)
 	local temp = {}
 	local entries = {}
 
-	for realm, realmData in pairs(AUR.Data.balance) do
-		if realm ~= "Warband" then
-			for char, _ in pairs(realmData) do
-				local characterHistory = BuildCharacterHistoryLookup(char, realm, currencyKey)
-				table.insert(temp, {id = realm .. "-" .. char ,characterHistory = characterHistory})
-			end
-		end
+	for _, entry in ipairs(Utils:GetSortedCharacters()) do
+		local characterHistory = BuildGenericHistoryLookup(entry.history, currencyKey)
+		table.insert(temp, {characterHistory = characterHistory})
 	end
 
 	for _, date in ipairs(dates) do
@@ -511,11 +412,11 @@ end
 local function UpdateCharacterOverview()
 	SelectFallbackCharacter()
 
-	local characterHistory = BuildCharacterHistory(selectedChar, selectedRealm, selectedCurrency[1])
+	local characterHistory = BuildCharacterHistory(selectedCharacterKey, selectedCurrency[1])
 	UpdateOverview(selectedCurrency[1], currentMonthOffset[1], characterHistory, OverviewScrollFrames[1])
 
 	if OverviewScrollFrames[1].actionsButton then
-		OverviewScrollFrames[1].actionsButton:SetEnabled(selectedRealm ~= nil and selectedChar ~= nil)
+		OverviewScrollFrames[1].actionsButton:SetEnabled(selectedCharacterKey ~= nil)
 	end
 end
 
@@ -529,8 +430,10 @@ local function UpdateWarbandOverview()
 	UpdateOverview(selectedCurrency[3], currentMonthOffset[3], warbandHistory, OverviewScrollFrames[3])
 end
 
-local function HandleCharacterDeleteConfirmed(char, realm)
-	local removed, errorCode = DeleteCharacterData(char, realm)
+local function HandleCharacterDeleteConfirmed(characterKey)
+	local entry = Utils:GetCharacterEntry(characterKey)
+	if not entry then return end
+	local removed, errorCode = Utils:DeleteCharacterData(characterKey)
 
 	if not removed then
 		if errorCode == "current-character" then
@@ -555,11 +458,12 @@ local function HandleCharacterDeleteConfirmed(char, realm)
 		UpdateWarbandOverview()
 	end
 
-	Utils:PrintMessage(string.format(L["chat.delete-character.deleted"], char, realm))
+	Utils:PrintMessage(string.format(L["chat.delete-character.deleted"], entry.name, entry.realm))
 end
 
-local function ShowCharacterDeleteConfirm(char, realm)
-	if not realm or not char then
+local function ShowCharacterDeleteConfirm(characterKey)
+	local entry = Utils:GetCharacterEntry(characterKey)
+	if not entry then
 		return
 	end
 
@@ -568,10 +472,10 @@ local function ShowCharacterDeleteConfirm(char, realm)
 		return
 	end
 
-	local confirmText = string.format(L["currency-overview.delete-character.confirm"], char, realm)
+	local confirmText = string.format(L["currency-overview.delete-character.confirm"], entry.name, entry.realm)
 
 	AWL.Dialogs:ShowConfirmDialog(confirmText, function()
-		HandleCharacterDeleteConfirmed(char, realm)
+		HandleCharacterDeleteConfirmed(characterKey)
 	end)
 end
 
@@ -668,83 +572,66 @@ local function CreateCharacterDropdown(scrollFrame, background)
 
 	characterDropdown:SetupMenu(function(self, root)
 		local function IsSelected(value)
-			if not selectedRealm or not selectedChar then
-				return false
-			end
-
-			return value == selectedRealm .. "-" .. selectedChar
+			return value == selectedCharacterKey
 		end
 		local function SetSelected(value)
-			local pos = value:reverse():find("-", 1, true)
-			pos = value:len() + 1 - pos
-			selectedRealm = value:sub(1, pos - 1)
-			selectedChar = value:sub(pos + 1)
+			selectedCharacterKey = value
 			currentMonthOffset[1] = 0
 			UpdateCharacterOverview()
 		end
 
-		local realms = {}
-		for realm, _ in pairs(AUR.Data.balance) do
-			if realm ~= "Warband" then table.insert(realms, realm) end
-		end
-		table.sort(realms)
-
-		for _, realmKey in ipairs(realms) do
-			local realmButton = root:CreateButton(realmKey)
-			local chars = {}
-			for charName, _ in pairs(AUR.Data.balance[realmKey]) do
-				table.insert(chars, charName)
+		local realmButton
+		local lastRealm
+		for _, entry in ipairs(Utils:GetSortedCharacters()) do
+			if entry.realm ~= lastRealm then
+				realmButton = root:CreateButton(entry.realm)
+				lastRealm = entry.realm
 			end
-			table.sort(chars)
+			local charButton = realmButton:CreateRadio(entry.name, IsSelected, SetSelected, entry.key)
+			charButton:AddInitializer(function(button, description, menu)
+				local factionFileID = 0
+				local classColor = WHITE_FONT_COLOR
 
-			for _, charKey in ipairs(chars) do
-				local charButton = realmButton:CreateRadio(charKey, IsSelected, SetSelected, realmKey .. "-" .. charKey)
-				charButton:AddInitializer(function(button, description, menu)
-					local factionFileID = 0
-					local classColor = WHITE_FONT_COLOR
+				if entry.metadata.class then
+					local class = entry.metadata.class
+					local faction = entry.metadata.faction
 
-					if AUR.Data.character[realmKey] and AUR.Data.character[realmKey][charKey] then
-						local class = AUR.Data.character[realmKey][charKey].class
-						local faction = AUR.Data.character[realmKey][charKey].faction
-
-						if AWL.GAME_TYPE_MAINLINE then
-							---@diagnostic disable-next-line: cast-local-type
-							classColor = C_ClassColor.GetClassColor(class)
-						else
-							classColor = RAID_CLASS_COLORS[class]
-						end
-
-						if faction == "Alliance" then factionFileID = 136758
-						elseif faction == "Horde" then factionFileID = 136759 end
-					end
-
-					local rightTexture = button:AttachTexture()
-					rightTexture:SetSize(18, 18)
-					rightTexture:SetPoint("RIGHT")
-
-					if factionFileID == 0 then
-						rightTexture:SetAtlas("Warfronts-BaseMapIcons-Empty-Barracks")
+					if AWL.GAME_TYPE_MAINLINE then
+						---@diagnostic disable-next-line: cast-local-type
+						classColor = C_ClassColor.GetClassColor(class)
 					else
-						rightTexture:SetTexture(factionFileID)
+						classColor = RAID_CLASS_COLORS[class]
 					end
 
-					local fontString = button.fontString
-					fontString:SetPoint("RIGHT")
-					fontString:SetTextColor(classColor:GetRGB())
+					if faction == "Alliance" then factionFileID = 136758
+					elseif faction == "Horde" then factionFileID = 136759 end
+				end
 
-					return fontString:GetUnboundedStringWidth() + rightTexture:GetWidth() + 20, rightTexture:GetHeight() + 4
-				end)
-			end
+				local rightTexture = button:AttachTexture()
+				rightTexture:SetSize(18, 18)
+				rightTexture:SetPoint("RIGHT")
+
+				if factionFileID == 0 then
+					rightTexture:SetAtlas("Warfronts-BaseMapIcons-Empty-Barracks")
+				else
+					rightTexture:SetTexture(factionFileID)
+				end
+
+				local fontString = button.fontString
+				fontString:SetPoint("RIGHT")
+				fontString:SetTextColor(classColor:GetRGB())
+
+				return fontString:GetUnboundedStringWidth() + rightTexture:GetWidth() + 20, rightTexture:GetHeight() + 4
+			end)
 		end
 	end)
 	return characterDropdown
 end
 
 local function OpenCharacterActionsMenu(ownerButton)
-	local char = selectedChar
-	local realm = selectedRealm
-	local hasSelection = realm ~= nil and char ~= nil
-	local isCurrentCharacter = IsCurrentCharacter(char, realm)
+	local characterKey = selectedCharacterKey
+	local hasSelection = Utils:GetCharacterEntry(characterKey) ~= nil
+	local isCurrentCharacter = IsCurrentCharacter(characterKey)
 
 	if MenuUtil and MenuUtil.CreateContextMenu then
 		MenuUtil.CreateContextMenu(ownerButton, function(_, root)
@@ -758,7 +645,7 @@ local function OpenCharacterActionsMenu(ownerButton)
 					return
 				end
 
-				ShowCharacterDeleteConfirm(char, realm)
+				ShowCharacterDeleteConfirm(characterKey)
 			end)
 
 			if deleteAction and deleteAction.SetEnabled then
@@ -775,7 +662,7 @@ local function OpenCharacterActionsMenu(ownerButton)
 			return
 		end
 
-		ShowCharacterDeleteConfirm(char, realm)
+		ShowCharacterDeleteConfirm(characterKey)
 	end
 end
 
@@ -936,6 +823,7 @@ end
 ------------------------
 
 function Overview:Initialize()
+	selectedCharacterKey = AWL.Utils:GetCharacterGUID()
 	InitializeFrames()
 end
 

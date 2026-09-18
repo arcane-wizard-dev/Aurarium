@@ -69,9 +69,8 @@ local function SetDiffTextColor(fontString, diff)
 	fontString:SetTextColor(color[1], color[2], color[3])
 end
 
-local function GetPreviousGold(char, realm, today)
-	local realmData = AUR.Data.balance and AUR.Data.balance[realm]
-	local characterHistory = realmData and realmData[char]
+local function GetPreviousGold(characterGUID, today)
+	local characterHistory = AUR.Data.balance and AUR.Data.balance[characterGUID]
 
 	if not characterHistory then
 		return nil
@@ -227,8 +226,8 @@ function GoldDisplay:Refresh()
 	GoldDisplayFrame:SetWidth(GetDisplayMode().width)
 
 	local currentGold = Utils:GetGold()
-	local char, realm = AWL.Utils:GetCharacterAndRealm()
-	local previousGold = GetPreviousGold(char, realm, Utils:GetToday())
+	local characterGUID = AWL.Utils:GetCharacterGUID()
+	local previousGold = GetPreviousGold(characterGUID, Utils:GetToday())
 
 	CurrentGoldText:SetText(FormatGold(currentGold))
 
