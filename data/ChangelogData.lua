@@ -8,6 +8,15 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
+			"Added: TOC version for patch 1.60.1 [forever]",
+			"Changed: Character profiles and data are initialized centrally using GUIDs; existing gold and currency histories are migrated at login",
+			"Changed: Addon initialization stops if the player identity is unavailable"
+		}
+	},
+	{
+		version = "v2.27",
+		date = "2026-09-13",
+		entries = {
 			"Updated: GitHub links following the organization rename to 'arcane-wizard-dev'"
 		}
 	},
@@ -71,15 +80,6 @@ AUR.CHANGELOG = {
 		date = "2026-07-18",
 		entries = {
 			"Minor code adjustments"
-		}
-	},
-	{
-		version = "v2.18",
-		date = "2026-07-12",
-		entries = {
-			"Added: Wago project page buttona",
-			"Removed: TOC version for patch 5.5.3 [mists of pandaria - classic]",
-			"Removed: TOC version for patch 2.5.5 [burning crusade - classic anniversary edition]"
 		}
 	}
 }
