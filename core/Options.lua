@@ -15,6 +15,7 @@ local GoldDisplay = AUR.Modules.GoldDisplay
 local Utils = AUR.Modules.Utils
 
 -- Variables
+local defaults = AUR.OPTIONS_DEFAULTS
 local goldDisplayModeOptions = {}
 local goldDisplayData = AUR.GOLD_DISPLAY_DATA
 
@@ -107,7 +108,7 @@ function Options:Initialize()
 		variableName	= "hide",
 		name			= L["options.general.minimap-button.name"],
 		tooltip			= L["options.general.minimap-button.tooltip"],
-		default			= true
+		default			= not defaults.general["minimap-button"].hide
 	})
 
 	-- Debug Mode
@@ -117,7 +118,7 @@ function Options:Initialize()
 		variableName	= "debug-mode",
 		name			= L["options.general.debug-mode.name"],
 		tooltip			= L["options.general.debug-mode.tooltip"],
-		default			= false
+		default			= defaults["general"]["debug-mode"]
 	})
 
 	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L["options.currency-overview"]))
@@ -129,7 +130,7 @@ function Options:Initialize()
 		variableName	= "open-on-login",
 		name			= L["options.currency-overview.open-on-login.name"],
 		tooltip			= L["options.currency-overview.open-on-login.tooltip"],
-		default			= false
+		default			= defaults["currency-overview"]["open-on-login"]
 	})
 
 	-- Hide Unchanged Entries
@@ -139,7 +140,7 @@ function Options:Initialize()
 		variableName	= "hide-unchanged-entries",
 		name			= L["options.currency-overview.hide-unchanged-entries.name"],
 		tooltip			= L["options.currency-overview.hide-unchanged-entries.tooltip"],
-		default			= false
+		default			= defaults["currency-overview"]["hide-unchanged-entries"]
 	})
 
 	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L["options.gold-display"]))
@@ -151,7 +152,7 @@ function Options:Initialize()
 		variableName	= "show",
 		name			= L["options.gold-display.show.name"],
 		tooltip			= L["options.gold-display.show.tooltip"],
-		default			= true
+		default			= defaults["gold-display"]["show"]
 	})
 
 	-- Displayed Coins
@@ -161,19 +162,19 @@ function Options:Initialize()
 		variableName	= "display-mode",
 		name			= L["options.gold-display.display-mode.name"],
 		tooltip			= L["options.gold-display.display-mode.tooltip"],
-		default			= AUR.GOLD_DISPLAY_DATA.defaultDisplayMode,
+		default			= defaults["gold-display"]["display-mode"],
 		options			= goldDisplayModeOptions
 	})
 
 	-- Profiles Section
 	AWL.Settings:AddProfilesSection(layout, {
-		useAccountProfile			= Utils:IsAccountProfile(),
+		useAccountProfile			= Addon:IsAccountProfile(),
 		onSwitchProfile				= function()
-			Utils:ToggleProfileMode()
+			Addon:ToggleProfileMode()
 			ReloadUI()
 		end,
 		onDeleteCharacterProfiles	= function()
-			Utils:ResetAllCharacterProfiles()
+			Addon:ResetAllCharacterProfiles()
 			ReloadUI()
 		end
 	})

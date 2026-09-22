@@ -69,44 +69,6 @@ function Utils:OpenSettings()
 	return true
 end
 
-function Utils:IsAccountProfile()
-	local characterGUID = AWL.Utils:GetCharacterGUID()
-
-	return Aurarium_Options_v5.profileKeys[characterGUID]["use-account"]
-end
-
-function Utils:OpenSettingsOnLoading()
-	local characterGUID = AWL.Utils:GetCharacterGUID()
-
-	if Aurarium_Options_v5.profileKeys[characterGUID]["open-settings"] then
-		if not self:OpenSettings() then
-			return
-		end
-
-		Aurarium_Options_v5.profileKeys[characterGUID]["open-settings"] = false
-	end
-end
-
-function Utils:ToggleProfileMode()
-	local characterGUID = AWL.Utils:GetCharacterGUID()
-	local useAccountProfile = self:IsAccountProfile()
-
-	Aurarium_Options_v5.profileKeys[characterGUID]["use-account"] = not useAccountProfile
-	Aurarium_Options_v5.profileKeys[characterGUID]["open-settings"] = true
-end
-
-function Utils:ResetAllCharacterProfiles()
-	local characterGUID = AWL.Utils:GetCharacterGUID()
-
-	Aurarium_Options_v5.profiles = {}
-	Aurarium_Options_v5.profileKeys = {}
-
-	Aurarium_Options_v5.profileKeys[characterGUID] = {
-		["use-account"] = true,
-		["open-settings"] = true
-	}
-end
-
 function Utils:UpdateCharacterData(characterGUID, refreshMetadata)
 	local name, realm = AWL.Utils:GetCharacterAndRealm()
 
@@ -177,57 +139,23 @@ function Utils:DeleteCharacterData(characterKey)
 end
 
 function Utils:InitializeDatabase(isLogin)
-	local characterGUID = AWL.Utils:GetCharacterGUID()
+	local dbInit = Addon:InitializeOptions({
+		databaseName = "Aurarium_Options_v5",
+		defaults = AUR.OPTIONS_DEFAULTS,
+		requireCharacterRealmKey = true,
+		onOpenSettings = function() return self:OpenSettings() end
+	})
 
-	if not characterGUID or not AWL.Utils:GetCharacterRealmKey() then
+	if not dbInit then
 		return nil
 	end
 
-	local createdProfile = false
-	local createdProfileKey = false
+	local characterGUID = dbInit.characterGUID
 
-	local defaults = {
-		["general"] = {
-			["minimap-button"] = {
-				["hide"] = false
-			}
-		},
-		["currency-overview"] = {},
-		["gold-display"] = {}
-	}
-
-	if not Aurarium_Options_v5 then
-		Aurarium_Options_v5 = {
-			["account"] = AWL.Utils:CopyTable(defaults),
-			["profiles"] = {},
-			["profileKeys"] = {}
-		}
-	end
-
-	if not Aurarium_Options_v5.profiles[characterGUID] then
-		Aurarium_Options_v5.profiles[characterGUID] = AWL.Utils:CopyTable(defaults)
-		createdProfile = true
-	end
-
-	if not Aurarium_Options_v5.profileKeys[characterGUID] then
-		Aurarium_Options_v5.profileKeys[characterGUID] = {
-			["use-account"] = true,
-			["open-settings"] = false
-		}
-		createdProfileKey = true
-	end
-
-	local useAccountProfile = Aurarium_Options_v5.profileKeys[characterGUID]["use-account"]
-
-	if useAccountProfile then
-		AUR.Settings.general = Aurarium_Options_v5.account["general"]
-		AUR.Settings.currencyOverview = Aurarium_Options_v5.account["currency-overview"]
-		AUR.Settings.goldDisplay = Aurarium_Options_v5.account["gold-display"]
-	else
-		AUR.Settings.general = Aurarium_Options_v5.profiles[characterGUID]["general"]
-		AUR.Settings.currencyOverview = Aurarium_Options_v5.profiles[characterGUID]["currency-overview"]
-		AUR.Settings.goldDisplay = Aurarium_Options_v5.profiles[characterGUID]["gold-display"]
-	end
+	AUR.Settings.global = dbInit.global
+	AUR.Settings.general = dbInit.settings["general"]
+	AUR.Settings.currencyOverview = dbInit.settings["currency-overview"]
+	AUR.Settings.goldDisplay = dbInit.settings["gold-display"]
 
 	if not Aurarium_DataDates then
 		Aurarium_DataDates = {}
@@ -257,18 +185,13 @@ function Utils:InitializeDatabase(isLogin)
 	AUR.Data.character[characterGUID] = AUR.Data.character[characterGUID] or {}
 	AUR.Data.balance[characterGUID] = AUR.Data.balance[characterGUID] or {}
 
-	if AWL.GAME_TYPE_MAINLINE or Aurarium_DataBalance.Warband then
+	if AWL.GAME_TYPE_RETAIL or AWL.GAME_TYPE_FOREVER or Aurarium_DataBalance.Warband then
 		AUR.Data.balance.Warband = AUR.Data.balance.Warband or {}
 	end
 
 	self:UpdateCharacterData(characterGUID, isLogin or createdCharacter)
 
-	return {
-		characterGUID = characterGUID,
-		createdProfile = createdProfile,
-		createdProfileKey = createdProfileKey,
-		activeProfile = useAccountProfile and "account" or "character"
-	}
+	return dbInit
 end
 
 function Utils:InitializeMinimapButton()

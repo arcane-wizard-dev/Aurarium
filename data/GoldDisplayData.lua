@@ -23,7 +23,7 @@ AUR.GOLD_DISPLAY_DATA = {
 		silver = 237620,
 		copper = 237617
 	},
-	defaultDisplayMode = "all",
+	defaultDisplayMode = AUR.OPTIONS_DEFAULTS["gold-display"]["display-mode"],
 	displayModes = {
 		gold = {
 			width = 120,
@@ -56,12 +56,7 @@ AUR.GOLD_DISPLAY_DATA = {
 		negative = {1, 0.2, 0.2},
 		neutral = {1, 1, 1}
 	},
-	defaultPosition = {
-		point = "CENTER",
-		relativePoint = "CENTER",
-		x = 0,
-		y = 0
-	},
+	defaultPosition = AUR.OPTIONS_DEFAULTS["gold-display"].position,
 	rows = {
 		currentValue = 9,
 		changeValue = -9

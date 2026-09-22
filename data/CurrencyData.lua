@@ -32,7 +32,7 @@ if AWL.GAME_TYPE_MISTS then
 			777		-- Zeitlose Münze
 		}
 	}
-elseif AWL.GAME_TYPE_MAINLINE then
+elseif AWL.GAME_TYPE_RETAIL or AWL.GAME_TYPE_FOREVER then
 	AUR.CURRENCY_CATEGORY_ORDER = {
 		"misc",         -- 1
 		"profession",	-- 280

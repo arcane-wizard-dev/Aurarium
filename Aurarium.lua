@@ -2,6 +2,7 @@ local addonName, AUR = ...
 
 -- Library
 local AWL = ArcaneWizardLibrary
+local Addon = AWL:GetAddon(addonName)
 
 -- Module imports
 local GoldDisplay = AUR.Modules.GoldDisplay
@@ -140,7 +141,7 @@ local function SaveBalance()
 		if not (goldChanged or charCurChanged) then
 			AUR.Data.balance[characterGUID][today] = nil
 		end
-	elseif AWL.GAME_TYPE_MAINLINE then
+	elseif AWL.GAME_TYPE_RETAIL or AWL.GAME_TYPE_FOREVER then
 		local goldChanged = TrackGoldBalance(characterGUID, today)
 		local charCurChanged = TrackCharacterCurrencies(characterGUID, today)
 		local warbandChanged = TrackWarbandCurrencies(today)
@@ -197,7 +198,7 @@ function AurariumFrame:ADDON_LOADED(_, addOnName)
 	local dbInit = Utils:InitializeDatabase(true)
 
 	if not dbInit then
-		AWL:GetAddon(addonName):AbortInitialization(self)
+		Addon:AbortInitialization(self)
 		return
 	end
 
@@ -206,13 +207,13 @@ function AurariumFrame:ADDON_LOADED(_, addOnName)
 	GoldDisplay:Initialize()
 	Overview:Initialize()
 
-	Utils:OpenSettingsOnLoading()
+	Addon:OpenSettingsOnLoading()
 
 	isInitialized = true
 
 	Utils:PrintDebug(string.format(
-		"InitializeDatabase: key=%s, createdProfile=%s, createdProfileKey=%s, activeProfile=%s",
-		tostring(dbInit.characterGUID), tostring(dbInit.createdProfile), tostring(dbInit.createdProfileKey), tostring(dbInit.activeProfile)
+		"InitializeDatabase: key=%s, createdProfile=%s, createdProfileKey=%s, cleanedOptions=%s, activeProfile=%s",
+		tostring(dbInit.characterGUID), tostring(dbInit.createdProfile), tostring(dbInit.createdProfileKey), tostring(dbInit.cleanedOptions), tostring(dbInit.activeProfile)
 	))
 	Utils:PrintDebug("Addon fully loaded.")
 end
