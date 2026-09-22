@@ -8,6 +8,14 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
+			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility",
+			"Minor code adjustments"
+		}
+	},
+	{
+		version = "v2.28",
+		date = "2026-09-18",
+		entries = {
 			"Added: TOC version for patch 1.60.1 [forever]",
 			"Changed: Character profiles and data are initialized centrally using GUIDs; existing gold and currency histories are migrated at login",
 			"Changed: Addon initialization stops if the player identity is unavailable"
@@ -73,13 +81,6 @@ AUR.CHANGELOG = {
 			"Added: TOC version for patch 1.15.9 [classic]",
 			"Removed: TOC version for patch 1.15.8 [classic]",
 			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility"
-		}
-	},
-	{
-		version = "v2.19",
-		date = "2026-07-18",
-		entries = {
-			"Minor code adjustments"
 		}
 	}
 }
