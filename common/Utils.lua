@@ -38,6 +38,42 @@ local function MigrateLegacyEntry(config)
 	return false
 end
 
+local function GetCurrencyBalanceInfo(info)
+	return {
+		quantity = info.quantity,
+		maxQuantity = not info.useTotalEarnedForMaxQty and info.maxQuantity or nil
+	}
+end
+
+local function AddAvailableCurrencies(definitions, categories, keyPrefix)
+	for _, definition in ipairs(definitions) do
+		local currencyID = definition.id
+		local info = C_CurrencyInfo.GetCurrencyInfo(currencyID)
+
+		if info and info.name and info.name ~= "" then
+			local category = definition.category
+			categories[category] = categories[category] or {}
+			local entry = {
+				id = currencyID,
+				key = keyPrefix .. currencyID,
+				name = info.name,
+				iconFileID = info.iconFileID,
+				info = GetCurrencyBalanceInfo(info),
+				patch = definition.patch,
+				isNew = definition.patch ~= nil and definition.patch == AWL.GAME_VERSION
+			}
+			table.insert(categories[category], entry)
+			AUR.State.currencyByID[currencyID] = entry
+		end
+	end
+end
+
+local function GetPatchOrder(patch)
+	if not patch then return 0 end
+	local major, minor, revision = patch:match("^(%d+)%.(%d+)%.(%d+)$")
+	return tonumber(major) * 10000 + tonumber(minor) * 100 + tonumber(revision)
+end
+
 ------------------------
 --- Module Functions ---
 ------------------------
@@ -48,6 +84,68 @@ end
 
 function Utils:GetGold()
 	return GetMoney()
+end
+
+function Utils:InitializeCurrencies()
+	local currencies = { character = {}, warband = {} }
+	AUR.State.currencies = currencies
+	AUR.State.currencyByID = {}
+
+	if not C_CurrencyInfo or not C_CurrencyInfo.GetCurrencyInfo then return end
+
+	local gameType
+	if AWL.GAME_TYPE_FOREVER then
+		gameType = "FOREVER"
+	elseif AWL.GAME_TYPE_RETAIL then
+		gameType = "RETAIL"
+	elseif AWL.GAME_TYPE_MISTS then
+		gameType = "MISTS"
+	elseif AWL.GAME_TYPE_TBC then
+		gameType = "TBC"
+	elseif AWL.GAME_TYPE_CLASSIC then
+		gameType = "CLASSIC"
+	end
+
+	AddAvailableCurrencies(AUR.CURRENCIES[gameType] or {}, currencies.character, "c-")
+	if gameType == "RETAIL" then
+		AddAvailableCurrencies(AUR.WARBAND_CURRENCIES, currencies.warband, "w-")
+	end
+
+	for _, categories in pairs(currencies) do
+		for category, entries in pairs(categories) do
+			table.sort(entries, function(a, b)
+				if AUR.CURRENCY_PATCH_CATEGORIES[category] and a.patch ~= b.patch then
+					return GetPatchOrder(a.patch) < GetPatchOrder(b.patch)
+				end
+				return a.name < b.name
+			end)
+		end
+	end
+end
+
+function Utils:RefreshCurrency(currencyID)
+	local entry = AUR.State.currencyByID[currencyID]
+	if not entry or not C_CurrencyInfo or not C_CurrencyInfo.GetCurrencyInfo then return end
+	local info = C_CurrencyInfo.GetCurrencyInfo(currencyID)
+	if not info or info.quantity == nil then return end
+	entry.info = GetCurrencyBalanceInfo(info)
+	return entry
+end
+
+function Utils:GetLatestBalances(ownerKey)
+	AUR.State.latestBalances = AUR.State.latestBalances or {}
+	if AUR.State.latestBalances[ownerKey] then return AUR.State.latestBalances[ownerKey] end
+
+	local balances, latestDates = {}, {}
+	for day, values in pairs(AUR.Data.balance[ownerKey] or {}) do
+		for key, value in pairs(values) do
+			if not latestDates[key] or day > latestDates[key] then
+				balances[key], latestDates[key] = value, day
+			end
+		end
+	end
+	AUR.State.latestBalances[ownerKey] = balances
+	return balances
 end
 
 function Utils:PrintMessage(msg)
@@ -135,6 +233,7 @@ function Utils:DeleteCharacterData(characterKey)
 	AUR.Data.balance[characterKey] = nil
 	AUR.Data.character[characterKey] = nil
 	AUR.State.characterEntries[characterKey] = nil
+	if AUR.State.latestBalances then AUR.State.latestBalances[characterKey] = nil end
 	return true
 end
 
@@ -180,12 +279,13 @@ function Utils:InitializeDatabase(isLogin)
 	AUR.Data.dates = Aurarium_DataDates
 	AUR.Data.character = Aurarium_DataCharacter_v2
 	AUR.Data.balance = Aurarium_DataBalance_v2
+	AUR.State.latestBalances = {}
 
 	local createdCharacter = not AUR.Data.character[characterGUID]
 	AUR.Data.character[characterGUID] = AUR.Data.character[characterGUID] or {}
 	AUR.Data.balance[characterGUID] = AUR.Data.balance[characterGUID] or {}
 
-	if AWL.GAME_TYPE_RETAIL or AWL.GAME_TYPE_FOREVER or Aurarium_DataBalance.Warband then
+	if AWL.GAME_TYPE_RETAIL or Aurarium_DataBalance.Warband then
 		AUR.Data.balance.Warband = AUR.Data.balance.Warband or {}
 	end
 

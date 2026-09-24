@@ -31,14 +31,14 @@ Individual features and display options can be configured in the addon settings.
 * View the sum of all currencies across all characters.
 * Hide days without balance changes.
 
-*\* In Classic and Burning Crusade - Classic Anniversary Edition, only gold is tracked.*
+*\* In Classic only gold is tracked.*
 
-*\*\* Warband currency tracking is supported in Retail and Forever.*
+*\*\* Warband currency tracking is supported only in Retail.*
 
 ## Supported Languages & Flavors
 
 * Languages: English, German, Russian
-* Flavors: Classic, Burning Crusade - Classic Anniversary Edition, Mists of Pandaria - Classic, Retail, Forever
+* Flavors: Classic, Burning Crusade - Classic Anniversary Edition, Mists of Pandaria - Classic, Forever, Retail
 
 ## Installation & Quick Start
 

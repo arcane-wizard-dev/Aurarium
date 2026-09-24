@@ -12,6 +12,7 @@ local Utils = AUR.Modules.Utils
 
 -- Variables
 local isInitialized = false
+local currencyRefreshPending = false
 
 --------------
 --- Frames ---
@@ -39,6 +40,7 @@ local function TrackGoldBalance(characterGUID, today)
 	AUR.Data.balance[characterGUID][today] = AUR.Data.balance[characterGUID][today] or {}
 
 	local newGold = Utils:GetGold()
+	AUR.State.gold = newGold
 	local prevGold = 0
 	local lastDate = nil
 
@@ -58,73 +60,36 @@ local function TrackGoldBalance(characterGUID, today)
 	end
 end
 
-local function TrackCharacterCurrencies(characterGUID, today)
-	local characterHistory = AUR.Data.balance[characterGUID]
-	local changed = false
-
-	for _, currencies in pairs(AUR.CHARACTER_CURRENCIES) do
-		for _, currencyID in ipairs(currencies) do
-			local key = "c-" .. tostring(currencyID)
-			local info = C_CurrencyInfo.GetCurrencyInfo(currencyID)
-
-			if info then
-				local newQty = info.quantity
-				local prevQty = 0
-				local lastDate = nil
-
-				for dateKey, dayData in pairs(characterHistory) do
-					if dateKey < today and dayData[key] ~= nil and (not lastDate or dateKey > lastDate) then
-						lastDate = dateKey
-						prevQty = dayData[key]
-					end
-				end
-
-				if newQty ~= prevQty then
-					AUR.Data.balance[characterGUID][today][key] = newQty
-					changed = true
-				else
-					AUR.Data.balance[characterGUID][today][key] = nil
-				end
-			end
+local function TrackCurrencyBalance(currency, characterGUID, today)
+	local info = currency.info
+	if not info or info.quantity == nil then return end
+	local ownerKey = characterGUID
+	if currency.key:sub(1, 2) == "w-" then
+		if not AWL.GAME_TYPE_RETAIL then return end
+		ownerKey = "Warband"
+	end
+	AUR.Data.balance[ownerKey] = AUR.Data.balance[ownerKey] or {}
+	local history = AUR.Data.balance[ownerKey]
+	local prevQty, lastDate = 0, nil
+	for dateKey, dayData in pairs(history) do
+		if dateKey < today and dayData[currency.key] ~= nil and (not lastDate or dateKey > lastDate) then
+			lastDate, prevQty = dateKey, dayData[currency.key]
 		end
 	end
-
-	return changed
-end
-
-local function TrackWarbandCurrencies(today)
-	local warbandHistory = AUR.Data.balance["Warband"]
-	AUR.Data.balance["Warband"][today] = AUR.Data.balance["Warband"][today] or {}
-	local changed = false
-
-	for _, currencies in pairs(AUR.WARBAND_CURRENCIES) do
-		for _, currencyID in ipairs(currencies) do
-			local key = "w-" .. tostring(currencyID)
-			local info = C_CurrencyInfo.GetCurrencyInfo(currencyID)
-			local newQty = (info and info.quantity) or 0
-			local prevQty = 0
-			local lastDate = nil
-
-			for dateKey, dayData in pairs(warbandHistory) do
-				if dateKey < today and dayData[key] ~= nil and (not lastDate or dateKey > lastDate) then
-					lastDate = dateKey
-					prevQty = dayData[key]
-				end
-			end
-
-			if newQty ~= prevQty then
-				AUR.Data.balance["Warband"][today][key] = newQty
-				changed = true
-			else
-				AUR.Data.balance["Warband"][today][key] = nil
-			end
-		end
+	if info.quantity ~= prevQty then
+		history[today] = history[today] or {}
+		history[today][currency.key] = info.quantity
+	elseif history[today] then
+		history[today][currency.key] = nil
 	end
-
-	return changed
+	if history[today] and not next(history[today]) then history[today] = nil end
+	if AUR.State.latestBalances then AUR.State.latestBalances[ownerKey] = nil end
 end
 
-local function SaveBalance()
+local function SaveBalance(update)
+	if not isInitialized then return end
+	if update.currencyID and not AUR.State.currencyByID[update.currencyID] then return end
+
 	local characterGUID = AWL.Utils:GetCharacterGUID()
 	local today = Utils:GetToday()
 
@@ -134,38 +99,37 @@ local function SaveBalance()
 
 	UpdateDateHistory(today)
 
-	if AWL.GAME_TYPE_MISTS then
-		local goldChanged = TrackGoldBalance(characterGUID, today)
-		local charCurChanged = TrackCharacterCurrencies(characterGUID, today)
-
-		if not (goldChanged or charCurChanged) then
-			AUR.Data.balance[characterGUID][today] = nil
+	if update.gold then
+		TrackGoldBalance(characterGUID, today)
+		if AUR.State.latestBalances then AUR.State.latestBalances[characterGUID] = nil end
+	end
+	if update.currencyID then
+		local currency = Utils:RefreshCurrency(update.currencyID)
+		if currency then TrackCurrencyBalance(currency, characterGUID, today) end
+	elseif update.currencies then
+		for currencyID, entry in pairs(AUR.State.currencyByID) do
+			local currency
+			if update.useCache then currency = entry
+			else currency = Utils:RefreshCurrency(currencyID) end
+			if currency then TrackCurrencyBalance(currency, characterGUID, today) end
 		end
-	elseif AWL.GAME_TYPE_RETAIL or AWL.GAME_TYPE_FOREVER then
-		local goldChanged = TrackGoldBalance(characterGUID, today)
-		local charCurChanged = TrackCharacterCurrencies(characterGUID, today)
-		local warbandChanged = TrackWarbandCurrencies(today)
+	end
 
-		if not (goldChanged or charCurChanged) then
-			AUR.Data.balance[characterGUID][today] = nil
-		end
+	if AUR.Data.balance[characterGUID][today] and not next(AUR.Data.balance[characterGUID][today]) then
+		AUR.Data.balance[characterGUID][today] = nil
+	end
 
-		if not warbandChanged then
-			AUR.Data.balance["Warband"][today] = nil
-		end
-	else
-		local goldChanged = TrackGoldBalance(characterGUID, today)
-
-		if not goldChanged then
-			AUR.Data.balance[characterGUID][today] = nil
-		end
+	local warbandHistory = AUR.Data.balance["Warband"]
+	if warbandHistory and warbandHistory[today] and not next(warbandHistory[today]) then
+		AUR.Data.balance["Warband"][today] = nil
 	end
 
 	Utils:PrintDebug("Balance saved.")
 
-	if GoldDisplay and GoldDisplay.Refresh then
+	if update.gold and GoldDisplay and GoldDisplay.Refresh then
 		GoldDisplay:Refresh()
 	end
+	if Overview.RefreshCurrencyMenus then Overview:RefreshCurrencyMenus() end
 end
 
 local function SlashCommand(msg)
@@ -202,6 +166,8 @@ function AurariumFrame:ADDON_LOADED(_, addOnName)
 		return
 	end
 
+	Utils:InitializeCurrencies()
+	AUR.State.gold = Utils:GetGold()
 	Utils:InitializeMinimapButton()
 	Options:Initialize()
 	GoldDisplay:Initialize()
@@ -224,9 +190,11 @@ function AurariumFrame:PLAYER_ENTERING_WORLD(_, isInitialLogin, isReloadingUi)
 		tostring(isInitialLogin), tostring(isReloadingUi)
 	))
 
-	if (isInitialLogin or isReloadingUi) then
+	if isInitialized and (isInitialLogin or isReloadingUi) then
 		C_Timer.After(5, function()
-			SaveBalance()
+			-- Currency data can become available after ADDON_LOADED.
+			Utils:InitializeCurrencies()
+			SaveBalance({gold = true, currencies = true, useCache = true})
 		end)
 
 		if AUR.Settings.currencyOverview["open-on-login"] then
@@ -238,7 +206,7 @@ end
 function AurariumFrame:PLAYER_MONEY(...)
 	Utils:PrintDebug("Event 'PLAYER_MONEY' fired. No payload.")
 
-	SaveBalance()
+	SaveBalance({gold = true})
 end
 
 function AurariumFrame:CURRENCY_DISPLAY_UPDATE(_, currencyType, quantity, quantityChange, quantityGainSource, quantityLostSource)
@@ -247,7 +215,17 @@ function AurariumFrame:CURRENCY_DISPLAY_UPDATE(_, currencyType, quantity, quanti
 		tostring(currencyType), tostring(quantity), tostring(quantityChange), tostring(quantityGainSource), tostring(quantityLostSource)
 	))
 
-	SaveBalance()
+	if not isInitialized or currencyRefreshPending then return end
+	if currencyType and currencyType > 0 then
+		SaveBalance({currencyID = currencyType})
+	else
+		-- Coalesce broad notifications into one refresh on the next frame.
+		currencyRefreshPending = true
+		C_Timer.After(0, function()
+			currencyRefreshPending = false
+			SaveBalance({currencies = true})
+		end)
+	end
 end
 
 AurariumFrame:RegisterEvent("ADDON_LOADED")

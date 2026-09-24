@@ -303,6 +303,10 @@ end
 ----------------------
 
 local function UpdateOverview(selectedCurrency, currentMonthOffset, history, scrollFrame)
+	if #history == 0 and currentMonthOffset == 0 then
+		history = {{date = Utils:GetToday(), value = 0}}
+	end
+
 	local filterPrefix = GetYearMonthString(currentMonthOffset)
 	local displayHistory = FilterUnchangedHistory(history)
 	local monthHistory = BuildMonthHistory(displayHistory, filterPrefix)
@@ -454,7 +458,7 @@ local function HandleCharacterDeleteConfirmed(characterKey)
 	UpdateCharacterOverview()
 	UpdateAccountOverview()
 
-	if AWL.GAME_TYPE_RETAIL or AWL.GAME_TYPE_FOREVER then
+	if AWL.GAME_TYPE_RETAIL then
 		UpdateWarbandOverview()
 	end
 
@@ -479,12 +483,85 @@ local function ShowCharacterDeleteConfirm(characterKey)
 	end)
 end
 
+local function GetCharacterBalances(characterKey)
+	local balances = {}
+	for key, value in pairs(Utils:GetLatestBalances(characterKey)) do balances[key] = value end
+	if IsCurrentCharacter(characterKey) then
+		balances.gold = AUR.State.gold
+		for _, entries in pairs(AUR.State.currencies.character) do
+			for _, entry in ipairs(entries) do
+				if entry.info and entry.info.quantity ~= nil then balances[entry.key] = entry.info.quantity end
+			end
+		end
+	end
+	return balances
+end
+
+local function GetDropdownBalances(index)
+	if index == 3 then return {}, true end
+	if index == 1 then
+		local characterKey = selectedCharacterKey or AWL.Utils:GetCharacterGUID()
+		if IsCurrentCharacter(characterKey) then return {gold = AUR.State.gold}, true end
+		return Utils:GetLatestBalances(characterKey), false
+	end
+	local balances = {}
+	for _, character in ipairs(Utils:GetSortedCharacters()) do
+		for key, value in pairs(GetCharacterBalances(character.key)) do
+			balances[key] = (balances[key] or 0) + value
+		end
+	end
+	return balances, false
+end
+
+local function FormatDropdownAmount(quantity, info)
+	if quantity == nil then return "-" end
+	local amount = BreakUpLargeNumbers(quantity)
+	if info and info.maxQuantity and info.maxQuantity > 0 then
+		amount = amount .. "/" .. BreakUpLargeNumbers(info.maxQuantity)
+	end
+	return amount
+end
+
+local function InitializeCurrencyMenuButton(button, entry, text)
+	local iconSize = entry.key:sub(1, 2) == "w-" and 18 or 16
+	local icon, iconWidth, anchorPoint = button, 0, "RIGHT"
+	if entry.key ~= "gold" then
+		icon = button:AttachTexture()
+		icon:SetSize(iconSize, iconSize)
+		icon:SetPoint("RIGHT")
+		icon:SetTexture(entry.iconFileID)
+		iconWidth, anchorPoint = iconSize, "LEFT"
+	end
+
+	local amount = button:AttachFontString()
+	amount:SetFontObject(button.fontString:GetFontObject())
+	amount:SetTextColor(1, 1, 1)
+	amount:SetPoint("RIGHT", icon, anchorPoint, -5, 0)
+	amount:SetJustifyH("RIGHT")
+	amount:SetText(text)
+	local amountWidth = amount:GetUnboundedStringWidth()
+	amount:SetWidth(amountWidth)
+
+	local fontString = button.fontString
+	local nameWidth = fontString:GetUnboundedStringWidth()
+	fontString:SetWidth(nameWidth)
+	local badgeWidth = 0
+	if entry.isNew and MenuTemplates and MenuTemplates.AttachNewFeatureFrame then
+		local badge = MenuTemplates.AttachNewFeatureFrame(button)
+		local badgeTextWidth = badge:GetTextWidth()
+		badgeWidth = badgeTextWidth + 16
+		badge:SetPoint("CENTER", fontString, "RIGHT", badgeTextWidth / 2 + 8, 0)
+	end
+	return nameWidth + iconWidth + amountWidth + badgeWidth + 35, iconSize + 4
+end
+
 local function CreateCurrencyDropdown(scrollFrame, background, index)
 	local currencyDropdown = CreateFrame("DropdownButton", nil, scrollFrame, "WowStyle1DropdownTemplate")
 	currencyDropdown:SetPoint("BOTTOMRIGHT", background, "TOPRIGHT", -5, 5)
 	currencyDropdown:SetSize(200, 25)
 
 	currencyDropdown:SetupMenu(function(self, root)
+		local balances, live = GetDropdownBalances(index)
 		local function IsSelected(value) return value == selectedCurrency[index] end
 		local function SetSelected(value)
 			selectedCurrency[index] = value
@@ -495,73 +572,46 @@ local function CreateCurrencyDropdown(scrollFrame, background, index)
 		end
 
 		if index == 1 or index == 2 then
-			local goldButton = root:CreateRadio(L["currency-overview.category.gold"], IsSelected, SetSelected, "gold");
-			goldButton:AddInitializer(function(button, description, menu)
-				local rightTexture = button:AttachTexture()
-				rightTexture:SetSize(16, 16)
-				rightTexture:SetPoint("RIGHT")
-				rightTexture:SetTexture(237618)
-				local fontString = button.fontString
-				fontString:SetPoint("RIGHT")
-				return fontString:GetUnboundedStringWidth() + rightTexture:GetWidth() + 20, rightTexture:GetHeight() + 4
-			end)
+			root:CreateRadio(L["currency-overview.category.gold"], IsSelected, SetSelected, "gold")
+		end
 
-			if not (AWL.GAME_TYPE_RETAIL or AWL.GAME_TYPE_FOREVER) and not AWL.GAME_TYPE_MISTS then return end
+		local categories = index == 3 and AUR.State.currencies.warband or AUR.State.currencies.character
+		if not next(categories) then return end
+		if index ~= 3 then root:CreateDivider() end
 
-			root:CreateDivider()
-
-			for _, categoryKey in ipairs(AUR.CURRENCY_CATEGORY_ORDER) do
-				if AUR.CHARACTER_CURRENCIES[categoryKey] then
-					local categoryButton = root:CreateButton(L["currency-overview.category." .. categoryKey])
-					if categoryKey == 'timerunning' then root:CreateDivider() end
-					local sortedList = {}
-					for _, currencyID in ipairs(AUR.CHARACTER_CURRENCIES[categoryKey]) do
-						local info = C_CurrencyInfo.GetCurrencyInfo(currencyID)
-						if info then table.insert(sortedList, {id = "c-" .. currencyID, name = info.name, iconFileID = info.iconFileID}) end
-					end
-					table.sort(sortedList, function(a, b) return a.name < b.name end)
-
-					for _, entry in ipairs(sortedList) do
-						local currencyButton = categoryButton:CreateRadio(entry.name, IsSelected, SetSelected, entry.id)
-						currencyButton:AddInitializer(function(button, description, menu)
-							local rightTexture = button:AttachTexture()
-							rightTexture:SetSize(16, 16)
-							rightTexture:SetPoint("RIGHT")
-							rightTexture:SetTexture(entry.iconFileID)
-							local fontString = button.fontString
-							fontString:SetPoint("RIGHT")
-							return fontString:GetUnboundedStringWidth() + rightTexture:GetWidth() + 20, rightTexture:GetHeight() + 4
-						end)
-					end
-				end
+		local hasCategory, dividerPending = false, false
+		for _, categoryKey in ipairs(AUR.CURRENCY_CATEGORY_ORDER) do
+			if categoryKey == false then
+				dividerPending = hasCategory
 			end
-		elseif index == 3 and (AWL.GAME_TYPE_RETAIL or AWL.GAME_TYPE_FOREVER) then
-			for _, categoryKey in ipairs(AUR.CURRENCY_CATEGORY_ORDER) do
-				if AUR.WARBAND_CURRENCIES[categoryKey] then
-					local categoryButton = root:CreateButton(L["currency-overview.category." .. categoryKey])
-					local sortedList = {}
-					for _, currencyID in ipairs(AUR.WARBAND_CURRENCIES[categoryKey]) do
-						local info = C_CurrencyInfo.GetCurrencyInfo(currencyID)
-						if info then table.insert(sortedList, {id = "w-" .. currencyID, name = info.name, iconFileID = info.iconFileID}) end
+			local entries = categories[categoryKey]
+			if entries then
+				if dividerPending then
+					root:CreateDivider()
+					dividerPending = false
+				end
+				local categoryButton = root:CreateButton(L["currency-overview.category." .. categoryKey])
+				hasCategory = true
+				local previousPatch
+				for _, entry in ipairs(entries) do
+					if AUR.CURRENCY_PATCH_CATEGORIES[categoryKey] and entry.patch and entry.patch ~= previousPatch then
+						if previousPatch then categoryButton:CreateDivider() end
+						categoryButton:CreateTitle(string.format(L["currency-overview.menu.patch"], entry.patch))
+						previousPatch = entry.patch
 					end
-					table.sort(sortedList, function(a, b) return a.name < b.name end)
-
-					for _, entry in ipairs(sortedList) do
-						local currencyButton = categoryButton:CreateRadio(entry.name, IsSelected, SetSelected, entry.id);
-						currencyButton:AddInitializer(function(button, description, menu)
-							local rightTexture = button:AttachTexture()
-							rightTexture:SetSize(18, 18)
-							rightTexture:SetPoint("RIGHT")
-							rightTexture:SetTexture(entry.iconFileID)
-							local fontString = button.fontString
-							fontString:SetPoint("RIGHT")
-							return fontString:GetUnboundedStringWidth() + rightTexture:GetWidth() + 20, rightTexture:GetHeight() + 4
-						end)
-					end
+					local currencyButton = categoryButton:CreateRadio(entry.name, IsSelected, SetSelected, entry.key)
+					local info = live and entry.info or nil
+					local quantity = balances[entry.key] or 0
+					if live then quantity = info and info.quantity end
+					local amount = FormatDropdownAmount(quantity, info)
+					currencyButton:AddInitializer(function(button)
+						return InitializeCurrencyMenuButton(button, entry, amount)
+					end)
 				end
 			end
 		end
 	end)
+	scrollFrame.currencyDropdown = currencyDropdown
 	return currencyDropdown
 end
 
@@ -734,7 +784,7 @@ local function SetupTabs(numTabs)
 end
 
 local function InitializeFrames()
-	local numTabs = (AWL.GAME_TYPE_RETAIL or AWL.GAME_TYPE_FOREVER) and 3 or 2
+	local numTabs = AWL.GAME_TYPE_RETAIL and 3 or 2
 	local insetTemplate = (AWL.GAME_TYPE_RETAIL or AWL.GAME_TYPE_FOREVER) and "InsetFrameTemplate4" or "InsetFrameTemplate"
 
 	OverviewFrame = CreateFrame("Frame", "Aurarium_OverviewFrame", UIParent, "PortraitFrameTemplate")
@@ -836,13 +886,20 @@ function Overview:Hide()
 	OverviewFrame:Hide()
 end
 
+function Overview:RefreshCurrencyMenus()
+	for _, scrollFrame in ipairs(OverviewScrollFrames) do
+		local dropdown = scrollFrame.currencyDropdown
+		if dropdown and dropdown:IsMenuOpen() then dropdown:GenerateMenu() end
+	end
+end
+
 function Overview:Refresh()
 	if not OverviewFrame then return end
 
 	UpdateCharacterOverview()
 	UpdateAccountOverview()
 
-	if AWL.GAME_TYPE_RETAIL or AWL.GAME_TYPE_FOREVER then
+	if AWL.GAME_TYPE_RETAIL then
 		UpdateWarbandOverview()
 	end
 end

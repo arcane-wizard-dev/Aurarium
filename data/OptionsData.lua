@@ -1,6 +1,5 @@
 local _, AUR = ...
 
--- Complete defaults for every supported WoW variant.
 AUR.OPTIONS_DEFAULTS = {
 	["general"] = {
 		["minimap-button"] = {
@@ -18,6 +17,11 @@ AUR.OPTIONS_DEFAULTS = {
 	["gold-display"] = {
 		["show"] = true,
 		["display-mode"] = "all",
-		["position"] = { ["point"] = "CENTER", ["relativePoint"] = "CENTER", ["x"] = 0, ["y"] = 0 },
+		["position"] = {
+			["point"] = "CENTER",
+			["relativePoint"] = "CENTER",
+			["x"] = 0,
+			["y"] = 0
+		},
 	},
 }

@@ -3,7 +3,7 @@
 - Minor code adjustments
 
 **v2.28 (2026-09-18)**
-- Added: TOC version for patch 1.60.1 [forever]
+- Added: Support for 'Forever'
 - Changed: Character profiles and data are initialized centrally using GUIDs; existing gold and currency histories are migrated at login
 - Changed: Addon initialization stops if the player identity is unavailable
 
