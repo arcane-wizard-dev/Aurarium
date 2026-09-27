@@ -8,6 +8,16 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
+			"Added: Explicit New badge control per currency",
+			"Changed: Mark currencies added in v2.30 as New",
+			"Fixed: Show today's balance immediately after login or reload",
+			"Minor code adjustments"
+		}
+	},
+	{
+		version = "v2.30",
+		date = "2026-09-24",
+		entries = {
 			"Added: Currency 'Arena Points' [burning crusade - classic anniversary edition]",
 			"Added: Currency 'Honor Points' [burning crusade - classic anniversary edition] [mists of pandaria - classic]",
 			"Added: Currency 'Conquest Points' [mists of pandaria - classic]",
@@ -98,13 +108,6 @@ AUR.CHANGELOG = {
 		entries = {
 			"Added: Currencies for the patch 'Midnight - The Curse of Ula’tek' [retail]",
 			"Removed: TOC version for patch 12.0.7 [retail]"
-		}
-	},
-	{
-		version = "v2.21",
-		date = "2026-08-04",
-		entries = {
-			"Minor code adjustments"
 		}
 	}
 }
