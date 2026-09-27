@@ -1,3 +1,9 @@
+**v2.31 (2026-09-27)**
+- Added: Explicit New badge control per currency
+- Changed: Mark currencies added in v2.30 as New
+- Fixed: Show today's balance immediately after login or reload
+- Minor code adjustments
+
 **v2.30 (2026-09-24)**
 - Added: Currency 'Arena Points' [burning crusade - classic anniversary edition]
 - Added: Currency 'Honor Points' [burning crusade - classic anniversary edition] [mists of pandaria - classic]
