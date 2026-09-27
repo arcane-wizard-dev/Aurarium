@@ -53,6 +53,10 @@ local function AddAvailableCurrencies(definitions, categories, keyPrefix)
 		if info and info.name and info.name ~= "" then
 			local category = definition.category
 			categories[category] = categories[category] or {}
+			local isNew = definition.isNew
+			if isNew == nil then
+				isNew = definition.patch ~= nil and definition.patch == AWL.GAME_VERSION
+			end
 			local entry = {
 				id = currencyID,
 				key = keyPrefix .. currencyID,
@@ -60,7 +64,7 @@ local function AddAvailableCurrencies(definitions, categories, keyPrefix)
 				iconFileID = info.iconFileID,
 				info = GetCurrencyBalanceInfo(info),
 				patch = definition.patch,
-				isNew = definition.patch ~= nil and definition.patch == AWL.GAME_VERSION
+				isNew = isNew
 			}
 			table.insert(categories[category], entry)
 			AUR.State.currencyByID[currencyID] = entry

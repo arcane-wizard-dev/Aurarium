@@ -15,7 +15,6 @@ local GoldDisplay = AUR.Modules.GoldDisplay
 local Utils = AUR.Modules.Utils
 
 -- Variables
-local defaults = AUR.OPTIONS_DEFAULTS
 local goldDisplayModeOptions = {}
 local goldDisplayData = AUR.GOLD_DISPLAY_DATA
 
@@ -108,7 +107,7 @@ function Options:Initialize()
 		variableName	= "hide",
 		name			= L["options.general.minimap-button.name"],
 		tooltip			= L["options.general.minimap-button.tooltip"],
-		default			= not defaults.general["minimap-button"].hide
+		default			= not AUR.OPTIONS_DEFAULTS.general["minimap-button"].hide
 	})
 
 	-- Debug Mode
@@ -118,7 +117,7 @@ function Options:Initialize()
 		variableName	= "debug-mode",
 		name			= L["options.general.debug-mode.name"],
 		tooltip			= L["options.general.debug-mode.tooltip"],
-		default			= defaults["general"]["debug-mode"]
+		default			= AUR.OPTIONS_DEFAULTS["general"]["debug-mode"]
 	})
 
 	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L["options.currency-overview"]))
@@ -130,7 +129,7 @@ function Options:Initialize()
 		variableName	= "open-on-login",
 		name			= L["options.currency-overview.open-on-login.name"],
 		tooltip			= L["options.currency-overview.open-on-login.tooltip"],
-		default			= defaults["currency-overview"]["open-on-login"]
+		default			= AUR.OPTIONS_DEFAULTS["currency-overview"]["open-on-login"]
 	})
 
 	-- Hide Unchanged Entries
@@ -140,7 +139,7 @@ function Options:Initialize()
 		variableName	= "hide-unchanged-entries",
 		name			= L["options.currency-overview.hide-unchanged-entries.name"],
 		tooltip			= L["options.currency-overview.hide-unchanged-entries.tooltip"],
-		default			= defaults["currency-overview"]["hide-unchanged-entries"]
+		default			= AUR.OPTIONS_DEFAULTS["currency-overview"]["hide-unchanged-entries"]
 	})
 
 	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L["options.gold-display"]))
@@ -152,7 +151,7 @@ function Options:Initialize()
 		variableName	= "show",
 		name			= L["options.gold-display.show.name"],
 		tooltip			= L["options.gold-display.show.tooltip"],
-		default			= defaults["gold-display"]["show"]
+		default			= AUR.OPTIONS_DEFAULTS["gold-display"]["show"]
 	})
 
 	-- Displayed Coins
@@ -162,7 +161,7 @@ function Options:Initialize()
 		variableName	= "display-mode",
 		name			= L["options.gold-display.display-mode.name"],
 		tooltip			= L["options.gold-display.display-mode.tooltip"],
-		default			= defaults["gold-display"]["display-mode"],
+		default			= AUR.OPTIONS_DEFAULTS["gold-display"]["display-mode"],
 		options			= goldDisplayModeOptions
 	})
 
