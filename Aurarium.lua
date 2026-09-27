@@ -191,14 +191,19 @@ function AurariumFrame:PLAYER_ENTERING_WORLD(_, isInitialLogin, isReloadingUi)
 	))
 
 	if isInitialized and (isInitialLogin or isReloadingUi) then
+		SaveBalance({gold = true})
+
 		C_Timer.After(5, function()
 			-- Currency data can become available after ADDON_LOADED.
 			Utils:InitializeCurrencies()
-			SaveBalance({gold = true, currencies = true, useCache = true})
+			SaveBalance({currencies = true, useCache = true})
+			if Overview:IsShown() then Overview:Refresh() end
 		end)
 
 		if AUR.Settings.currencyOverview["open-on-login"] then
 			Overview:Show()
+		elseif Overview:IsShown() then
+			Overview:Refresh()
 		end
 	end
 end

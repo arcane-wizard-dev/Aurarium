@@ -4,4 +4,5 @@
 
 - Added: Explicit New badge control per currency
 - Changed: Mark currencies added in v2.30 as New
+- Fixed: Show today's balance immediately after login or reload
 - Minor code adjustments
