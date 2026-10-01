@@ -364,7 +364,7 @@ local function UpdateOverview(selectedCurrency, currentMonthOffset, history, scr
 
 		background.texture = background:CreateTexture(nil, "BACKGROUND")
 		background.texture:SetAllPoints()
-		background.texture:SetTexture(Addon:GetMediaPath("active-table-background.blp"))
+		background.texture:SetTexture(Addon:GetMediaPath("overview/active-table-background.tga"))
 		background.texture:SetAlpha(0)
 
 		background:SetScript("OnEnter", function(self) self.texture:SetAlpha(0.3) end)
