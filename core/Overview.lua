@@ -725,7 +725,7 @@ local function CreateCharacterActionsButton(scrollFrame, characterDropdown)
 	local icon = actionsButton:CreateTexture(nil, "ARTWORK")
 	icon:SetPoint("CENTER")
 	icon:SetSize(14, 14)
-	icon:SetTexture(Addon:GetMediaPath("gear-icon.tga"))
+	icon:SetTexture(Addon:GetMediaPath("overview/gear-icon.tga"))
 
 	actionsButton:SetScript("OnClick", function(self)
 		OpenCharacterActionsMenu(self)
