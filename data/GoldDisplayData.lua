@@ -14,7 +14,7 @@ AUR.GOLD_DISPLAY_DATA = {
 	logo = {
 		path = "icon.tga",
 		size = 30,
-		alpha = 0.4,
+		alpha = 0.5,
 		x = 9,
 		y = 0
 	},
