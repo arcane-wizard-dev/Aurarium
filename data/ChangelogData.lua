@@ -8,6 +8,13 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
+			"Updated: Logo"
+		}
+	},
+	{
+		version = "v2.31",
+		date = "2026-09-27",
+		entries = {
 			"Added: Explicit New badge control per currency",
 			"Changed: Mark currencies added in v2.30 as New",
 			"Fixed: Show today's balance immediately after login or reload",
@@ -100,14 +107,6 @@ AUR.CHANGELOG = {
 			"Added: Changelog window available through the 'changelog' slash command",
 			"Removed: Version notice chat messages",
 			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility"
-		}
-	},
-	{
-		version = "v2.22",
-		date = "2026-08-14",
-		entries = {
-			"Added: Currencies for the patch 'Midnight - The Curse of Ula’tek' [retail]",
-			"Removed: TOC version for patch 12.0.7 [retail]"
 		}
 	}
 }
