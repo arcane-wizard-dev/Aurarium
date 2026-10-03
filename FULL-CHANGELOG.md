@@ -1,3 +1,6 @@
+**v2.32 (2026-10-03)**
+- Updated: Logo
+
 **v2.31 (2026-09-27)**
 - Added: Explicit New badge control per currency
 - Changed: Mark currencies added in v2.30 as New
