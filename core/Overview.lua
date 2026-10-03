@@ -601,6 +601,7 @@ local function CreateCurrencyDropdown(scrollFrame, background, index)
 					end
 					local currencyButton = categoryButton:CreateRadio(entry.name, IsSelected, SetSelected, entry.key)
 					local info = live and entry.info or nil
+					---@type number|nil
 					local quantity = balances[entry.key] or 0
 					if live then quantity = info and info.quantity end
 					local amount = FormatDropdownAmount(quantity, info)
