@@ -802,7 +802,7 @@ local function InitializeFrames()
 
 	local portrait = OverviewFrame:GetPortrait()
 	portrait:SetPoint('TOPLEFT', -5, 8)
-	portrait:SetTexture(Addon:GetMediaPath("icon-round.blp"))
+	portrait:SetTexture(Addon:GetMediaPath("icon-round.tga"))
 
 	local background = CreateFrame("Frame", nil, OverviewFrame, insetTemplate)
 	background:SetSize(454, 430)
