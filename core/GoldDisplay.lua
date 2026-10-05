@@ -168,6 +168,7 @@ local function CreateGoldDisplay()
 	local data = AUR.GOLD_DISPLAY_DATA
 
 	GoldDisplayFrame = AWL.Frames:CreatePopup(data)
+	GoldDisplayFrame:SetBackdropColor(unpack(data.backgroundColor))
 
 	CreateLogoButton(GoldDisplayFrame)
 
@@ -224,6 +225,7 @@ function GoldDisplay:Refresh()
 	end
 
 	GoldDisplayFrame:SetWidth(GetDisplayMode().width)
+	GoldDisplayFrame:SetBorderShown(AUR.Settings.goldDisplay["show-border"] ~= false)
 
 	local currentGold = Utils:GetGold()
 	local characterGUID = AWL.Utils:GetCharacterGUID()

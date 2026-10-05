@@ -2,11 +2,11 @@ local _, AUR = ...
 
 AUR.GOLD_DISPLAY_DATA = {
 	width = 180,
-	height = 50,
-	backgroundStyle = "solid-black",
+	height = 52,
+	style = "tooltip",
+	backgroundColor = {0, 0, 0, 1},
 	backgroundAlpha = 0.6,
-	showBorder = true,
-	borderStyle = "gold",
+	showBorder = AUR.OPTIONS_DEFAULTS["gold-display"]["show-border"],
 	showCloseButton = false,
 	movable = true,
 	closeOnEscape = false,

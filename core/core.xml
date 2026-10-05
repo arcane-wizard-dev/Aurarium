@@ -4,5 +4,4 @@
 
 	<Script file="GoldDisplay.lua" />
 	<Script file="Overview.lua" />
-	<Include file="Overview.xml" />
 </Ui>

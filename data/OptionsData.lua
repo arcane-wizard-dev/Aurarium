@@ -16,6 +16,7 @@ AUR.OPTIONS_DEFAULTS = {
 	},
 	["gold-display"] = {
 		["show"] = true,
+		["show-border"] = true,
 		["display-mode"] = "all",
 		["position"] = {
 			["point"] = "CENTER",

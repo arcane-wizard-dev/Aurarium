@@ -77,14 +77,14 @@ local currencyOverviewProxy = setmetatable({}, {
 
 local goldDisplayProxy = setmetatable({}, {
 	__index = function(_, key)
-		if key == "show" or key == "display-mode" then
+		if key == "show" or key == "show-border" or key == "display-mode" then
 			return AUR.Settings.goldDisplay[key]
 		end
 	end,
 	__newindex = function(_, key, value)
 		if key == "show" then
 			GoldDisplay:SetVisible(value)
-		elseif key == "display-mode" then
+		elseif key == "show-border" or key == "display-mode" then
 			AUR.Settings.goldDisplay[key] = value
 			GoldDisplay:Refresh()
 		end
@@ -163,6 +163,16 @@ function Options:Initialize()
 		tooltip			= L["options.gold-display.display-mode.tooltip"],
 		default			= AUR.OPTIONS_DEFAULTS["gold-display"]["display-mode"],
 		options			= goldDisplayModeOptions
+	})
+
+	-- Show Border
+	AWL.Settings:AddCheckbox(category, {
+		variableTable	= goldDisplayProxy,
+		settingKey		= addonName .. "_gold-display-show-border",
+		variableName	= "show-border",
+		name			= L["options.gold-display.show-border.name"],
+		tooltip			= L["options.gold-display.show-border.tooltip"],
+		default			= AUR.OPTIONS_DEFAULTS["gold-display"]["show-border"]
 	})
 
 	-- Profiles Section
