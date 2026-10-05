@@ -8,6 +8,15 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
+			"Changed: Overview and Gold Display now use the native Blizzard UI appearance, with an optional border for the Gold Display",
+			"Changed: Character data can now be deleted from the character selection menu",
+			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility"
+		}
+	},
+	{
+		version = "v2.32",
+		date = "2026-10-03",
+		entries = {
 			"Updated: Logo"
 		}
 	},
@@ -97,16 +106,6 @@ AUR.CHANGELOG = {
 		date = "2026-08-21",
 		entries = {
 			"Added: Gold Display - A small movable display with a gold border shows the current gold and today's change with selectable coin detail, adaptive width, and a clickable translucent Aurarium logo"
-		}
-	},
-	{
-		version = "v2.23",
-		date = "2026-08-18",
-		entries = {
-			"Added: Changelog window available from the options menu",
-			"Added: Changelog window available through the 'changelog' slash command",
-			"Removed: Version notice chat messages",
-			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility"
 		}
 	}
 }
