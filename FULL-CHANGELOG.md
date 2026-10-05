@@ -1,3 +1,8 @@
+**v2.33 (2026-10-05)**
+- Changed: Overview and Gold Display now use the native Blizzard UI appearance, with an optional border for the Gold Display
+- Changed: Character data can now be deleted from the character selection menu
+- Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility
+
 **v2.32 (2026-10-03)**
 - Updated: Logo
 
