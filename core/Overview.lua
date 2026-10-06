@@ -80,6 +80,7 @@ end
 
 local function FormatCurrency(val, selectedCurrency)
 	local v = val or 0
+
 	if selectedCurrency == "gold" then
 		return FormatGold(v)
 	else
@@ -89,10 +90,12 @@ end
 
 local function FormatCurrencyDiff(diff, selectedCurrency)
 	local d = diff or 0
+
 	if selectedCurrency == "gold" then
 		return FormatGoldDiff(d)
 	else
 		local sign = (d > 0 and "+" or d == 0 and "±" or "")
+
 		return sign .. BreakUpLargeNumbers(d)
 	end
 end
@@ -106,6 +109,7 @@ local function BuildGenericHistory(rawData, currencyKey)
 	for i, date in ipairs(dates) do
 		local dayData = rawData[date] or {}
 		local v = dayData[currencyKey]
+
 		if v ~= nil then
 			startIndex = i
 			break
@@ -130,6 +134,7 @@ local function BuildGenericHistory(rawData, currencyKey)
 	end
 
 	table.sort(entries, function(a,b) return a.date < b.date end)
+
 	return entries
 end
 
@@ -142,6 +147,7 @@ local function BuildGenericHistoryLookup(rawData, currencyKey)
 	for i, date in ipairs(dates) do
 		local dayData = rawData[date] or {}
 		local v = dayData[currencyKey]
+
 		if v ~= nil then
 			startIndex = i
 			break
@@ -170,6 +176,7 @@ end
 
 local function BuildCharacterHistory(characterKey, currencyKey)
 	local entry = Utils:GetCharacterEntry(characterKey)
+
 	return entry and BuildGenericHistory(entry.history, currencyKey) or {}
 end
 
@@ -183,13 +190,16 @@ local function SelectFallbackCharacter()
 	end
 
 	local currentGUID = AWL.Utils:GetCharacterGUID()
+
 	if Utils:GetCharacterEntry(currentGUID) then
 		selectedCharacterKey = currentGUID
+
 		return true
 	end
 
 	local firstCharacter = Utils:GetSortedCharacters()[1]
 	selectedCharacterKey = firstCharacter and firstCharacter.key or nil
+
 	return selectedCharacterKey ~= nil
 end
 
@@ -213,6 +223,7 @@ local function BuildAccountHistory(currencyKey)
 
 		for _, characterHistory in ipairs(temp) do
 			local c = characterHistory.characterHistory[date]
+
 			if c then
 				value = value + c
 				hasValue = true
@@ -225,17 +236,21 @@ local function BuildAccountHistory(currencyKey)
 	end
 
 	table.sort(entries, function(a,b) return a.date < b.date end)
+
 	return entries
 end
 
 local function BuildMonthHistory(history, monthPrefix)
 	local month = {}
+
 	for _, e in ipairs(history) do
 		if e.date:sub(1,7) == monthPrefix then
 			table.insert(month, e)
 		end
 	end
+
 	table.sort(month, function(a,b) return a.date > b.date end)
+
 	return month
 end
 
@@ -280,8 +295,10 @@ end
 
 local function GetPreviousValueFromHistory(history, currentDate)
 	local lo, hi, idx = 1, #history, 0
+
 	while lo <= hi do
 		local mid = math.floor((lo + hi) / 2)
+
 		if history[mid].date < currentDate then
 			idx = mid
 			lo = mid + 1
@@ -289,6 +306,7 @@ local function GetPreviousValueFromHistory(history, currentDate)
 			hi = mid - 1
 		end
 	end
+
 	return idx > 0 and history[idx].value or nil
 end
 
@@ -331,6 +349,7 @@ local function UpdateOverview(selectedCurrency, currentMonthOffset, history, scr
 
 		scrollFrame.prevButton:SetEnabled(HasAnyDataBeforeMonth(displayHistory, filterPrefix))
 		scrollFrame.nextButton:SetEnabled(HasAnyDataAfterMonth(displayHistory, filterPrefix))
+
 		return
 	end
 
@@ -361,8 +380,13 @@ local function UpdateOverview(selectedCurrency, currentMonthOffset, history, scr
 		background.texture:SetTexture(Addon:GetMediaPath("overview/active-table-background.tga"))
 		background.texture:SetAlpha(0)
 
-		background:SetScript("OnEnter", function(self) self.texture:SetAlpha(0.3) end)
-		background:SetScript("OnLeave", function(self) self.texture:SetAlpha(0) end)
+		background:SetScript("OnEnter", function(self)
+			self.texture:SetAlpha(0.3)
+		end)
+
+		background:SetScript("OnLeave", function(self)
+			self.texture:SetAlpha(0)
+		end)
 
 		local dateStr = entry.date
 		local currentValue = entry.value
@@ -385,6 +409,7 @@ local function UpdateOverview(selectedCurrency, currentMonthOffset, history, scr
 		if entry.date ~= firstDate then
 			local diff = currentValue - prevValue
 			rowDifference:SetText(FormatCurrencyDiff(diff, selectedCurrency))
+
 			if diff > 0 then
 				rowDifference:SetTextColor(0, 1, 0)
 			elseif diff < 0 then
@@ -427,6 +452,7 @@ end
 local function HandleCharacterDeleteConfirmed(characterKey)
 	local entry = Utils:GetCharacterEntry(characterKey)
 	if not entry then return end
+
 	local removed, errorCode = Utils:DeleteCharacterData(characterKey)
 
 	if not removed then
@@ -440,6 +466,7 @@ local function HandleCharacterDeleteConfirmed(characterKey)
 	SelectFallbackCharacter()
 
 	local characterDropdown = OverviewScrollFrames[1] and OverviewScrollFrames[1].characterDropdown
+
 	if characterDropdown and characterDropdown.GenerateMenu then
 		characterDropdown:GenerateMenu()
 	end
@@ -463,6 +490,7 @@ local function ShowCharacterDeleteConfirm(characterKey)
 
 	if not AWL or not AWL.Dialogs or not AWL.Dialogs.ShowConfirmDialog then
 		Utils:PrintDebug("ArcaneWizardLibrary dialog API is not available.")
+
 		return
 	end
 
@@ -475,46 +503,63 @@ end
 
 local function GetCharacterBalances(characterKey)
 	local balances = {}
-	for key, value in pairs(Utils:GetLatestBalances(characterKey)) do balances[key] = value end
+
+	for key, value in pairs(Utils:GetLatestBalances(characterKey)) do
+		balances[key] = value
+	end
+
 	if IsCurrentCharacter(characterKey) then
 		balances.gold = AUR.State.gold
+
 		for _, entries in pairs(AUR.State.currencies.character) do
 			for _, entry in ipairs(entries) do
-				if entry.info and entry.info.quantity ~= nil then balances[entry.key] = entry.info.quantity end
+				if entry.info and entry.info.quantity ~= nil then
+					balances[entry.key] = entry.info.quantity
+				end
 			end
 		end
 	end
+
 	return balances
 end
 
 local function GetDropdownBalances(index)
 	if index == 3 then return {}, true end
+
 	if index == 1 then
 		local characterKey = selectedCharacterKey or AWL.Utils:GetCharacterGUID()
 		if IsCurrentCharacter(characterKey) then return {gold = AUR.State.gold}, true end
+
 		return Utils:GetLatestBalances(characterKey), false
 	end
+
 	local balances = {}
+
 	for _, character in ipairs(Utils:GetSortedCharacters()) do
 		for key, value in pairs(GetCharacterBalances(character.key)) do
 			balances[key] = (balances[key] or 0) + value
 		end
 	end
+
 	return balances, false
 end
 
 local function FormatDropdownAmount(quantity, info)
 	if quantity == nil then return "-" end
+
 	local amount = BreakUpLargeNumbers(quantity)
+
 	if info and info.maxQuantity and info.maxQuantity > 0 then
 		amount = amount .. "/" .. BreakUpLargeNumbers(info.maxQuantity)
 	end
+
 	return amount
 end
 
 local function InitializeCurrencyMenuButton(button, entry, text)
 	local iconSize = entry.key:sub(1, 2) == "w-" and 18 or 16
 	local icon, iconWidth, anchorPoint = button, 0, "RIGHT"
+
 	if entry.key ~= "gold" then
 		icon = button:AttachTexture()
 		icon:SetSize(iconSize, iconSize)
@@ -536,12 +581,14 @@ local function InitializeCurrencyMenuButton(button, entry, text)
 	local nameWidth = fontString:GetUnboundedStringWidth()
 	fontString:SetWidth(nameWidth)
 	local badgeWidth = 0
+
 	if entry.isNew and MenuTemplates and MenuTemplates.AttachNewFeatureFrame then
 		local badge = MenuTemplates.AttachNewFeatureFrame(button)
 		local badgeTextWidth = badge:GetTextWidth()
 		badgeWidth = badgeTextWidth + 16
 		badge:SetPoint("CENTER", fontString, "RIGHT", badgeTextWidth / 2 + 8, 0)
 	end
+
 	return nameWidth + iconWidth + amountWidth + badgeWidth + 35, iconSize + 4
 end
 
@@ -552,13 +599,20 @@ local function CreateCurrencyDropdown(scrollFrame, background, index)
 
 	currencyDropdown:SetupMenu(function(self, root)
 		local balances, live = GetDropdownBalances(index)
+
 		local function IsSelected(value) return value == selectedCurrency[index] end
+
 		local function SetSelected(value)
 			selectedCurrency[index] = value
 			currentMonthOffset[index] = 0
-			if index == 1 then UpdateCharacterOverview()
-			elseif index == 2 then UpdateAccountOverview()
-			else UpdateWarbandOverview() end
+
+			if index == 1 then
+				UpdateCharacterOverview()
+			elseif index == 2 then
+				UpdateAccountOverview()
+			else
+				UpdateWarbandOverview()
+			end
 		end
 
 		if index == 1 or index == 2 then
@@ -567,34 +621,51 @@ local function CreateCurrencyDropdown(scrollFrame, background, index)
 
 		local categories = index == 3 and AUR.State.currencies.warband or AUR.State.currencies.character
 		if not next(categories) then return end
-		if index ~= 3 then root:CreateDivider() end
+
+		if index ~= 3 then
+			root:CreateDivider()
+		end
 
 		local hasCategory, dividerPending = false, false
+
 		for _, categoryKey in ipairs(AUR.CURRENCY_CATEGORY_ORDER) do
 			if categoryKey == false then
 				dividerPending = hasCategory
 			end
+
 			local entries = categories[categoryKey]
+
 			if entries then
 				if dividerPending then
 					root:CreateDivider()
 					dividerPending = false
 				end
+
 				local categoryButton = root:CreateButton(L["currency-overview.category." .. categoryKey])
 				hasCategory = true
 				local previousPatch
+
 				for _, entry in ipairs(entries) do
 					if AUR.CURRENCY_PATCH_CATEGORIES[categoryKey] and entry.patch and entry.patch ~= previousPatch then
-						if previousPatch then categoryButton:CreateDivider() end
+						if previousPatch then
+							categoryButton:CreateDivider()
+						end
+
 						categoryButton:CreateTitle(string.format(L["currency-overview.menu.patch"], entry.patch))
 						previousPatch = entry.patch
 					end
+
 					local currencyButton = categoryButton:CreateRadio(entry.name, IsSelected, SetSelected, entry.key)
 					local info = live and entry.info or nil
 					---@type number|nil
 					local quantity = balances[entry.key] or 0
-					if live then quantity = info and info.quantity end
+
+					if live then
+						quantity = info and info.quantity
+					end
+
 					local amount = FormatDropdownAmount(quantity, info)
+
 					currencyButton:AddInitializer(function(button)
 						return InitializeCurrencyMenuButton(button, entry, amount)
 					end)
@@ -602,7 +673,9 @@ local function CreateCurrencyDropdown(scrollFrame, background, index)
 			end
 		end
 	end)
+
 	scrollFrame.currencyDropdown = currencyDropdown
+
 	return currencyDropdown
 end
 
@@ -615,6 +688,7 @@ local function CreateCharacterDropdown(scrollFrame, background)
 		local function IsSelected(value)
 			return value == selectedCharacterKey
 		end
+
 		local function SetSelected(value)
 			selectedCharacterKey = value
 			currentMonthOffset[1] = 0
@@ -623,12 +697,15 @@ local function CreateCharacterDropdown(scrollFrame, background)
 
 		local realmButton
 		local lastRealm
+
 		for _, entry in ipairs(Utils:GetSortedCharacters()) do
 			if entry.realm ~= lastRealm then
 				realmButton = root:CreateButton(entry.realm)
 				lastRealm = entry.realm
 			end
+
 			local charButton = realmButton:CreateRadio(entry.name, IsSelected, SetSelected, entry.key)
+
 			charButton:AddInitializer(function(button, description, menu)
 				local factionFileID = 0
 				local classColor = WHITE_FONT_COLOR
@@ -644,8 +721,11 @@ local function CreateCharacterDropdown(scrollFrame, background)
 						classColor = RAID_CLASS_COLORS[class]
 					end
 
-					if faction == "Alliance" then factionFileID = 136758
-					elseif faction == "Horde" then factionFileID = 136759 end
+					if faction == "Alliance" then
+						factionFileID = 136758
+					elseif faction == "Horde" then
+						factionFileID = 136759
+					end
 				end
 
 				local rightTexture = button:AttachTexture()
@@ -667,14 +747,18 @@ local function CreateCharacterDropdown(scrollFrame, background)
 		end
 
 		local entry = Utils:GetCharacterEntry(selectedCharacterKey)
+
 		if entry then
 			root:CreateDivider()
+
 			local deleteAction = root:CreateButton(string.format(L["currency-overview.menu.delete-character"], entry.name), function()
 				ShowCharacterDeleteConfirm(entry.key)
 			end)
+
 			deleteAction:SetEnabled(not IsCurrentCharacter(entry.key))
 		end
 	end)
+
 	return characterDropdown
 end
 
@@ -716,11 +800,17 @@ local function InitializeFrames()
 			label = L["button.next"],
 			onClick = function()
 				currentMonthOffset[i] = currentMonthOffset[i] - 1
-				if i == 1 then UpdateCharacterOverview()
-				elseif i == 2 then UpdateAccountOverview()
-				else UpdateWarbandOverview() end
+
+				if i == 1 then
+					UpdateCharacterOverview()
+				elseif i == 2 then
+					UpdateAccountOverview()
+				else
+					UpdateWarbandOverview()
+				end
 			end
 		})
+
 		scrollFrame.nextButton:SetPoint("TOPRIGHT", background, "BOTTOMRIGHT", -5, -5)
 
 		scrollFrame.prevButton = AWL.Controls:CreateButton({
@@ -729,14 +819,21 @@ local function InitializeFrames()
 			label = L["button.prev"],
 			onClick = function()
 				currentMonthOffset[i] = currentMonthOffset[i] + 1
-				if i == 1 then UpdateCharacterOverview()
-				elseif i == 2 then UpdateAccountOverview()
-				else UpdateWarbandOverview() end
+
+				if i == 1 then
+					UpdateCharacterOverview()
+				elseif i == 2 then
+					UpdateAccountOverview()
+				else
+					UpdateWarbandOverview()
+				end
 			end
 		})
+
 		scrollFrame.prevButton:SetPoint("TOPLEFT", background, "BOTTOMLEFT", 5, -5)
 
 		CreateCurrencyDropdown(scrollFrame, background, i)
+
 		if i == 1 then
 			local characterDropdown = CreateCharacterDropdown(scrollFrame, background)
 			scrollFrame.characterDropdown = characterDropdown
@@ -767,7 +864,10 @@ end
 function Overview:RefreshCurrencyMenus()
 	for _, scrollFrame in ipairs(OverviewScrollFrames) do
 		local dropdown = scrollFrame.currencyDropdown
-		if dropdown and dropdown:IsMenuOpen() then dropdown:GenerateMenu() end
+
+		if dropdown and dropdown:IsMenuOpen() then
+			dropdown:GenerateMenu()
+		end
 	end
 end
 

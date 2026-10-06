@@ -53,9 +53,11 @@ local function TrackGoldBalance(characterGUID, today)
 
 	if newGold ~= prevGold then
 		AUR.Data.balance[characterGUID][today]["gold"] = newGold
+
 		return true
 	else
 		AUR.Data.balance[characterGUID][today]["gold"] = nil
+
 		return false
 	end
 end
@@ -63,27 +65,39 @@ end
 local function TrackCurrencyBalance(currency, characterGUID, today)
 	local info = currency.info
 	if not info or info.quantity == nil then return end
+
 	local ownerKey = characterGUID
+
 	if currency.key:sub(1, 2) == "w-" then
 		if not AWL.GAME_TYPE_RETAIL then return end
+
 		ownerKey = "Warband"
 	end
+
 	AUR.Data.balance[ownerKey] = AUR.Data.balance[ownerKey] or {}
 	local history = AUR.Data.balance[ownerKey]
 	local prevQty, lastDate = 0, nil
+
 	for dateKey, dayData in pairs(history) do
 		if dateKey < today and dayData[currency.key] ~= nil and (not lastDate or dateKey > lastDate) then
 			lastDate, prevQty = dateKey, dayData[currency.key]
 		end
 	end
+
 	if info.quantity ~= prevQty then
 		history[today] = history[today] or {}
 		history[today][currency.key] = info.quantity
 	elseif history[today] then
 		history[today][currency.key] = nil
 	end
-	if history[today] and not next(history[today]) then history[today] = nil end
-	if AUR.State.latestBalances then AUR.State.latestBalances[ownerKey] = nil end
+
+	if history[today] and not next(history[today]) then
+		history[today] = nil
+	end
+
+	if AUR.State.latestBalances then
+		AUR.State.latestBalances[ownerKey] = nil
+	end
 end
 
 local function SaveBalance(update)
@@ -101,17 +115,31 @@ local function SaveBalance(update)
 
 	if update.gold then
 		TrackGoldBalance(characterGUID, today)
-		if AUR.State.latestBalances then AUR.State.latestBalances[characterGUID] = nil end
+
+		if AUR.State.latestBalances then
+			AUR.State.latestBalances[characterGUID] = nil
+		end
 	end
+
 	if update.currencyID then
 		local currency = Utils:RefreshCurrency(update.currencyID)
-		if currency then TrackCurrencyBalance(currency, characterGUID, today) end
+
+		if currency then
+			TrackCurrencyBalance(currency, characterGUID, today)
+		end
 	elseif update.currencies then
 		for currencyID, entry in pairs(AUR.State.currencyByID) do
 			local currency
-			if update.useCache then currency = entry
-			else currency = Utils:RefreshCurrency(currencyID) end
-			if currency then TrackCurrencyBalance(currency, characterGUID, today) end
+
+			if update.useCache then
+				currency = entry
+			else
+				currency = Utils:RefreshCurrency(currencyID)
+			end
+
+			if currency then
+				TrackCurrencyBalance(currency, characterGUID, today)
+			end
 		end
 	end
 
@@ -120,6 +148,7 @@ local function SaveBalance(update)
 	end
 
 	local warbandHistory = AUR.Data.balance["Warband"]
+
 	if warbandHistory and warbandHistory[today] and not next(warbandHistory[today]) then
 		AUR.Data.balance["Warband"][today] = nil
 	end
@@ -129,7 +158,10 @@ local function SaveBalance(update)
 	if update.gold and GoldDisplay and GoldDisplay.Refresh then
 		GoldDisplay:Refresh()
 	end
-	if Overview.RefreshCurrencyMenus then Overview:RefreshCurrencyMenus() end
+
+	if Overview.RefreshCurrencyMenus then
+		Overview:RefreshCurrencyMenus()
+	end
 end
 
 local function SlashCommand(msg)
@@ -163,6 +195,7 @@ function AurariumFrame:ADDON_LOADED(_, addOnName)
 
 	if not dbInit then
 		Addon:AbortInitialization(self)
+
 		return
 	end
 
@@ -194,10 +227,12 @@ function AurariumFrame:PLAYER_ENTERING_WORLD(_, isInitialLogin, isReloadingUi)
 		SaveBalance({gold = true})
 
 		C_Timer.After(5, function()
-			-- Currency data can become available after ADDON_LOADED.
 			Utils:InitializeCurrencies()
 			SaveBalance({currencies = true, useCache = true})
-			if Overview:IsShown() then Overview:Refresh() end
+
+			if Overview:IsShown() then
+				Overview:Refresh()
+			end
 		end)
 
 		if AUR.Settings.currencyOverview["open-on-login"] then
@@ -221,11 +256,12 @@ function AurariumFrame:CURRENCY_DISPLAY_UPDATE(_, currencyType, quantity, quanti
 	))
 
 	if not isInitialized or currencyRefreshPending then return end
+
 	if currencyType and currencyType > 0 then
 		SaveBalance({currencyID = currencyType})
 	else
-		-- Coalesce broad notifications into one refresh on the next frame.
 		currencyRefreshPending = true
+
 		C_Timer.After(0, function()
 			currencyRefreshPending = false
 			SaveBalance({currencies = true})

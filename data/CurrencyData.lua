@@ -24,7 +24,14 @@ AUR.CURRENCY_CATEGORY_ORDER = {
 	"mid"			-- 264, 283
 }
 
-AUR.CURRENCY_PATCH_CATEGORIES = {legion = true, bfa = true, sl = true, df = true, tww = true, mid = true}
+AUR.CURRENCY_PATCH_CATEGORIES = {
+	legion = true,
+	bfa = true,
+	sl = true,
+	df = true,
+	tww = true,
+	mid = true
+}
 
 AUR.CURRENCIES = {
 	CLASSIC = {},

@@ -135,6 +135,7 @@ local function CreateLogoButton(frame)
 	button:SetSize(logoData.size, logoData.size)
 	button:SetPoint("LEFT", frame, "LEFT", logoData.x, logoData.y)
 	button:RegisterForClicks("LeftButtonUp")
+
 	button:SetScript("OnClick", function()
 		Overview:Show()
 	end)
@@ -236,6 +237,7 @@ function GoldDisplay:Refresh()
 	if previousGold == nil then
 		DailyChangeText:SetText("-")
 		SetDiffTextColor(DailyChangeText, 0)
+
 		return
 	end
 

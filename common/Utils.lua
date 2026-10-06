@@ -22,6 +22,7 @@ local function RemoveLegacyEntry(database, realm, name)
 	if not database[realm] then return end
 
 	database[realm][name] = nil
+
 	if not next(database[realm]) then
 		database[realm] = nil
 	end
@@ -30,11 +31,14 @@ end
 local function MigrateLegacyEntry(config)
 	local realmData = config.legacy[config.realm]
 	local legacyEntry = realmData and realmData[config.name]
+
 	if legacyEntry then
 		AWL.Utils:MergeMissingTableEntries(config.target[config.guid], legacyEntry)
 		RemoveLegacyEntry(config.legacy, config.realm, config.name)
+
 		return true
 	end
+
 	return false
 end
 
@@ -54,9 +58,11 @@ local function AddAvailableCurrencies(definitions, categories, keyPrefix)
 			local category = definition.category
 			categories[category] = categories[category] or {}
 			local isNew = definition.isNew
+
 			if isNew == nil then
 				isNew = definition.patch ~= nil and definition.patch == AWL.GAME_VERSION
 			end
+
 			local entry = {
 				id = currencyID,
 				key = keyPrefix .. currencyID,
@@ -74,7 +80,9 @@ end
 
 local function GetPatchOrder(patch)
 	if not patch then return 0 end
+
 	local major, minor, revision = patch:match("^(%d+)%.(%d+)%.(%d+)$")
+
 	return tonumber(major) * 10000 + tonumber(minor) * 100 + tonumber(revision)
 end
 
@@ -98,6 +106,7 @@ function Utils:InitializeCurrencies()
 	if not C_CurrencyInfo or not C_CurrencyInfo.GetCurrencyInfo then return end
 
 	local gameType
+
 	if AWL.GAME_TYPE_FOREVER then
 		gameType = "FOREVER"
 	elseif AWL.GAME_TYPE_RETAIL then
@@ -111,6 +120,7 @@ function Utils:InitializeCurrencies()
 	end
 
 	AddAvailableCurrencies(AUR.CURRENCIES[gameType] or {}, currencies.character, "c-")
+
 	if gameType == "RETAIL" then
 		AddAvailableCurrencies(AUR.WARBAND_CURRENCIES, currencies.warband, "w-")
 	end
@@ -121,6 +131,7 @@ function Utils:InitializeCurrencies()
 				if AUR.CURRENCY_PATCH_CATEGORIES[category] and a.patch ~= b.patch then
 					return GetPatchOrder(a.patch) < GetPatchOrder(b.patch)
 				end
+
 				return a.name < b.name
 			end)
 		end
@@ -130,9 +141,12 @@ end
 function Utils:RefreshCurrency(currencyID)
 	local entry = AUR.State.currencyByID[currencyID]
 	if not entry or not C_CurrencyInfo or not C_CurrencyInfo.GetCurrencyInfo then return end
+
 	local info = C_CurrencyInfo.GetCurrencyInfo(currencyID)
 	if not info or info.quantity == nil then return end
+
 	entry.info = GetCurrencyBalanceInfo(info)
+
 	return entry
 end
 
@@ -141,6 +155,7 @@ function Utils:GetLatestBalances(ownerKey)
 	if AUR.State.latestBalances[ownerKey] then return AUR.State.latestBalances[ownerKey] end
 
 	local balances, latestDates = {}, {}
+
 	for day, values in pairs(AUR.Data.balance[ownerKey] or {}) do
 		for key, value in pairs(values) do
 			if not latestDates[key] or day > latestDates[key] then
@@ -148,7 +163,9 @@ function Utils:GetLatestBalances(ownerKey)
 			end
 		end
 	end
+
 	AUR.State.latestBalances[ownerKey] = balances
+
 	return balances
 end
 
@@ -165,6 +182,7 @@ end
 function Utils:OpenSettings()
 	if not Addon:OpenCategory() then
 		self:PrintDebug("In combat. The options menu cannot be opened.")
+
 		return false
 	end
 
@@ -175,12 +193,18 @@ function Utils:UpdateCharacterData(characterGUID, refreshMetadata)
 	local name, realm = AWL.Utils:GetCharacterAndRealm()
 
 	local migratedCharacter = MigrateLegacyEntry({
-		legacy = Aurarium_DataCharacter, target = Aurarium_DataCharacter_v2,
-		guid = characterGUID, name = name, realm = realm
+		legacy = Aurarium_DataCharacter,
+		target = Aurarium_DataCharacter_v2,
+		guid = characterGUID,
+		name = name,
+		realm = realm
 	})
 	local migratedBalance = MigrateLegacyEntry({
-		legacy = Aurarium_DataBalance, target = Aurarium_DataBalance_v2,
-		guid = characterGUID, name = name, realm = realm
+		legacy = Aurarium_DataBalance,
+		target = Aurarium_DataBalance_v2,
+		guid = characterGUID,
+		name = name,
+		realm = realm
 	})
 
 	if Aurarium_DataBalance.Warband then
@@ -189,6 +213,7 @@ function Utils:UpdateCharacterData(characterGUID, refreshMetadata)
 	end
 
 	local metadata = AUR.Data.character[characterGUID]
+
 	if refreshMetadata or migratedCharacter or migratedBalance then
 		metadata.name = name
 		metadata.realm = realm
@@ -196,17 +221,21 @@ function Utils:UpdateCharacterData(characterGUID, refreshMetadata)
 		metadata.faction = UnitFactionGroup("player")
 	end
 
-	-- Only characters that have completed their first GUID-based login are visible.
 	local entries = {}
+
 	for guid, history in pairs(AUR.Data.balance) do
 		if guid ~= "Warband" then
 			local character = AUR.Data.character[guid] or {}
 			entries[guid] = {
-				key = guid, name = character.name or guid, realm = character.realm or "",
-				metadata = character, history = history
+				key = guid,
+				name = character.name or guid,
+				realm = character.realm or "",
+				metadata = character,
+				history = history
 			}
 		end
 	end
+
 	AUR.State.characterEntries = entries
 end
 
@@ -216,14 +245,18 @@ end
 
 function Utils:GetSortedCharacters()
 	local characters = {}
+
 	for _, entry in pairs(AUR.State.characterEntries) do
 		table.insert(characters, entry)
 	end
+
 	table.sort(characters, function(a, b)
 		if a.realm ~= b.realm then return a.realm < b.realm end
 		if a.name ~= b.name then return a.name < b.name end
+
 		return a.key < b.key
 	end)
+
 	return characters
 end
 
@@ -231,13 +264,18 @@ function Utils:DeleteCharacterData(characterKey)
 	if characterKey == AWL.Utils:GetCharacterGUID() then
 		return false, "current-character"
 	end
+
 	local entry = self:GetCharacterEntry(characterKey)
 	if not entry then return false, "not-found" end
 
 	AUR.Data.balance[characterKey] = nil
 	AUR.Data.character[characterKey] = nil
 	AUR.State.characterEntries[characterKey] = nil
-	if AUR.State.latestBalances then AUR.State.latestBalances[characterKey] = nil end
+
+	if AUR.State.latestBalances then
+		AUR.State.latestBalances[characterKey] = nil
+	end
+
 	return true
 end
 

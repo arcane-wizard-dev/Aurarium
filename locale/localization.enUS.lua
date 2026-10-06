@@ -1,9 +1,12 @@
 local _, AUR = ...
 
-AUR.Localization = setmetatable({},{__index=function(self,key)
-	geterrorhandler()("Aurarium (Debug): Missing entry for '" .. tostring(key) .. "'")
-	return key
-end})
+AUR.Localization = setmetatable({},{
+	__index=function(self,key)
+		geterrorhandler()("Aurarium (Debug): Missing entry for '" .. tostring(key) .. "'")
+
+		return key
+	end
+})
 
 local L = AUR.Localization
 
