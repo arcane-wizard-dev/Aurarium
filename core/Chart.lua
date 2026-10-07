@@ -577,7 +577,9 @@ local function UpdateHover()
 	plot.hoverPoint:Show()
 
 	GameTooltip:SetOwner(plot, "ANCHOR_RIGHT")
-	GameTooltip:SetText(Chart:FormatDate(point.date))
+	GameTooltip:SetText(
+		Chart:FormatDate(point.date), Data.normalColor[1], Data.normalColor[2], Data.normalColor[3]
+	)
 	GameTooltip:AddLine(FormatAmount(point.value), 1, 1, 1)
 	GameTooltip:Show()
 end
@@ -1148,7 +1150,9 @@ local function CreateWindow()
 
 	infoButton:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-		GameTooltip:SetText(L["chart.title"])
+		GameTooltip:SetText(
+			L["chart.title"], Data.normalColor[1], Data.normalColor[2], Data.normalColor[3]
+		)
 		GameTooltip:AddLine(L["chart.history-note"], 1, 1, 1, true)
 		GameTooltip:Show()
 	end)
