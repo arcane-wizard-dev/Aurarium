@@ -94,6 +94,34 @@ function Utils:GetToday()
 	return date("%Y-%m-%d")
 end
 
+function Utils:GetDateFormat()
+	local selected = AUR.Settings.general["date-format"]
+	for _, format in ipairs(AUR.DATE_FORMATS) do
+		if selected == format then return format end
+	end
+	return AUR.OPTIONS_DEFAULTS.general["date-format"]
+end
+
+function Utils:GetDateFormatHint()
+	return L["date-format." .. self:GetDateFormat()]
+end
+
+function Utils:FormatDate(value, short)
+	local format = self:GetDateFormat()
+	if format == "dmy" then
+		local formatted = value:sub(9, 10) .. "." .. value:sub(6, 7) .. "."
+		if short then return formatted end
+		return formatted .. value:sub(1, 4)
+	end
+	if format == "mdy" then
+		local formatted = value:sub(6, 7) .. "/" .. value:sub(9, 10)
+		if short then return formatted end
+		return formatted .. "/" .. value:sub(1, 4)
+	end
+	if short then return value:sub(6) end
+	return value
+end
+
 function Utils:GetGold()
 	return GetMoney()
 end

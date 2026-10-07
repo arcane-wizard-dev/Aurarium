@@ -5,6 +5,7 @@ local AWL = ArcaneWizardLibrary
 local Addon = AWL:GetAddon(addonName)
 
 -- Module imports
+local Chart = AUR.Modules.Chart
 local GoldDisplay = AUR.Modules.GoldDisplay
 local Options = AUR.Modules.Options
 local Overview = AUR.Modules.Overview
@@ -162,6 +163,8 @@ local function SaveBalance(update)
 	if Overview.RefreshCurrencyMenus then
 		Overview:RefreshCurrencyMenus()
 	end
+
+	Chart:OnBalanceUpdated(update)
 end
 
 local function SlashCommand(msg)
@@ -175,6 +178,8 @@ local function SlashCommand(msg)
 		AWL.Frames:OpenChangelog(addonName, AUR.CHANGELOG)
 	elseif command == "overview" then
 		Overview:Show()
+	elseif command == "chart" then
+		Chart:Show()
 	else
 		Utils:PrintDebug("These arguments are not accepted.")
 	end
@@ -212,7 +217,11 @@ function AurariumFrame:ADDON_LOADED(_, addOnName)
 
 	Utils:PrintDebug(string.format(
 		"InitializeDatabase: key=%s, createdProfile=%s, createdProfileKey=%s, cleanedOptions=%s, activeProfile=%s",
-		tostring(dbInit.characterGUID), tostring(dbInit.createdProfile), tostring(dbInit.createdProfileKey), tostring(dbInit.cleanedOptions), tostring(dbInit.activeProfile)
+		tostring(dbInit.characterGUID),
+		tostring(dbInit.createdProfile),
+		tostring(dbInit.createdProfileKey),
+		tostring(dbInit.cleanedOptions),
+		tostring(dbInit.activeProfile)
 	))
 	Utils:PrintDebug("Addon fully loaded.")
 end

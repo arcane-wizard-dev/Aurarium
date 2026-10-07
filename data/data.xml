@@ -5,7 +5,9 @@
 
 	<Script file="CommonData.lua" />
 	<Script file="GoldDisplayData.lua" />
+	<Script file="CurrencyMenuData.lua" />
 	<Script file="OverviewData.lua" />
+	<Script file="ChartData.lua" />
 	<Script file="ChangelogData.lua" />
 	<Script file="CurrencyData.lua" />
 </Ui>

@@ -15,6 +15,11 @@ local GoldDisplay = AUR.Modules.GoldDisplay
 local Utils = AUR.Modules.Utils
 
 -- Variables
+local dateFormatOptions = {}
+for _, format in ipairs(AUR.DATE_FORMATS) do
+	dateFormatOptions[#dateFormatOptions + 1] = {value = format, label = L["date-format." .. format]}
+end
+
 local goldDisplayModeOptions = {}
 local goldDisplayData = AUR.GOLD_DISPLAY_DATA
 
@@ -53,6 +58,20 @@ local minimapButtonProxy = setmetatable({}, {
 		else
 			Utils.minimapButton:Hide(addonName)
 		end
+	end,
+})
+
+local dateFormatProxy = setmetatable({}, {
+	__index = function(_, key)
+		if key == "date-format" then return Utils:GetDateFormat() end
+	end,
+	__newindex = function(_, key, value)
+		if key ~= "date-format" then return end
+		AUR.Settings.general[key] = value
+		if AUR.Modules.Overview:IsShown() then
+			AUR.Modules.Overview:Refresh()
+		end
+		AUR.Modules.Chart:RefreshDateFormat()
 	end,
 })
 
@@ -99,6 +118,17 @@ function Options:Initialize()
 	local category, layout = Settings.RegisterVerticalLayoutCategory(addonName)
 
 	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L["options.general"]))
+
+	AWL.Settings:AddDropdown(category, {
+		variableTable	= dateFormatProxy,
+		settingKey		= addonName .. "_date-format",
+		variableName	= "date-format",
+		name			= L["options.general.date-format.name"],
+		tooltip			= L["options.general.date-format.tooltip"],
+		isNew			= true,
+		default			= AUR.OPTIONS_DEFAULTS.general["date-format"],
+		options			= dateFormatOptions
+	})
 
 	-- Minimap Button
 	AWL.Settings:AddCheckbox(category, {

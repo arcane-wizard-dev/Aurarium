@@ -9,6 +9,7 @@ AUR.OPTIONS_DEFAULTS = {
 			["showInCompartment"] = false
 		},
 		["debug-mode"] = false,
+		["date-format"] = "ymd",
 	},
 	["currency-overview"] = {
 		["open-on-login"] = false,

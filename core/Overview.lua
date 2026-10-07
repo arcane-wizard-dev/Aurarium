@@ -12,15 +12,17 @@ local Overview = AUR.Modules.Overview
 
 -- Module imports
 local Utils = AUR.Modules.Utils
+local CurrencyMenu = AUR.Modules.CurrencyMenu
 local OverviewData = AUR.OVERVIEW_DATA
+local TabIndex = OverviewData.tabIndices
 
 -- Variables
 local selectedCharacterKey
 local currentMonthOffset = {}
 local selectedCurrency = {}
-selectedCurrency[1] = "gold"
-selectedCurrency[2] = "gold"
-selectedCurrency[3] = "w-2032"
+selectedCurrency[TabIndex.character] = "gold"
+selectedCurrency[TabIndex.account] = "gold"
+selectedCurrency[TabIndex.warband] = "w-2032"
 
 --------------
 --- Frames ---
@@ -335,7 +337,7 @@ local function UpdateOverview(selectedCurrency, currentMonthOffset, history, scr
 	scrollFrame.rows = {}
 
 	local header = scrollFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	header:SetPoint("TOP", scrollFrame.scrollFrame, "TOP", 5, 70)
+	header:SetPoint("TOP", scrollFrame.scrollFrame, "TOP", OverviewData.monthHeading.x, OverviewData.monthHeading.y)
 	header:SetText(FormatMonthText(filterPrefix))
 	table.insert(scrollFrame.rows, {header})
 
@@ -345,7 +347,7 @@ local function UpdateOverview(selectedCurrency, currentMonthOffset, history, scr
 		noEntry:SetText(L["currency-overview.table.no-entries"])
 		table.insert(scrollFrame.rows, {noEntry})
 
-		scrollFrame:SetContentHeight(20)
+		scrollFrame:SetContentHeight(OverviewData.history.rowHeight)
 
 		scrollFrame.prevButton:SetEnabled(HasAnyDataBeforeMonth(displayHistory, filterPrefix))
 		scrollFrame.nextButton:SetEnabled(HasAnyDataAfterMonth(displayHistory, filterPrefix))
@@ -356,23 +358,23 @@ local function UpdateOverview(selectedCurrency, currentMonthOffset, history, scr
 	local offsetY = 0
 
 	local headerDate = scrollFrame.content:CreateFontString(nil,"OVERLAY", "GameFontNormal")
-	headerDate:SetPoint("TOPLEFT", 5, offsetY)
+	headerDate:SetPoint("TOPLEFT", OverviewData.history.columns.date, offsetY)
 	headerDate:SetText(L["currency-overview.table.date"])
 
 	local headerAmount  = scrollFrame.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	headerAmount:SetPoint("TOPLEFT", 80, offsetY)
+	headerAmount:SetPoint("TOPLEFT", OverviewData.history.columns.amount, offsetY)
 	headerAmount:SetText(L["currency-overview.table.amount"])
 
 	local headerDifference = scrollFrame.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	headerDifference:SetPoint("TOPLEFT", 230, offsetY)
+	headerDifference:SetPoint("TOPLEFT", OverviewData.history.columns.difference, offsetY)
 	headerDifference:SetText(L["currency-overview.table.difference"])
 
 	table.insert(scrollFrame.rows, {headerDate, headerAmount, headerDifference})
-	offsetY = offsetY - 20
+	offsetY = offsetY - OverviewData.history.rowHeight
 
 	for i, entry in ipairs(monthHistory) do
 		local background = CreateFrame("Frame", nil, scrollFrame.content)
-		background:SetSize(414, 20)
+		background:SetSize(OverviewData.history.rowWidth, OverviewData.history.rowHeight)
 		background:SetPoint("TOPLEFT", scrollFrame.content, "TOPLEFT", 0, offsetY)
 
 		background.texture = background:CreateTexture(nil, "BACKGROUND")
@@ -381,7 +383,7 @@ local function UpdateOverview(selectedCurrency, currentMonthOffset, history, scr
 		background.texture:SetAlpha(0)
 
 		background:SetScript("OnEnter", function(self)
-			self.texture:SetAlpha(0.3)
+			self.texture:SetAlpha(OverviewData.history.hoverAlpha)
 		end)
 
 		background:SetScript("OnLeave", function(self)
@@ -394,15 +396,15 @@ local function UpdateOverview(selectedCurrency, currentMonthOffset, history, scr
 		local prevValue = GetPreviousValueFromHistory(history, dateStr) or 0
 
 		local rowDate = background:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-		rowDate:SetPoint("LEFT", 5, 0)
-		rowDate:SetText(entry.date)
+		rowDate:SetPoint("LEFT", OverviewData.history.columns.date, 0)
+		rowDate:SetText(Utils:FormatDate(entry.date))
 
 		local rowAmount = background:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-		rowAmount:SetPoint("LEFT", 80, 0)
+		rowAmount:SetPoint("LEFT", OverviewData.history.columns.amount, 0)
 		rowAmount:SetText(FormatCurrency(currentValue, selectedCurrency))
 
 		local rowDifference = background:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-		rowDifference:SetPoint("LEFT", 230, 0)
+		rowDifference:SetPoint("LEFT", OverviewData.history.columns.difference, 0)
 
 		local firstDate = history[1].date
 
@@ -423,7 +425,7 @@ local function UpdateOverview(selectedCurrency, currentMonthOffset, history, scr
 		end
 
 		table.insert(scrollFrame.rows, {background, rowDate, rowAmount, rowDifference})
-		offsetY = offsetY - 20
+		offsetY = offsetY - OverviewData.history.rowHeight
 	end
 
 	scrollFrame:SetContentHeight(math.abs(offsetY))
@@ -435,18 +437,33 @@ end
 local function UpdateCharacterOverview()
 	SelectFallbackCharacter()
 
-	local characterHistory = BuildCharacterHistory(selectedCharacterKey, selectedCurrency[1])
-	UpdateOverview(selectedCurrency[1], currentMonthOffset[1], characterHistory, OverviewScrollFrames[1])
+	local characterHistory = BuildCharacterHistory(selectedCharacterKey, selectedCurrency[TabIndex.character])
+	UpdateOverview(
+		selectedCurrency[TabIndex.character],
+		currentMonthOffset[TabIndex.character],
+		characterHistory,
+		OverviewScrollFrames[TabIndex.character]
+	)
 end
 
 local function UpdateAccountOverview()
-	local accountHistory = BuildAccountHistory(selectedCurrency[2])
-	UpdateOverview(selectedCurrency[2], currentMonthOffset[2], accountHistory, OverviewScrollFrames[2])
+	local accountHistory = BuildAccountHistory(selectedCurrency[TabIndex.account])
+	UpdateOverview(
+		selectedCurrency[TabIndex.account],
+		currentMonthOffset[TabIndex.account],
+		accountHistory,
+		OverviewScrollFrames[TabIndex.account]
+	)
 end
 
 local function UpdateWarbandOverview()
-	local warbandHistory = BuildWarbandHistory(selectedCurrency[3])
-	UpdateOverview(selectedCurrency[3], currentMonthOffset[3], warbandHistory, OverviewScrollFrames[3])
+	local warbandHistory = BuildWarbandHistory(selectedCurrency[TabIndex.warband])
+	UpdateOverview(
+		selectedCurrency[TabIndex.warband],
+		currentMonthOffset[TabIndex.warband],
+		warbandHistory,
+		OverviewScrollFrames[TabIndex.warband]
+	)
 end
 
 local function HandleCharacterDeleteConfirmed(characterKey)
@@ -465,15 +482,19 @@ local function HandleCharacterDeleteConfirmed(characterKey)
 
 	SelectFallbackCharacter()
 
-	local characterDropdown = OverviewScrollFrames[1] and OverviewScrollFrames[1].characterDropdown
+	local characterDropdown = OverviewScrollFrames[TabIndex.character] and OverviewScrollFrames[TabIndex.character].characterDropdown
 
 	if characterDropdown and characterDropdown.GenerateMenu then
 		characterDropdown:GenerateMenu()
 	end
 
-	currentMonthOffset[1] = 0
+	currentMonthOffset[TabIndex.character] = 0
 	UpdateCharacterOverview()
 	UpdateAccountOverview()
+
+	if AUR.Modules.Chart:IsShown() then
+		AUR.Modules.Chart:Refresh(true)
+	end
 
 	if AWL.GAME_TYPE_RETAIL then
 		UpdateWarbandOverview()
@@ -501,177 +522,33 @@ local function ShowCharacterDeleteConfirm(characterKey)
 	end)
 end
 
-local function GetCharacterBalances(characterKey)
-	local balances = {}
-
-	for key, value in pairs(Utils:GetLatestBalances(characterKey)) do
-		balances[key] = value
-	end
-
-	if IsCurrentCharacter(characterKey) then
-		balances.gold = AUR.State.gold
-
-		for _, entries in pairs(AUR.State.currencies.character) do
-			for _, entry in ipairs(entries) do
-				if entry.info and entry.info.quantity ~= nil then
-					balances[entry.key] = entry.info.quantity
-				end
-			end
-		end
-	end
-
-	return balances
-end
-
-local function GetDropdownBalances(index)
-	if index == 3 then return {}, true end
-
-	if index == 1 then
-		local characterKey = selectedCharacterKey or AWL.Utils:GetCharacterGUID()
-		if IsCurrentCharacter(characterKey) then return {gold = AUR.State.gold}, true end
-
-		return Utils:GetLatestBalances(characterKey), false
-	end
-
-	local balances = {}
-
-	for _, character in ipairs(Utils:GetSortedCharacters()) do
-		for key, value in pairs(GetCharacterBalances(character.key)) do
-			balances[key] = (balances[key] or 0) + value
-		end
-	end
-
-	return balances, false
-end
-
-local function FormatDropdownAmount(quantity, info)
-	if quantity == nil then return "-" end
-
-	local amount = BreakUpLargeNumbers(quantity)
-
-	if info and info.maxQuantity and info.maxQuantity > 0 then
-		amount = amount .. "/" .. BreakUpLargeNumbers(info.maxQuantity)
-	end
-
-	return amount
-end
-
-local function InitializeCurrencyMenuButton(button, entry, text)
-	local iconSize = entry.key:sub(1, 2) == "w-" and 18 or 16
-	local icon, iconWidth, anchorPoint = button, 0, "RIGHT"
-
-	if entry.key ~= "gold" then
-		icon = button:AttachTexture()
-		icon:SetSize(iconSize, iconSize)
-		icon:SetPoint("RIGHT")
-		icon:SetTexture(entry.iconFileID)
-		iconWidth, anchorPoint = iconSize, "LEFT"
-	end
-
-	local amount = button:AttachFontString()
-	amount:SetFontObject(button.fontString:GetFontObject())
-	amount:SetTextColor(1, 1, 1)
-	amount:SetPoint("RIGHT", icon, anchorPoint, -5, 0)
-	amount:SetJustifyH("RIGHT")
-	amount:SetText(text)
-	local amountWidth = amount:GetUnboundedStringWidth()
-	amount:SetWidth(amountWidth)
-
-	local fontString = button.fontString
-	local nameWidth = fontString:GetUnboundedStringWidth()
-	fontString:SetWidth(nameWidth)
-	local badgeWidth = 0
-
-	if entry.isNew and MenuTemplates and MenuTemplates.AttachNewFeatureFrame then
-		local badge = MenuTemplates.AttachNewFeatureFrame(button)
-		local badgeTextWidth = badge:GetTextWidth()
-		badgeWidth = badgeTextWidth + 16
-		badge:SetPoint("CENTER", fontString, "RIGHT", badgeTextWidth / 2 + 8, 0)
-	end
-
-	return nameWidth + iconWidth + amountWidth + badgeWidth + 35, iconSize + 4
-end
-
-local function CreateCurrencyDropdown(scrollFrame, background, index)
+local function CreateCurrencyDropdown(scrollFrame, background, tabIndex)
 	local currencyDropdown = CreateFrame("DropdownButton", nil, scrollFrame, "WowStyle1DropdownTemplate")
-	currencyDropdown:SetPoint("BOTTOMRIGHT", background, "TOPRIGHT", -5, 5)
-	currencyDropdown:SetSize(200, 25)
+	currencyDropdown:SetPoint("BOTTOMRIGHT", background, "TOPRIGHT", -OverviewData.dropdown.offset, OverviewData.dropdown.offset)
+	currencyDropdown:SetSize(OverviewData.dropdown.currencyWidth, OverviewData.dropdown.height)
 
 	currencyDropdown:SetupMenu(function(self, root)
-		local balances, live = GetDropdownBalances(index)
-
-		local function IsSelected(value) return value == selectedCurrency[index] end
+		local function IsSelected(value) return value == selectedCurrency[tabIndex] end
 
 		local function SetSelected(value)
-			selectedCurrency[index] = value
-			currentMonthOffset[index] = 0
+			selectedCurrency[tabIndex] = value
+			currentMonthOffset[tabIndex] = 0
 
-			if index == 1 then
+			if tabIndex == TabIndex.character then
 				UpdateCharacterOverview()
-			elseif index == 2 then
+			elseif tabIndex == TabIndex.account then
 				UpdateAccountOverview()
 			else
 				UpdateWarbandOverview()
 			end
 		end
 
-		if index == 1 or index == 2 then
-			root:CreateRadio(L["currency-overview.category.gold"], IsSelected, SetSelected, "gold")
-		end
-
-		local categories = index == 3 and AUR.State.currencies.warband or AUR.State.currencies.character
-		if not next(categories) then return end
-
-		if index ~= 3 then
-			root:CreateDivider()
-		end
-
-		local hasCategory, dividerPending = false, false
-
-		for _, categoryKey in ipairs(AUR.CURRENCY_CATEGORY_ORDER) do
-			if categoryKey == false then
-				dividerPending = hasCategory
-			end
-
-			local entries = categories[categoryKey]
-
-			if entries then
-				if dividerPending then
-					root:CreateDivider()
-					dividerPending = false
-				end
-
-				local categoryButton = root:CreateButton(L["currency-overview.category." .. categoryKey])
-				hasCategory = true
-				local previousPatch
-
-				for _, entry in ipairs(entries) do
-					if AUR.CURRENCY_PATCH_CATEGORIES[categoryKey] and entry.patch and entry.patch ~= previousPatch then
-						if previousPatch then
-							categoryButton:CreateDivider()
-						end
-
-						categoryButton:CreateTitle(string.format(L["currency-overview.menu.patch"], entry.patch))
-						previousPatch = entry.patch
-					end
-
-					local currencyButton = categoryButton:CreateRadio(entry.name, IsSelected, SetSelected, entry.key)
-					local info = live and entry.info or nil
-					---@type number|nil
-					local quantity = balances[entry.key] or 0
-
-					if live then
-						quantity = info and info.quantity
-					end
-
-					local amount = FormatDropdownAmount(quantity, info)
-
-					currencyButton:AddInitializer(function(button)
-						return InitializeCurrencyMenuButton(button, entry, amount)
-					end)
-				end
-			end
-		end
+		CurrencyMenu:Populate(root, {
+			scope = OverviewData.tabs[tabIndex].id,
+			characterKey = selectedCharacterKey,
+			isSelected = IsSelected,
+			onSelected = SetSelected
+		})
 	end)
 
 	scrollFrame.currencyDropdown = currencyDropdown
@@ -681,8 +558,8 @@ end
 
 local function CreateCharacterDropdown(scrollFrame, background)
 	local characterDropdown = CreateFrame("DropdownButton", nil, scrollFrame, "WowStyle1DropdownTemplate")
-	characterDropdown:SetPoint("BOTTOMLEFT", background, "TOPLEFT", 5, 5)
-	characterDropdown:SetSize(125, 25)
+	characterDropdown:SetPoint("BOTTOMLEFT", background, "TOPLEFT", OverviewData.dropdown.offset, OverviewData.dropdown.offset)
+	characterDropdown:SetSize(OverviewData.dropdown.characterWidth, OverviewData.dropdown.height)
 
 	characterDropdown:SetupMenu(function(self, root)
 		local function IsSelected(value)
@@ -691,7 +568,7 @@ local function CreateCharacterDropdown(scrollFrame, background)
 
 		local function SetSelected(value)
 			selectedCharacterKey = value
-			currentMonthOffset[1] = 0
+			currentMonthOffset[TabIndex.character] = 0
 			UpdateCharacterOverview()
 		end
 
@@ -729,7 +606,7 @@ local function CreateCharacterDropdown(scrollFrame, background)
 				end
 
 				local rightTexture = button:AttachTexture()
-				rightTexture:SetSize(18, 18)
+				rightTexture:SetSize(OverviewData.menu.factionIconSize, OverviewData.menu.factionIconSize)
 				rightTexture:SetPoint("RIGHT")
 
 				if factionFileID == 0 then
@@ -742,7 +619,8 @@ local function CreateCharacterDropdown(scrollFrame, background)
 				fontString:SetPoint("RIGHT")
 				fontString:SetTextColor(classColor:GetRGB())
 
-				return fontString:GetUnboundedStringWidth() + rightTexture:GetWidth() + 20, rightTexture:GetHeight() + 4
+				return fontString:GetUnboundedStringWidth() + rightTexture:GetWidth() + OverviewData.menu.characterWidthPadding,
+					rightTexture:GetHeight() + OverviewData.menu.rowHeightPadding
 			end)
 		end
 
@@ -762,13 +640,62 @@ local function CreateCharacterDropdown(scrollFrame, background)
 	return characterDropdown
 end
 
+local function CreateMoreMenu(tabs)
+	local data = OverviewData.moreMenu
+	local button = CreateFrame("DropdownButton", nil, OverviewFrame, "WowStyle1FilterDropdownTemplate")
+	button.resizeToText = false
+	button:SetPoint("TOPRIGHT", OverviewFrame, "TOPRIGHT", data.x, data.y)
+	button:SetText(L["currency-overview.menu.more"])
+	local width = math.max(data.minimumWidth, math.ceil(button.Text:GetUnboundedStringWidth()) + data.arrowSize + data.textInset * 2)
+	button:SetSize(width, data.height)
+	button.Text:ClearAllPoints()
+	button.Text:SetPoint("LEFT", data.textInset, 0)
+	button.Text:SetPoint("RIGHT", -data.textInset, 0)
+	button.Text:SetJustifyH("CENTER")
+
+	button:SetMenuAnchor(AnchorUtil.CreateAnchor("TOPLEFT", button, "TOPRIGHT", data.menuGap, 0))
+	button:SetupMenu(function(_, root)
+		local chartButton = root:CreateButton(L["chart.title"], function()
+			local scope = tabs:GetSelectedTab()
+			AUR.Modules.Chart:Show({
+				scope = scope,
+				characterKey = selectedCharacterKey,
+				currencyKey = selectedCurrency[TabIndex[scope]]
+			})
+		end)
+		chartButton:AddInitializer(function(menuButton)
+			for index, height in ipairs(data.icon.barHeights) do
+				local bar = menuButton:AttachTexture()
+				bar:SetColorTexture(unpack(data.icon.color))
+				bar:SetSize(data.icon.barWidth, height)
+				bar:SetPoint("BOTTOMLEFT", menuButton, "LEFT", data.itemPadding + (index - 1) * (data.icon.barWidth + data.icon.barGap), -data.icon.size / 2)
+			end
+
+			local text = menuButton.fontString
+			local textWidth = text:GetUnboundedStringWidth()
+			text:ClearAllPoints()
+			text:SetPoint("LEFT", data.itemPadding + data.icon.size + data.iconGap, 0)
+			text:SetWidth(textWidth)
+
+			return textWidth + data.icon.size + data.iconGap + data.itemPadding * 2, data.itemHeight
+		end)
+	end)
+	button:HookScript("OnHide", function(self)
+		self:CloseMenu()
+	end)
+	tabs:SetOnTabChanged(function()
+		button:CloseMenu()
+	end)
+	OverviewFrame.moreMenu = button
+end
+
 local function InitializeFrames()
-	local numTabs = AWL.GAME_TYPE_RETAIL and 3 or 2
+	local lastTabIndex = AWL.GAME_TYPE_RETAIL and TabIndex.warband or TabIndex.account
 	local windowConfig = AWL.Utils:CopyTable(OverviewData.window)
 	windowConfig.title = addonName
 	OverviewFrame = AWL.Frames:CreateWindow(windowConfig)
 	OverviewFrame:SetFrameStrata("HIGH")
-	OverviewFrame.portrait:SetPoint("TOPLEFT", -5, 8)
+	OverviewFrame.portrait:SetPoint("TOPLEFT", OverviewData.portrait.x, OverviewData.portrait.y)
 	OverviewFrame.portrait:SetTexture(Addon:GetMediaPath("icon-round.tga"))
 
 	local insetConfig = AWL.Utils:CopyTable(OverviewData.inset)
@@ -777,9 +704,9 @@ local function InitializeFrames()
 	background:SetPoint("BOTTOM", OverviewFrame, "BOTTOM", 0, OverviewData.inset.bottom)
 	local tabs = AWL.Frames:CreateTabGroup(OverviewFrame)
 
-	for i = 1, numTabs do
-		currentMonthOffset[i] = 0
-		local tabData = OverviewData.tabs[i]
+	for tabIndex = TabIndex.character, lastTabIndex do
+		currentMonthOffset[tabIndex] = 0
+		local tabData = OverviewData.tabs[tabIndex]
 		local page = tabs:AddTab(tabData.id, L[tabData.label])
 		page:ClearAllPoints()
 		page:SetAllPoints(background)
@@ -799,11 +726,11 @@ local function InitializeFrames()
 			width = OverviewData.buttonWidth,
 			label = L["button.next"],
 			onClick = function()
-				currentMonthOffset[i] = currentMonthOffset[i] - 1
+				currentMonthOffset[tabIndex] = currentMonthOffset[tabIndex] - 1
 
-				if i == 1 then
+				if tabIndex == TabIndex.character then
 					UpdateCharacterOverview()
-				elseif i == 2 then
+				elseif tabIndex == TabIndex.account then
 					UpdateAccountOverview()
 				else
 					UpdateWarbandOverview()
@@ -811,18 +738,18 @@ local function InitializeFrames()
 			end
 		})
 
-		scrollFrame.nextButton:SetPoint("TOPRIGHT", background, "BOTTOMRIGHT", -5, -5)
+		scrollFrame.nextButton:SetPoint("TOPRIGHT", background, "BOTTOMRIGHT", -OverviewData.buttonOffset.x, OverviewData.buttonOffset.y)
 
 		scrollFrame.prevButton = AWL.Controls:CreateButton({
 			parent = scrollFrame,
 			width = OverviewData.buttonWidth,
 			label = L["button.prev"],
 			onClick = function()
-				currentMonthOffset[i] = currentMonthOffset[i] + 1
+				currentMonthOffset[tabIndex] = currentMonthOffset[tabIndex] + 1
 
-				if i == 1 then
+				if tabIndex == TabIndex.character then
 					UpdateCharacterOverview()
-				elseif i == 2 then
+				elseif tabIndex == TabIndex.account then
 					UpdateAccountOverview()
 				else
 					UpdateWarbandOverview()
@@ -830,17 +757,19 @@ local function InitializeFrames()
 			end
 		})
 
-		scrollFrame.prevButton:SetPoint("TOPLEFT", background, "BOTTOMLEFT", 5, -5)
+		scrollFrame.prevButton:SetPoint("TOPLEFT", background, "BOTTOMLEFT", OverviewData.buttonOffset.x, OverviewData.buttonOffset.y)
 
-		CreateCurrencyDropdown(scrollFrame, background, i)
+		CreateCurrencyDropdown(scrollFrame, background, tabIndex)
 
-		if i == 1 then
+		if tabIndex == TabIndex.character then
 			local characterDropdown = CreateCharacterDropdown(scrollFrame, background)
 			scrollFrame.characterDropdown = characterDropdown
 		end
 
-		OverviewScrollFrames[i] = scrollFrame
+		OverviewScrollFrames[tabIndex] = scrollFrame
 	end
+
+	CreateMoreMenu(tabs)
 end
 
 ------------------------
