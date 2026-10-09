@@ -1,3 +1,8 @@
+**v2.34 (2026-10-09)**
+- Added: Chart - Visualize gold and currency balances over selectable date ranges
+- Added: Configurable date format
+- Minor code adjustments
+
 **v2.33 (2026-10-05)**
 - Changed: Overview and Gold Display now use the native Blizzard UI appearance, with an optional border for the Gold Display
 - Changed: Character data can now be deleted from the character selection menu
