@@ -8,6 +8,15 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
+			"Added: Chart - Visualize gold and currency balances over selectable date ranges",
+			"Added: Configurable date format",
+			"Minor code adjustments"
+		}
+	},
+	{
+		version = "v2.33",
+		date = "2026-10-05",
+		entries = {
 			"Changed: Overview and Gold Display now use the native Blizzard UI appearance, with an optional border for the Gold Display",
 			"Changed: Character data can now be deleted from the character selection menu",
 			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility"
@@ -99,13 +108,6 @@ AUR.CHANGELOG = {
 		date = "2026-08-30",
 		entries = {
 			"Minor code adjustments"
-		}
-	},
-	{
-		version = "v2.24",
-		date = "2026-08-21",
-		entries = {
-			"Added: Gold Display - A small movable display with a gold border shows the current gold and today's change with selectable coin detail, adaptive width, and a clickable translucent Aurarium logo"
 		}
 	}
 }
