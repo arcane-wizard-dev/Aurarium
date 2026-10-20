@@ -107,6 +107,8 @@ local function SaveBalance(update)
 	if update.currencyID and not AUR.State.currencyByID[update.currencyID] then return end
 
 	local characterGUID = AWL.Utils:GetCharacterGUID()
+	if not characterGUID then return end
+
 	local today = Utils:GetToday()
 
 	if not AUR.Data.character[characterGUID] or not AUR.Data.balance[characterGUID] then

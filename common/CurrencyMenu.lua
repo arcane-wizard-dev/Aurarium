@@ -159,13 +159,17 @@ function CurrencyMenu:GetOptions(scope)
 		local entries = categories[category]
 
 		if entries and #entries > 0 then
-			if dividerPending then
-				options[#options + 1] = {divider = true}
-				dividerPending = false
-			end
+			local children = options
 
-			local children = {}
-			options[#options + 1] = {label = L["currency-overview.category." .. category], category = category, children = children}
+			if scope ~= "warband" then
+				if dividerPending then
+					options[#options + 1] = {divider = true}
+					dividerPending = false
+				end
+
+				children = {}
+				options[#options + 1] = {label = L["currency-overview.category." .. category], category = category, children = children}
+			end
 
 			for _, entry in ipairs(entries) do
 				children[#children + 1] = {label = entry.name, value = entry.key, icon = entry.iconFileID, entry = entry}

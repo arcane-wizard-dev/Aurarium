@@ -39,17 +39,16 @@ AUR.UIConfig.Chart = {
 	window = {
 		texture = "chart/chart-frame.tga"
 	},
+	inset = {backgroundStyle = "shaded-alt"},
 	footer = {
 		buttonWidth = 100,
-		buttonTextPadding = 24,
-		right = 12,
-		bottom = 12
+		buttonTextPadding = 24
 	},
 	margin = 12,
 	header = {
 		top = ArtworkConfig.captionTop - ArtworkConfig.bodyTop,
 		height = 24,
-		badgeGap = 24
+		infoGap = 24
 	},
 	sidebar = {
 		width = ArtworkConfig.sidebarRight - ArtworkConfig.bodyLeft,
@@ -89,9 +88,7 @@ AUR.UIConfig.Chart = {
 	axisGap = {x = 10, y = 10},
 	dateAxis = {
 		maximumLabels = 7,
-		labelGap = 20,
-		daySteps = {1, 2, 7, 14},
-		monthSteps = {1, 2, 3, 6, 12}
+		labelGap = 20
 	},
 	grid = {
 		axisColor = {170 / 255, 170 / 255, 170 / 255, 1},
@@ -105,10 +102,13 @@ AUR.UIConfig.Chart = {
 	},
 	axisPadding = 0.1,
 	flatAxisPadding = 0.01,
-	axisStepMultipliers = {1, 2, 5, 10, 20},
+	axisStepMultipliers = {1, 2, 3, 4, 5, 6, 8, 10, 20},
 	pointSize = 6,
 	pointSpacing = 4,
+	tooltipGap = 8,
 	lineThickness = 2,
+	lineTexture = "chart/smooth-line.tga",
+	lineJoinTexture = "chart/smooth-point.tga",
 	gridThickness = 1,
 	errorColor = {1, 0.3, 0.3},
 	positiveColor = {0.2, 1, 0.2},

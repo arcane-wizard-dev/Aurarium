@@ -4,46 +4,6 @@ if GetLocale() ~= "deDE" then return end
 
 local L = AUR.Localization
 
-L["currency-overview.menu.more"] = "Mehr"
-
-L["chart.title"] = "Diagramm"
-L["chart.beta"] = "Beta-Version"
-L["chart.beta-badge"] = "BETA"
-L["chart.scope"] = "Ansicht"
-L["chart.currency"] = "Währung"
-L["chart.period"] = "Zeitraum"
-L["chart.period.7days"] = "Letzte 7 Tage"
-L["chart.period.30days"] = "Letzte 30 Tage"
-L["chart.period.90days"] = "Letzte 90 Tage"
-L["chart.period.month"] = "Dieser Monat"
-L["chart.period.last-month"] = "Letzter Monat"
-L["chart.period.year"] = "Dieses Jahr"
-L["chart.period.all"] = "Gesamter Verlauf"
-L["chart.period.custom"] = "Eigener Zeitraum"
-L["chart.from"] = "Von"
-L["chart.to"] = "Bis"
-L["chart.apply"] = "Übernehmen"
-L["date-format.ymd"] = "JJJJ-MM-TT"
-L["date-format.mdy"] = "MM/TT/JJJJ"
-L["date-format.dmy"] = "TT.MM.JJJJ"
-L["chart.decimal-separator"] = ","
-L["chart.unit.thousand"] = "k"
-L["chart.unit.million"] = "M"
-L["chart.error.date"] = "Bitte ein gültiges Datum eingeben (%s)."
-L["chart.error.range"] = "Von darf nicht nach Bis liegen; keine zukünftigen Daten."
-L["chart.no-data"] = "Für diese Währung ist im gewählten Zeitraum noch kein Verlauf vorhanden."
-L["chart.no-currencies"] = "Keine Währungen verfügbar."
-L["chart.summary.start"] = "Anfang"
-L["chart.summary.end"] = "Ende"
-L["chart.summary.change"] = "Änderung"
-L["chart.history-note"] = "Die Grafik zeigt den zuletzt erfassten Bestand pro Tag. Für Tage ohne neuen Wert wird der vorherige Bestand angezeigt. Der Verlauf beginnt mit dem ersten erfassten Wert."
-
-L["wow-token.title"] = "WoW-Marke"
-L["wow-token.region"] = "Region"
-L["wow-token.price"] = "Goldpreis"
-L["wow-token.no-data"] = "Für den gewählten Zeitraum wurden noch keine Preise der WoW-Marke aufgezeichnet."
-L["wow-token.history-note"] = "Das Diagramm zeigt den zuletzt pro Tag aufgezeichneten Goldpreis der WoW-Marke für deine Spielregion. Preise werden erfasst, während du eingeloggt bist. An Tagen ohne neuen Preis wird der zuletzt erfasste Preis angezeigt. Die Aufzeichnung beginnt mit der ersten erfolgreichen Abfrage."
-
 -- Options
 
 L["options.general"] = "Allgemeine Einstellungen"
@@ -57,8 +17,6 @@ L["options.general.debug-mode.tooltip"] = "Die Aktivierung des Debugmodus zeigt 
 L["options.currency-overview"] = "Gold- und Währungsübersicht"
 L["options.currency-overview.open-on-login.name"] = "Automatisch öffnen"
 L["options.currency-overview.open-on-login.tooltip"] = "Bei Aktivierung öffnet sich die Gold- und Währungsübersicht beim Login automatisch."
-L["options.currency-overview.hide-unchanged-entries.name"] = "Unveränderte Einträge ausblenden"
-L["options.currency-overview.hide-unchanged-entries.tooltip"] = "Bei Aktivierung werden Tage ohne Bestandsänderung in der Charakter-, Account- und Kriegsmeute-Übersicht ausgeblendet."
 
 L["options.gold-display"] = "Goldanzeige"
 L["options.gold-display.show.name"] = "Goldanzeige anzeigen"
@@ -74,6 +32,10 @@ L["minimap-button.tooltip"] = "|cnLINK_FONT_COLOR:Linksklick|r zum Öffnen der G
 
 L["button.next"] = "Weiter"
 L["button.prev"] = "Zurück"
+
+L["date-format.ymd"] = "JJJJ-MM-TT"
+L["date-format.mdy"] = "MM/TT/JJJJ"
+L["date-format.dmy"] = "TT.MM.JJJJ"
 
 L["month.jan"] = "Januar"
 L["month.feb"] = "Februar"
@@ -127,6 +89,54 @@ L["currency-overview.table.date"] = "Datum"
 L["currency-overview.table.amount"] = "Betrag"
 L["currency-overview.table.difference"] = "Differenz"
 L["currency-overview.table.no-entries"] = "Keine Einträge für diesen Monat."
+
+L["currency-overview.menu.more"] = "Mehr"
+L["currency-overview.menu.hide-unchanged-entries"] = "Unveränderte Einträge ausblenden"
 L["currency-overview.menu.delete-character"] = "Daten von '%s' löschen …"
 L["currency-overview.menu.patch"] = "Patch %s"
+
 L["currency-overview.delete-character.confirm"] = "Charakter '%s' auf Realm '%s' und alle erfassten Daten löschen?"
+
+-- Chart
+
+L["chart.title"] = "Diagramm"
+L["chart.scope"] = "Ansicht"
+L["chart.currency"] = "Währung"
+
+L["chart.period"] = "Zeitraum"
+L["chart.period.7days"] = "Letzte 7 Tage"
+L["chart.period.30days"] = "Letzte 30 Tage"
+L["chart.period.90days"] = "Letzte 90 Tage"
+L["chart.period.month"] = "Dieser Monat"
+L["chart.period.last-month"] = "Letzter Monat"
+L["chart.period.year"] = "Dieses Jahr"
+L["chart.period.all"] = "Gesamter Verlauf"
+L["chart.period.custom"] = "Eigener Zeitraum"
+
+L["chart.from"] = "Von"
+L["chart.to"] = "Bis"
+L["chart.apply"] = "Übernehmen"
+
+L["chart.decimal-separator"] = ","
+L["chart.unit.thousand"] = "k"
+L["chart.unit.million"] = "M"
+
+L["chart.error.date"] = "Bitte ein gültiges Datum eingeben (%s)."
+L["chart.error.range"] = "Von darf nicht nach Bis liegen; keine zukünftigen Daten."
+
+L["chart.no-data"] = "Für diese Währung ist im gewählten Zeitraum noch kein Verlauf vorhanden."
+L["chart.no-currencies"] = "Keine Währungen verfügbar."
+
+L["chart.summary.start"] = "Anfang"
+L["chart.summary.end"] = "Ende"
+L["chart.summary.change"] = "Änderung"
+
+L["chart.history-note"] = "Die Grafik zeigt den zuletzt erfassten Bestand pro Tag. Für Tage ohne neuen Wert wird der vorherige Bestand angezeigt. Der Verlauf beginnt mit dem ersten erfassten Wert."
+
+-- WoW Token
+
+L["wow-token.title"] = "WoW-Marke"
+L["wow-token.region"] = "Region"
+L["wow-token.price"] = "Goldpreis"
+L["wow-token.no-data"] = "Für den gewählten Zeitraum wurden noch keine Preise der WoW-Marke aufgezeichnet."
+L["wow-token.history-note"] = "Das Diagramm zeigt den zuletzt pro Tag aufgezeichneten Goldpreis der WoW-Marke für deine Spielregion. Preise werden erfasst, während du eingeloggt bist. An Tagen ohne neuen Preis wird der zuletzt erfasste Preis angezeigt. Die Aufzeichnung beginnt mit der ersten erfolgreichen Abfrage."

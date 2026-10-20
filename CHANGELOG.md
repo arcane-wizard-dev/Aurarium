@@ -4,6 +4,6 @@
 
 **Important note: Migration of older character data will be removed at the end of 2026. Log in once with each character using an up-to-date version of Aurarium before then to preserve their gold and currency history.**
 
-- Added: Daily WoW Token price history in the overview and chart [retail]
+- Added: Settings menu in the overview to hide unchanged entries
+- Changed: Improved chart rendering and tooltips
 - Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility
-- Minor code adjustments

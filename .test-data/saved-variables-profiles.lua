@@ -4,7 +4,9 @@
 Aurarium_Options_v5 = {
 	["account"] = {
 		["currency-overview"] = {
-			["hide-unchanged-entries"] = false,
+			["table-overview"] = {
+				["hide-unchanged-entries"] = false,
+			},
 			["open-on-login"] = true,
 		},
 		["general"] = {
@@ -45,7 +47,9 @@ Aurarium_Options_v5 = {
 	["profiles"] = {
 		["Player-TEST-CURRENT"] = {
 			["currency-overview"] = {
-				["hide-unchanged-entries"] = false,
+				["table-overview"] = {
+					["hide-unchanged-entries"] = true,
+				},
 				["open-on-login"] = true,
 			},
 			["general"] = {
@@ -72,7 +76,9 @@ Aurarium_Options_v5 = {
 		},
 		["Player-TEST-OFFLINE"] = {
 			["currency-overview"] = {
-				["hide-unchanged-entries"] = false,
+				["table-overview"] = {
+					["hide-unchanged-entries"] = false,
+				},
 				["open-on-login"] = true,
 			},
 			["general"] = {

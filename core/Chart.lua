@@ -11,7 +11,13 @@ local ChartData = AUR.CHART_DATA
 local ChartConfig = AUR.UIConfig.Chart
 local OverviewConfig = AUR.UIConfig.Overview
 
-local window, plot, scopeGroup, characterDropdown, currencyDropdown, periodDropdown
+---@class AurariumChartWindow: ArcaneWizardLibraryWindowFrame
+---@field inset ArcaneWizardLibraryInsetFrame
+---@field footerCloseButton Button
+---@field artwork Texture
+local window
+
+local plot, scopeGroup, characterDropdown, currencyDropdown, periodDropdown
 local characterLabel
 local firstInput, lastInput, applyButton, statusText, captionText, customPanel, customButton
 local summaryValues = {}
@@ -22,7 +28,7 @@ local selectedPeriod = ChartData.defaultPeriod
 local history, points, rangeFirst, rangeLast, minimum, maximum
 local refreshPending = false
 local lines, axisLabels, gridLines = {}, {}, {}
-local shortLines = {}
+local lineJoins = {}
 
 local function DateParts(value)
 	local year, month, day = value:match("^(%d%d%d%d)%-(%d%d)%-(%d%d)$")
@@ -45,17 +51,6 @@ end
 
 local function ShiftDate(value, days)
 	return date("%Y-%m-%d", Timestamp(value) + days * 86400)
-end
-
-local function MonthDate(month)
-	return date("%Y-%m-%d", time({
-		year = math.floor(month / 12),
-		month = month % 12 + 1,
-		day = 1,
-		hour = 12,
-		min = 0,
-		sec = 0
-	}))
 end
 
 function Chart:ParseDate(value)
@@ -255,66 +250,18 @@ function Chart:GetDayOffset(first, last)
 	return math.floor((Timestamp(last) - Timestamp(first)) / 86400 + 0.5)
 end
 
-local function CalendarTicks(first, last, config)
-	local year, month = DateParts(first)
-	local nextMonth = (math.floor((year * 12 + month - 1) / config.step) + 1) * config.step
-	local previous
-	local days = Chart:GetDayOffset(first, last)
-	local ticks = {first}
-
-	while true do
-		local day = MonthDate(nextMonth)
-
-		if day >= last then
-			break
-		end
-
-		if previous and Chart:GetDayOffset(previous, day) < config.minimumGap then return end
-
-		local offset = Chart:GetDayOffset(first, day)
-
-		if offset >= config.minimumGap and days - offset >= config.minimumGap then
-			ticks[#ticks + 1] = day
-		end
-
-		previous = day
-		nextMonth = nextMonth + config.step
-	end
-
-	ticks[#ticks + 1] = last
-
-	return ticks
-end
-
 function Chart:GetDateTicks(first, last, limit)
 	if first == last then return {first} end
 
 	local days = self:GetDayOffset(first, last)
-	local minimumGap = days / (math.max(2, math.floor(limit)) - 1)
-	local ticks = {first}
-	local DateAxisConfig = ChartConfig.dateAxis
+	local steps = math.min(days, math.max(2, math.floor(limit)) - 1)
+	local ticks = {}
 
-	for _, step in ipairs(DateAxisConfig.daySteps) do
-		if step >= minimumGap then
-			for offset = step, days - 1, step do
-				if days - offset >= minimumGap then
-					ticks[#ticks + 1] = ShiftDate(first, offset)
-				end
-			end
-
-			ticks[#ticks + 1] = last
-
-			return ticks
-		end
+	for i = 0, steps do
+		ticks[#ticks + 1] = ShiftDate(first, math.floor(days * i / steps + 0.5))
 	end
 
-	for _, step in ipairs(DateAxisConfig.monthSteps) do
-		local calendar = CalendarTicks(first, last, {step = step, minimumGap = minimumGap})
-
-		if calendar then return calendar end
-	end
-
-	return CalendarTicks(first, last, {step = 12 * math.ceil(minimumGap / 365), minimumGap = minimumGap})
+	return ticks
 end
 
 function Chart:ReduceSeries(series, limit)
@@ -472,44 +419,56 @@ local function Label(parent, text)
 	return label
 end
 
+local function CreateLineTexture(path)
+	local texture = plot:CreateTexture(nil, "ARTWORK")
+	texture:SetTexture(Addon:GetMediaPath(path), "CLAMP", "CLAMP", "LINEAR")
+	texture:SetVertexColor(unpack(ChartConfig.lineColor))
+	texture:SetBlendMode("BLEND")
+	texture:SetSnapToPixelGrid(false)
+	texture:SetTexelSnappingBias(0)
+
+	return texture
+end
+
 local function DrawLine(config)
 	local dx, dy = config.x2 - config.x1, config.y2 - config.y1
-	local thickness = math.max(ChartConfig.lineThickness, config.pixel)
+	local length = math.sqrt(dx * dx + dy * dy)
 
-	if dx * dx + dy * dy <= (2 * thickness) ^ 2 then
-		local texture = shortLines[config.index]
+	if length == 0 then return end
 
-		if not texture then
-			texture = plot:CreateTexture(nil, "ARTWORK")
-			texture:SetColorTexture(unpack(ChartConfig.lineColor))
-			shortLines[config.index] = texture
-		end
-
-		texture:ClearAllPoints()
-		texture:SetPoint(
-			"BOTTOMLEFT", plot, "BOTTOMLEFT",
-			math.min(config.x1, config.x2) - thickness / 2,
-			math.min(config.y1, config.y2) - thickness / 2
-		)
-		texture:SetSize(math.abs(dx) + thickness, math.abs(dy) + thickness)
-		texture:Show()
-
-		return
-	end
-
+	local radius = ChartConfig.lineThickness * config.pixel
+	local halfLength, halfX, halfY = length / 2, dx / 2, dy / 2
+	local normalX, normalY = -dy / length * radius, dx / length * radius
 	local line = lines[config.index]
 
 	if not line then
-		line = plot:CreateLine(nil, "ARTWORK")
-		line:SetColorTexture(unpack(ChartConfig.lineColor))
+		line = CreateLineTexture(ChartConfig.lineTexture)
 		lines[config.index] = line
 	end
 
-	line:SetThickness(thickness)
 	line:ClearAllPoints()
-	line:SetStartPoint("BOTTOMLEFT", plot, config.x1, config.y1)
-	line:SetEndPoint("BOTTOMLEFT", plot, config.x2, config.y2)
+	line:SetPoint("CENTER", plot, "BOTTOMLEFT", config.x1 + halfX, config.y1 + halfY)
+	line:SetSize(length, radius * 2)
+	line:SetVertexOffset(1, halfLength - halfX + normalX, -halfY + normalY - radius)
+	line:SetVertexOffset(2, halfLength - halfX - normalX, -halfY - normalY + radius)
+	line:SetVertexOffset(3, halfX + normalX - halfLength, halfY + normalY - radius)
+	line:SetVertexOffset(4, halfX - normalX - halfLength, halfY - normalY + radius)
 	line:Show()
+end
+
+local function DrawLineJoin(config)
+	local join = lineJoins[config.index]
+
+	if not join then
+		join = CreateLineTexture(ChartConfig.lineJoinTexture)
+		lineJoins[config.index] = join
+	end
+
+	local size = ChartConfig.lineThickness * config.pixel * 2
+	join:ClearAllPoints()
+	join:SetPoint("CENTER", plot, "BOTTOMLEFT", config.x, config.y)
+	join:SetSize(size, size)
+	join:Show()
 end
 
 local function DrawGridLine(config)
@@ -530,6 +489,7 @@ local function DrawGridLine(config)
 	texture:SetPoint("BOTTOMLEFT", plot, "BOTTOMLEFT", x, y)
 	texture:SetSize(math.max(pixel, right - x), math.max(pixel, top - y))
 	texture:SetColorTexture(unpack(config.color))
+	texture:SetDrawLayer("BACKGROUND", config.color == ChartConfig.grid.axisColor and 1 or 0)
 	texture:Show()
 
 	return x, y
@@ -588,7 +548,10 @@ local function UpdateHover()
 	plot.hoverPoint:SetPoint("CENTER", plot, "BOTTOMLEFT", px, py)
 	plot.hoverPoint:Show()
 
-	GameTooltip:SetOwner(plot, "ANCHOR_RIGHT")
+	GameTooltip:SetOwner(plot, "ANCHOR_NONE")
+	GameTooltip:ClearAllPoints()
+	GameTooltip:SetPoint("BOTTOMLEFT", plot.hoverPoint, "TOPRIGHT", ChartConfig.tooltipGap, ChartConfig.tooltipGap)
+	GameTooltip:SetClampedToScreen(true)
 	GameTooltip:SetText(
 		Chart:FormatDate(point.date), ChartConfig.normalColor[1], ChartConfig.normalColor[2], ChartConfig.normalColor[3]
 	)
@@ -603,7 +566,7 @@ local function DrawChart()
 		line:Hide()
 	end
 
-	for _, line in pairs(shortLines) do
+	for _, line in pairs(lineJoins) do
 		line:Hide()
 	end
 
@@ -649,7 +612,7 @@ local function DrawChart()
 			y = fraction * height,
 			width = width,
 			height = 0,
-			color = i == 0 and ChartConfig.grid.axisColor or ChartConfig.grid.horizontalColor
+			color = (i == 0 or i == ChartConfig.gridSteps) and ChartConfig.grid.axisColor or ChartConfig.grid.horizontalColor
 		})
 		gridIndex = gridIndex + 1
 		DrawGridLine({
@@ -668,7 +631,6 @@ local function DrawChart()
 		label:Show()
 	end
 
-	local days = Chart:GetDayOffset(rangeFirst, rangeLast)
 	local shortDates = rangeFirst:sub(1, 4) == rangeLast:sub(1, 4)
 	local sample = axisLabels[ChartConfig.gridSteps + 2]
 	sample:SetText(Chart:FormatDate(rangeFirst, shortDates))
@@ -677,20 +639,21 @@ local function DrawChart()
 	sample:SetText(Chart:FormatDate(rangeLast, shortDates))
 	textWidth = math.max(textWidth, sample:GetUnboundedStringWidth())
 
-	local labelLimit = math.min(ChartConfig.dateAxis.maximumLabels, math.floor(width / (textWidth + ChartConfig.dateAxis.labelGap)) + 1)
+	local labelSpacing = 1.5 * textWidth + ChartConfig.dateAxis.labelGap
+	local labelLimit = math.max(2, math.min(ChartConfig.dateAxis.maximumLabels, math.floor(width / labelSpacing) + 1))
 	local ticks = Chart:GetDateTicks(rangeFirst, rangeLast, labelLimit)
 
 	for i, day in ipairs(ticks) do
-		local offset = Chart:GetDayOffset(rangeFirst, day)
 		gridIndex = gridIndex + 1
+		local isEdge = #ticks > 1 and (i == 1 or i == #ticks)
 
 		local x = DrawGridLine({
 			index = gridIndex,
-			x = days > 0 and offset / days * width or width / 2,
+			x = #ticks > 1 and (i - 1) / (#ticks - 1) * width or width / 2,
 			y = 0,
 			width = 0,
 			height = height,
-			color = ChartConfig.grid.verticalColor
+			color = isEdge and ChartConfig.grid.axisColor or ChartConfig.grid.verticalColor
 		})
 
 		local label = axisLabels[ChartConfig.gridSteps + 1 + i]
@@ -711,22 +674,18 @@ local function DrawChart()
 		label:Show()
 	end
 
-	DrawGridLine({
-		index = gridIndex + 1,
-		x = 0,
-		y = 0,
-		width = 0,
-		height = height,
-		color = ChartConfig.grid.axisColor
-	})
-	DrawGridLine({
-		index = gridIndex + 2,
-		x = 0,
-		y = 0,
-		width = width,
-		height = 0,
-		color = ChartConfig.grid.axisColor
-	})
+	if #ticks == 1 then
+		for i = 0, 1 do
+			DrawGridLine({
+				index = gridIndex + i + 1,
+				x = i * width,
+				y = 0,
+				width = 0,
+				height = height,
+				color = ChartConfig.grid.axisColor
+			})
+		end
+	end
 
 	local pixel = PixelUtil.GetPixelToUIUnitFactor() / plot:GetEffectiveScale()
 	local firstX = Coordinates(points[1])
@@ -746,6 +705,23 @@ local function DrawChart()
 			y2 = y2,
 			pixel = pixel
 		})
+	end
+
+	if #reduced > 1 then
+		for i, point in ipairs(reduced) do
+			local x, y = Coordinates(point)
+			local needsJoin = i == 1 or i == #reduced
+
+			if not needsJoin then
+				local x1, y1 = Coordinates(reduced[i - 1])
+				local x2, y2 = Coordinates(reduced[i + 1])
+				needsJoin = math.abs((x - x1) * (y2 - y) - (y - y1) * (x2 - x)) > 0.000001
+			end
+
+			if needsJoin then
+				DrawLineJoin({index = i, x = x, y = y, pixel = pixel})
+			end
+		end
 	end
 
 	if #points == 1 then
@@ -1078,9 +1054,9 @@ local function CreateWindow()
 	windowConfig.addonName = addonName
 	windowConfig.width = ArtworkConfig.width
 	windowConfig.height = ArtworkConfig.height
-	windowConfig.title = addonName .. " - " .. L["chart.title"] .. " (" .. L["chart.beta"] .. ")"
+	windowConfig.title = addonName .. " - " .. L["chart.title"]
 
-	window = AWL.Frames:CreateWindow(windowConfig)
+	window = AWL.Frames:CreateWindow(windowConfig) --[[@as AurariumChartWindow]]
 	window:SetFrameStrata("HIGH")
 	window.portrait:SetPoint("TOPLEFT", OverviewConfig.portrait.x, OverviewConfig.portrait.y)
 	window.portrait:SetTexture(Addon:GetMediaPath("icon-round.tga"))
@@ -1091,7 +1067,8 @@ local function CreateWindow()
 	local insetConfig = AWL.Utils:CopyTable(OverviewConfig.inset)
 	insetConfig.parent = window
 	insetConfig.width = ArtworkConfig.artworkRight - ArtworkConfig.artworkLeft
-	insetConfig.height = ArtworkConfig.artworkBottom - ArtworkConfig.artworkTop
+	insetConfig.height = ArtworkConfig.height - ArtworkConfig.artworkTop - OverviewConfig.inset.bottom
+	insetConfig.backgroundStyle = ChartConfig.inset.backgroundStyle
 
 	window.inset = AWL.Frames:CreateInset(insetConfig)
 	window.inset:SetPoint("TOPLEFT", ArtworkConfig.artworkLeft, -ArtworkConfig.artworkTop)
@@ -1108,7 +1085,7 @@ local function CreateWindow()
 		ChartConfig.footer.buttonWidth,
 		window.footerCloseButton:GetFontString():GetUnboundedStringWidth() + ChartConfig.footer.buttonTextPadding
 	))
-	window.footerCloseButton:SetPoint("BOTTOMRIGHT", -ChartConfig.footer.right, ChartConfig.footer.bottom)
+	window.footerCloseButton:SetPoint("TOPRIGHT", window.inset, "BOTTOMRIGHT", -OverviewConfig.buttonOffset.x, OverviewConfig.buttonOffset.y)
 
 	local body = window.content
 	body:ClearAllPoints()
@@ -1185,23 +1162,13 @@ local function CreateWindow()
 	infoButton:SetSize(ArtworkConfig.infoSize, ArtworkConfig.infoSize)
 	infoButton:SetPoint("TOPLEFT", ArtworkConfig.infoLeft - ArtworkConfig.chartLeft, ArtworkConfig.bodyTop - ArtworkConfig.infoTop)
 
-	local betaBadge = CreateFrame("Frame", nil, chartPanel, "NewFeatureLabelTemplate")
-	betaBadge.animateGlow = false
-	betaBadge.Label:SetTextToFit(L["chart.beta-badge"])
-	betaBadge.BGLabel:SetTextToFit(L["chart.beta-badge"])
-
-	local badgeWidth = betaBadge:GetTextWidth()
-	betaBadge:SetPoint("CENTER", infoButton, "LEFT", -ChartConfig.header.badgeGap - badgeWidth / 2, 0)
-	betaBadge:Show()
-	window.betaBadge = betaBadge
-	captionText:SetPoint("TOPRIGHT", -ArtworkConfig.infoSize - badgeWidth - ChartConfig.header.badgeGap * 2, -ChartConfig.header.top)
+	captionText:SetPoint("TOPRIGHT", -ArtworkConfig.infoSize - ChartConfig.header.infoGap, -ChartConfig.header.top)
 
 	infoButton:SetScript("OnEnter", function(self)
+		local r, g, b = NORMAL_FONT_COLOR:GetRGB()
 		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-		GameTooltip:SetText(
-			L["chart.title"], ChartConfig.normalColor[1], ChartConfig.normalColor[2], ChartConfig.normalColor[3]
-		)
-		GameTooltip:AddLine(L[Scope() == "token" and "wow-token.history-note" or "chart.history-note"], 1, 1, 1, true)
+		GameTooltip:SetText(L["chart.title"], unpack(ChartConfig.normalColor))
+		GameTooltip:AddLine(L[Scope() == "token" and "wow-token.history-note" or "chart.history-note"], r, g, b, true)
 		GameTooltip:Show()
 	end)
 

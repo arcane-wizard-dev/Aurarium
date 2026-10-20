@@ -75,25 +75,6 @@ local dateFormatProxy = setmetatable({}, {
 	end,
 })
 
-local currencyOverviewProxy = setmetatable({}, {
-	__index = function(_, key)
-		if key == "hide-unchanged-entries" then
-			return AUR.Settings.currencyOverview["hide-unchanged-entries"]
-		end
-	end,
-	__newindex = function(_, key, value)
-		if key ~= "hide-unchanged-entries" then
-			return
-		end
-
-		AUR.Settings.currencyOverview["hide-unchanged-entries"] = value
-
-		if AUR.Modules.Overview and AUR.Modules.Overview:IsShown() then
-			AUR.Modules.Overview:Refresh()
-		end
-	end,
-})
-
 local goldDisplayProxy = setmetatable({}, {
 	__index = function(_, key)
 		if key == "show" or key == "show-border" or key == "display-mode" then
@@ -160,16 +141,6 @@ function Options:Initialize()
 		name			= L["options.currency-overview.open-on-login.name"],
 		tooltip			= L["options.currency-overview.open-on-login.tooltip"],
 		default			= AUR.OPTIONS_DEFAULTS["currency-overview"]["open-on-login"]
-	})
-
-	-- Hide Unchanged Entries
-	AWL.Settings:AddCheckbox(category, {
-		variableTable	= currencyOverviewProxy,
-		settingKey		= addonName .. "_hide-unchanged-entries",
-		variableName	= "hide-unchanged-entries",
-		name			= L["options.currency-overview.hide-unchanged-entries.name"],
-		tooltip			= L["options.currency-overview.hide-unchanged-entries.tooltip"],
-		default			= AUR.OPTIONS_DEFAULTS["currency-overview"]["hide-unchanged-entries"]
 	})
 
 	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L["options.gold-display"]))

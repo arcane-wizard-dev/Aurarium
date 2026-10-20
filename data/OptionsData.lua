@@ -13,7 +13,9 @@ AUR.OPTIONS_DEFAULTS = {
 	},
 	["currency-overview"] = {
 		["open-on-login"] = false,
-		["hide-unchanged-entries"] = false,
+		["table-overview"] = {
+			["hide-unchanged-entries"] = false,
+		},
 	},
 	["gold-display"] = {
 		["show"] = true,

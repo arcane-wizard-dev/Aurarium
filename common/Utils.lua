@@ -325,6 +325,7 @@ function Utils:InitializeDatabase(isLogin)
 	AUR.Settings.general = dbInit.settings["general"]
 	AUR.Settings.currencyOverview = dbInit.settings["currency-overview"]
 	AUR.Settings.goldDisplay = dbInit.settings["gold-display"]
+	AWL.Utils:MergeMissingTableEntries(AUR.Settings.currencyOverview, AUR.OPTIONS_DEFAULTS["currency-overview"])
 
 	if not Aurarium_DataDates then
 		Aurarium_DataDates = {}

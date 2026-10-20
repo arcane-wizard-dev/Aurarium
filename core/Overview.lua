@@ -265,7 +265,7 @@ local function BuildMonthHistory(history, monthPrefix)
 end
 
 local function FilterUnchangedHistory(history)
-	if not AUR.Settings.currencyOverview["hide-unchanged-entries"] then
+	if not AUR.Settings.currencyOverview["table-overview"]["hide-unchanged-entries"] then
 		return history
 	end
 
@@ -324,7 +324,23 @@ end
 --- Frame Functions ---
 ----------------------
 
-local function UpdateOverview(selectedCurrency, currentMonthOffset, history, scrollFrame)
+local function CreateHistoryCell(parent, tableFrame, index)
+	local x, width, align = tableFrame:GetColumnLayout(index)
+	local cell = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	cell:SetPoint("LEFT", parent, "LEFT", x, 0)
+	cell:SetWidth(width)
+	cell:SetJustifyH(align)
+	cell:SetWordWrap(false)
+
+	return cell
+end
+
+local function UpdateOverview(config)
+	local selectedCurrency = config.currency
+	local currentMonthOffset = config.monthOffset
+	local history = config.history
+	local scrollFrame = config.tableFrame
+
 	if #history == 0 and currentMonthOffset == 0 and selectedCurrency ~= "token" then
 		history = {{date = Utils:GetToday(), value = 0}}
 	end
@@ -349,6 +365,8 @@ local function UpdateOverview(selectedCurrency, currentMonthOffset, history, scr
 	header:SetText(FormatMonthText(filterPrefix))
 	table.insert(scrollFrame.rows, {header})
 
+	scrollFrame:SetColumnText(2, L[selectedCurrency == "token" and "wow-token.price" or "currency-overview.table.amount"])
+
 	if #monthHistory == 0 then
 		local noEntry = scrollFrame.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 		noEntry:SetPoint("TOP", 0, 0)
@@ -365,29 +383,14 @@ local function UpdateOverview(selectedCurrency, currentMonthOffset, history, scr
 
 	local offsetY = 0
 
-	local headerDate = scrollFrame.content:CreateFontString(nil,"OVERLAY", "GameFontNormal")
-	headerDate:SetPoint("TOPLEFT", OverviewConfig.history.columns.date, offsetY)
-	headerDate:SetText(L["currency-overview.table.date"])
-
-	local headerAmount  = scrollFrame.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	headerAmount:SetPoint("TOPLEFT", OverviewConfig.history.columns.amount, offsetY)
-	headerAmount:SetText(L[selectedCurrency == "token" and "wow-token.price" or "currency-overview.table.amount"])
-
-	local headerDifference = scrollFrame.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	headerDifference:SetPoint("TOPLEFT", OverviewConfig.history.columns.difference, offsetY)
-	headerDifference:SetText(L["currency-overview.table.difference"])
-
-	table.insert(scrollFrame.rows, {headerDate, headerAmount, headerDifference})
-	offsetY = offsetY - OverviewConfig.history.rowHeight
-
 	for i, entry in ipairs(monthHistory) do
 		local background = CreateFrame("Frame", nil, scrollFrame.content)
-		background:SetSize(OverviewConfig.history.rowWidth, OverviewConfig.history.rowHeight)
+		background:SetSize(scrollFrame:GetContentWidth(), OverviewConfig.history.rowHeight)
 		background:SetPoint("TOPLEFT", scrollFrame.content, "TOPLEFT", 0, offsetY)
 
 		background.texture = background:CreateTexture(nil, "BACKGROUND")
 		background.texture:SetAllPoints()
-		background.texture:SetTexture(Addon:GetMediaPath("overview/active-table-background.tga"))
+		background.texture:SetTexture(OverviewConfig.history.highlightTexture)
 		background.texture:SetAlpha(0)
 
 		background:SetScript("OnEnter", function(self)
@@ -403,16 +406,13 @@ local function UpdateOverview(selectedCurrency, currentMonthOffset, history, scr
 
 		local prevValue = GetPreviousValueFromHistory(history, dateStr) or 0
 
-		local rowDate = background:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-		rowDate:SetPoint("LEFT", OverviewConfig.history.columns.date, 0)
+		local rowDate = CreateHistoryCell(background, scrollFrame, 1)
 		rowDate:SetText(Utils:FormatDate(entry.date))
 
-		local rowAmount = background:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-		rowAmount:SetPoint("LEFT", OverviewConfig.history.columns.amount, 0)
+		local rowAmount = CreateHistoryCell(background, scrollFrame, 2)
 		rowAmount:SetText(FormatCurrency(currentValue, selectedCurrency))
 
-		local rowDifference = background:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-		rowDifference:SetPoint("LEFT", OverviewConfig.history.columns.difference, 0)
+		local rowDifference = CreateHistoryCell(background, scrollFrame, 3)
 
 		local firstDate = history[1].date
 
@@ -446,32 +446,32 @@ local function UpdateCharacterOverview()
 	SelectFallbackCharacter()
 
 	local characterHistory = BuildCharacterHistory(selectedCharacterKey, selectedCurrency[TabIndex.character])
-	UpdateOverview(
-		selectedCurrency[TabIndex.character],
-		currentMonthOffset[TabIndex.character],
-		characterHistory,
-		OverviewScrollFrames[TabIndex.character]
-	)
+	UpdateOverview({
+		currency = selectedCurrency[TabIndex.character],
+		monthOffset = currentMonthOffset[TabIndex.character],
+		history = characterHistory,
+		tableFrame = OverviewScrollFrames[TabIndex.character]
+	})
 end
 
 local function UpdateAccountOverview()
 	local accountHistory = BuildAccountHistory(selectedCurrency[TabIndex.account])
-	UpdateOverview(
-		selectedCurrency[TabIndex.account],
-		currentMonthOffset[TabIndex.account],
-		accountHistory,
-		OverviewScrollFrames[TabIndex.account]
-	)
+	UpdateOverview({
+		currency = selectedCurrency[TabIndex.account],
+		monthOffset = currentMonthOffset[TabIndex.account],
+		history = accountHistory,
+		tableFrame = OverviewScrollFrames[TabIndex.account]
+	})
 end
 
 local function UpdateWarbandOverview()
 	local warbandHistory = BuildWarbandHistory(selectedCurrency[TabIndex.warband])
-	UpdateOverview(
-		selectedCurrency[TabIndex.warband],
-		currentMonthOffset[TabIndex.warband],
-		warbandHistory,
-		OverviewScrollFrames[TabIndex.warband]
-	)
+	UpdateOverview({
+		currency = selectedCurrency[TabIndex.warband],
+		monthOffset = currentMonthOffset[TabIndex.warband],
+		history = warbandHistory,
+		tableFrame = OverviewScrollFrames[TabIndex.warband]
+	})
 end
 
 local function UpdateTokenOverview()
@@ -479,7 +479,12 @@ local function UpdateTokenOverview()
 	if not scrollFrame then return end
 
 	scrollFrame.regionDropdown:SetDefaultText(L["wow-token.region"] .. ": " .. WowToken:GetRegionName())
-	UpdateOverview("token", currentMonthOffset[TabIndex.token], WowToken:GetHistory(), scrollFrame)
+	UpdateOverview({
+		currency = "token",
+		monthOffset = currentMonthOffset[TabIndex.token],
+		history = WowToken:GetHistory(),
+		tableFrame = scrollFrame
+	})
 end
 
 local function HandleCharacterDeleteConfirmed(characterKey)
@@ -540,7 +545,7 @@ end
 
 local function CreateCurrencyDropdown(scrollFrame, background, tabIndex)
 	local currencyDropdown = CreateFrame("DropdownButton", nil, scrollFrame, "WowStyle1DropdownTemplate")
-	currencyDropdown:SetPoint("BOTTOMRIGHT", background, "TOPRIGHT", -OverviewConfig.dropdown.offset, OverviewConfig.dropdown.offset)
+	currencyDropdown:SetPoint("BOTTOMRIGHT", background, "TOPRIGHT", -OverviewConfig.dropdown.offset.x, OverviewConfig.dropdown.offset.y)
 	currencyDropdown:SetSize(OverviewConfig.dropdown.currencyWidth, OverviewConfig.dropdown.height)
 
 	currencyDropdown:SetupMenu(function(self, root)
@@ -574,7 +579,7 @@ end
 
 local function CreateCharacterDropdown(scrollFrame, background)
 	local characterDropdown = CreateFrame("DropdownButton", nil, scrollFrame, "WowStyle1DropdownTemplate")
-	characterDropdown:SetPoint("BOTTOMLEFT", background, "TOPLEFT", OverviewConfig.dropdown.offset, OverviewConfig.dropdown.offset)
+	characterDropdown:SetPoint("BOTTOMLEFT", background, "TOPLEFT", OverviewConfig.dropdown.offset.x, OverviewConfig.dropdown.offset.y)
 	characterDropdown:SetSize(OverviewConfig.dropdown.characterWidth, OverviewConfig.dropdown.height)
 
 	characterDropdown:SetupMenu(function(self, root)
@@ -656,6 +661,16 @@ local function CreateCharacterDropdown(scrollFrame, background)
 	return characterDropdown
 end
 
+local function PopulateSettingsMenu(_, root)
+	root:CreateCheckbox(L["currency-overview.menu.hide-unchanged-entries"], function()
+		return AUR.Settings.currencyOverview["table-overview"]["hide-unchanged-entries"]
+	end, function()
+		local settings = AUR.Settings.currencyOverview["table-overview"]
+		settings["hide-unchanged-entries"] = not settings["hide-unchanged-entries"]
+		Overview:Refresh()
+	end)
+end
+
 local function CreateMoreMenu(tabs)
 	local MoreMenuConfig = OverviewConfig.moreMenu
 	local button = CreateFrame("DropdownButton", nil, OverviewFrame, "WowStyle1FilterDropdownTemplate")
@@ -680,12 +695,11 @@ local function CreateMoreMenu(tabs)
 			})
 		end)
 		chartButton:AddInitializer(function(menuButton)
-			for index, height in ipairs(MoreMenuConfig.icon.barHeights) do
-				local bar = menuButton:AttachTexture()
-				bar:SetColorTexture(unpack(MoreMenuConfig.icon.color))
-				bar:SetSize(MoreMenuConfig.icon.barWidth, height)
-				bar:SetPoint("BOTTOMLEFT", menuButton, "LEFT", MoreMenuConfig.itemPadding + (index - 1) * (MoreMenuConfig.icon.barWidth + MoreMenuConfig.icon.barGap), -MoreMenuConfig.icon.size / 2)
-			end
+			local icon = menuButton:AttachTexture()
+			icon:SetTexture(MoreMenuConfig.icon.texture)
+			icon:SetVertexColor(unpack(MoreMenuConfig.icon.color))
+			icon:SetSize(MoreMenuConfig.icon.size, MoreMenuConfig.icon.size)
+			icon:SetPoint("LEFT", MoreMenuConfig.itemPadding, 0)
 
 			local text = menuButton.fontString
 			local textWidth = text:GetUnboundedStringWidth()
@@ -705,19 +719,33 @@ local function CreateMoreMenu(tabs)
 	OverviewFrame.moreMenu = button
 end
 
-local function CreateOverviewPage(tabs, background, tabIndex)
+local function CreateOverviewPage(tabs, tabIndex)
 	currentMonthOffset[tabIndex] = 0
 	local TabConfig = OverviewConfig.tabs[tabIndex]
 	local page = tabs:AddTab(TabConfig.id, L[TabConfig.label])
 	page:ClearAllPoints()
-	page:SetAllPoints(background)
-	local scrollFrame = AWL.ScrollFrames:CreateScrollFrame({
+	page:SetSize(OverviewConfig.inset.width, OverviewConfig.inset.height)
+	page:SetPoint("BOTTOM", OverviewFrame, "BOTTOM", 0, OverviewConfig.inset.bottom)
+
+	local columns = AWL.Utils:CopyTable(OverviewConfig.history.columns)
+
+	for _, column in ipairs(columns) do
+		column.text = L[column.text]
+	end
+
+	---@class AurariumOverviewTable: ArcaneWizardLibraryTable
+	---@field nextButton Button
+	---@field prevButton Button
+	---@field regionDropdown? ArcaneWizardLibraryDropdown
+	---@field characterDropdown? ArcaneWizardLibraryDropdown
+	local scrollFrame = AWL.Tables:CreateTable({
 		parent = page,
 		width = OverviewConfig.inset.width,
 		height = OverviewConfig.inset.height,
-		backgroundAlpha = 0,
-		showBorder = false,
-		contentInsets = OverviewConfig.contentInsets
+		backgroundStyle = OverviewConfig.inset.backgroundStyle,
+		backgroundAlpha = OverviewConfig.inset.backgroundAlpha,
+		columns = columns,
+		settingsMenu = PopulateSettingsMenu
 	})
 	scrollFrame:SetAllPoints(page)
 	scrollFrame:SetScrollStep(OverviewConfig.scrollStep)
@@ -741,7 +769,7 @@ local function CreateOverviewPage(tabs, background, tabIndex)
 		end
 	})
 
-	scrollFrame.nextButton:SetPoint("TOPRIGHT", background, "BOTTOMRIGHT", -OverviewConfig.buttonOffset.x, OverviewConfig.buttonOffset.y)
+	scrollFrame.nextButton:SetPoint("TOPRIGHT", page, "BOTTOMRIGHT", -OverviewConfig.buttonOffset.x, OverviewConfig.buttonOffset.y)
 
 	scrollFrame.prevButton = AWL.Controls:CreateButton({
 		parent = scrollFrame,
@@ -762,10 +790,10 @@ local function CreateOverviewPage(tabs, background, tabIndex)
 		end
 	})
 
-	scrollFrame.prevButton:SetPoint("TOPLEFT", background, "BOTTOMLEFT", OverviewConfig.buttonOffset.x, OverviewConfig.buttonOffset.y)
+	scrollFrame.prevButton:SetPoint("TOPLEFT", page, "BOTTOMLEFT", OverviewConfig.buttonOffset.x, OverviewConfig.buttonOffset.y)
 
 	if tabIndex ~= TabIndex.token then
-		CreateCurrencyDropdown(scrollFrame, background, tabIndex)
+		CreateCurrencyDropdown(scrollFrame, page, tabIndex)
 	else
 		local dropdown = AWL.Controls:CreateDropdown({
 			parent = scrollFrame,
@@ -773,14 +801,14 @@ local function CreateOverviewPage(tabs, background, tabIndex)
 			options = {}
 		})
 		dropdown:SetHeight(OverviewConfig.dropdown.height)
-		dropdown:SetPoint("BOTTOMLEFT", background, "TOPLEFT", OverviewConfig.dropdown.offset, OverviewConfig.dropdown.offset)
+		dropdown:SetPoint("BOTTOMLEFT", page, "TOPLEFT", OverviewConfig.dropdown.offset.x, OverviewConfig.dropdown.offset.y)
 		dropdown:SetDefaultText(L["wow-token.region"] .. ": " .. WowToken:GetRegionName())
 		dropdown:SetEnabled(false)
 		scrollFrame.regionDropdown = dropdown
 	end
 
 	if tabIndex == TabIndex.character then
-		local characterDropdown = CreateCharacterDropdown(scrollFrame, background)
+		local characterDropdown = CreateCharacterDropdown(scrollFrame, page)
 		scrollFrame.characterDropdown = characterDropdown
 	end
 
@@ -797,15 +825,10 @@ local function InitializeFrames()
 	OverviewFrame.portrait:SetPoint("TOPLEFT", OverviewConfig.portrait.x, OverviewConfig.portrait.y)
 	OverviewFrame.portrait:SetTexture(Addon:GetMediaPath("icon-round.tga"))
 
-	local insetConfig = AWL.Utils:CopyTable(OverviewConfig.inset)
-	insetConfig.parent = OverviewFrame
-	local background = AWL.Frames:CreateInset(insetConfig)
-	background:SetPoint("BOTTOM", OverviewFrame, "BOTTOM", 0, OverviewConfig.inset.bottom)
-	OverviewFrame.historyBackground = background
 	local tabs = AWL.Frames:CreateTabGroup(OverviewFrame)
 
 	for tabIndex = TabIndex.character, lastTabIndex do
-		CreateOverviewPage(tabs, background, tabIndex)
+		CreateOverviewPage(tabs, tabIndex)
 	end
 
 	CreateMoreMenu(tabs)
@@ -844,7 +867,7 @@ function Overview:RefreshToken(force)
 	if not OverviewFrame or not WowToken:IsSupported() then return end
 
 	if not OverviewScrollFrames[TabIndex.token] then
-		CreateOverviewPage(OverviewFrame.tabGroup, OverviewFrame.historyBackground, TabIndex.token)
+		CreateOverviewPage(OverviewFrame.tabGroup, TabIndex.token)
 	end
 
 	if force or self:IsShown() then
