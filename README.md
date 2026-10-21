@@ -27,21 +27,21 @@ Individual features and display options can be configured in the addon settings.
 
 ### Gold and Currency Overview
 
-* View gold and currency balances by day and month*.
+* View gold and currency balances by day and month.*
 * Save and view balances individually for each character.
-* View character and warband currencies separately**.
+* View character and warband currencies separately.**
 * View the sum of all currencies across all characters.
 * Hide days without balance changes.
-* <sup>✨ NEW</sup> Track daily WoW Token prices for your region in Retail.
+* <sup>✨ NEW</sup> Track daily WoW Token prices for your region.**
 
 ### Chart
 
-* <sup>✨ NEW</sup> View a line chart for a character, the account, the warband**, or WoW Token prices (Retail).
+* <sup>✨ NEW</sup> View a line chart for a character, the account, the warband**, or WoW Token prices**.
 * <sup>✨ NEW</sup> Choose preset periods or a custom date range.
 
 *\* In Classic only gold is tracked.*
 
-*\*\* Warband currency tracking is supported only in Retail.*
+*\*\* This feature is only available in Retail.*
 
 ## Supported Languages & Flavors
 

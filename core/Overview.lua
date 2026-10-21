@@ -661,7 +661,7 @@ local function CreateCharacterDropdown(scrollFrame, background)
 	return characterDropdown
 end
 
-local function PopulateSettingsMenu(_, root)
+local function PopulateTableMenu(_, root)
 	root:CreateCheckbox(L["currency-overview.menu.hide-unchanged-entries"], function()
 		return AUR.Settings.currencyOverview["table-overview"]["hide-unchanged-entries"]
 	end, function()
@@ -745,7 +745,7 @@ local function CreateOverviewPage(tabs, tabIndex)
 		backgroundStyle = OverviewConfig.inset.backgroundStyle,
 		backgroundAlpha = OverviewConfig.inset.backgroundAlpha,
 		columns = columns,
-		settingsMenu = PopulateSettingsMenu
+		tableMenu = PopulateTableMenu
 	})
 	scrollFrame:SetAllPoints(page)
 	scrollFrame:SetScrollStep(OverviewConfig.scrollStep)

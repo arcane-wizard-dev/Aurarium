@@ -1,5 +1,5 @@
 **v2.38 (2026-10-21)**
-- Added: Settings menu in the overview to hide unchanged entries
+- Added: Table menu in the overview to hide unchanged entries
 - Changed: Improved chart rendering and tooltips
 - Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility
 
