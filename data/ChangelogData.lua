@@ -11,7 +11,7 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
-			"Added: Settings menu in the overview to hide unchanged entries",
+			"Added: Table menu in the overview to hide unchanged entries",
 			"Changed: Improved chart rendering and tooltips",
 			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility"
 		}
