@@ -11,6 +11,15 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
+			"Added: Settings menu in the overview to hide unchanged entries",
+			"Changed: Improved chart rendering and tooltips",
+			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility"
+		}
+	},
+	{
+		version = "v2.37",
+		date = "2026-10-16",
+		entries = {
 			"Added: Daily WoW Token price history in the overview and chart [retail]",
 			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility",
 			"Minor code adjustments"
@@ -104,15 +113,6 @@ AUR.CHANGELOG = {
 		entries = {
 			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility",
 			"Minor code adjustments"
-		}
-	},
-	{
-		version = "v2.28",
-		date = "2026-09-18",
-		entries = {
-			"Added: Support for 'Forever'",
-			"Changed: Character profiles and data are initialized centrally using GUIDs; existing gold and currency histories are migrated at login",
-			"Changed: Addon initialization stops if the player identity is unavailable"
 		}
 	}
 }
