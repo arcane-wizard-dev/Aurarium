@@ -27,16 +27,16 @@ Individual features and display options can be configured in the addon settings.
 
 ### Gold and Currency Overview
 
-* View gold and currency balances by day and month.*
+* View gold and currency balances by day and month.\*
 * Save and view balances individually for each character.
-* View character and warband currencies separately.**
+* View character and warband currencies separately.\*\*
 * View the sum of all currencies across all characters.
 * Hide days without balance changes.
-* <sup>✨ NEW</sup> Track daily WoW Token prices for your region.**
+* <sup>✨ NEW</sup> Track daily WoW Token prices for your region.\*\*
 
 ### Chart
 
-* <sup>✨ NEW</sup> View a line chart for a character, the account, the warband**, or WoW Token prices**.
+* <sup>✨ NEW</sup> View a line chart for a character, the account, the warband\*\*, or WoW Token prices\*\*.
 * <sup>✨ NEW</sup> Choose preset periods or a custom date range.
 
 *\* In Classic only gold is tracked.*
@@ -57,7 +57,7 @@ To manage the addon, use the following commands in your chat and press enter:
 * Type `/aur` or `/aurarium` to access the addon options menu.
 * Type `/aur changelog` or `/aurarium changelog` to open the changelog.
 * Type `/aur overview` or `/aurarium overview` to manually display the Gold and Currency Overview.
-* Type `/aur chart` or `/aurarium chart` to open the balance chart, or choose **More > Chart** at the top right of the overview.
+* Type `/aur chart` or `/aurarium chart` to manually display the Chart.
 
 ## Bugs & Feedback
 
