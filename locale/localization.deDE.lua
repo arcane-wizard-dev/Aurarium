@@ -1,5 +1,7 @@
 local _, AUR = ...
 
+if AUR.State and AUR.State.libraryIncompatible then return end
+
 if GetLocale() ~= "deDE" then return end
 
 local L = AUR.Localization

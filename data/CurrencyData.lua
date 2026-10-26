@@ -1,5 +1,7 @@
 local _, AUR = ...
 
+if AUR.State and AUR.State.libraryIncompatible then return end
+
 AUR.CURRENCY_CATEGORY_ORDER = {
 	"misc",         -- 1
 	"profession",	-- 280

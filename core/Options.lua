@@ -1,5 +1,7 @@
 local addonName, AUR = ...
 
+if AUR.State and AUR.State.libraryIncompatible then return end
+
 -- Library
 local AWL = ArcaneWizardLibrary
 local Addon = AWL:GetAddon(addonName)
@@ -106,7 +108,6 @@ function Options:Initialize()
 		variableName	= "date-format",
 		name			= L["options.general.date-format.name"],
 		tooltip			= L["options.general.date-format.tooltip"],
-		isNew			= true,
 		default			= AUR.OPTIONS_DEFAULTS.general["date-format"],
 		options			= dateFormatOptions
 	})

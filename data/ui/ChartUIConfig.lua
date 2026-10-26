@@ -1,5 +1,7 @@
 local _, AUR = ...
 
+if AUR.State and AUR.State.libraryIncompatible then return end
+
 local ArtworkConfig = {
 	width = 980,
 	height = 640,

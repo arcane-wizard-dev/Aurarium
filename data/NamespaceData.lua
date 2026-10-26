@@ -1,5 +1,7 @@
 local addonName, AUR = ...
 
+if AUR.State and AUR.State.libraryIncompatible then return end
+
 AUR.Settings = AUR.Settings or {}
 AUR.Data = AUR.Data or {}
 AUR.State = AUR.State or {}

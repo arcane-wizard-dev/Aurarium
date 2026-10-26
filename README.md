@@ -2,19 +2,19 @@
 
 [![GitHub Release](https://img.shields.io/github/v/release/arcane-wizard-dev/Aurarium?color=blue&logo=github&cacheSeconds=600)](https://github.com/arcane-wizard-dev/Aurarium/releases) [![GitHub Release Date](https://img.shields.io/github/release-date/arcane-wizard-dev/Aurarium?color=blue&logo=github&cacheSeconds=600)](https://github.com/arcane-wizard-dev/Aurarium/releases)
 
-_Track your gold & currencies. Know your worth._
+_Your gold and currencies, tracked day by day._
 
-Aurarium is a World of Warcraft addon that provides a detailed insight into wealth progression by tracking gold and currencies across all characters and displaying them over time. It helps you keep an accurate eye on your daily and monthly earnings.
+Aurarium is a World of Warcraft addon that records your characters’ gold and supported currency balances as you play and shows how they change over time. In Retail, it also tracks Warband currencies and daily WoW Token prices for your game region.
 
 > ⚠️ **Important!** This addon requires **Arcane Wizard: Library**. See Installation & Quick Start for installation details.
 
 ## Key Features
 
-**Gold Display** - Shows your current gold and today's change in a compact movable display, with selectable coin detail and quick access to the full overview.
+**Gold Display** - See your current gold and today’s change in a compact, movable display, with selectable coin denominations and quick access to the overview.
 
-**Gold and Currency Overview** - Displays a comprehensive overview of your gold and currencies across your entire account.
+**Gold and Currency Overview** - View recorded gold and supported currency balances by character or across your account, with a separate view for Warband currencies in Retail.
 
-**Chart** - Visualizes your gold and currency history to help you follow balance trends over time.
+**Chart** - Explore your recorded gold and currency history and, in Retail, WoW Token prices using preset periods or a custom date range.
 
 ## Features
 
@@ -30,14 +30,14 @@ Individual features and display options can be configured in the addon settings.
 * View gold and currency balances by day and month.\*
 * Save and view balances individually for each character.
 * View character and warband currencies separately.\*\*
-* View the sum of all currencies across all characters.
+* View totals for the selected currency across your recorded characters.
 * Hide days without balance changes.
-* <sup>✨ NEW</sup> Track daily WoW Token prices for your region.\*\*
+* Track daily WoW Token prices for your region.\*\*
 
 ### Chart
 
-* <sup>✨ NEW</sup> View a line chart for a character, the account, the warband\*\*, or WoW Token prices\*\*.
-* <sup>✨ NEW</sup> Choose preset periods or a custom date range.
+* View a line chart for a character, the account, the warband\*\*, or WoW Token prices\*\*.
+* Choose preset periods or a custom date range.
 
 *\* In Classic only gold is tracked.*
 

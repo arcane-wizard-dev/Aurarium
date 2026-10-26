@@ -8,6 +8,7 @@
 ## DefaultState: enabled
 
 ## Dependencies: ArcaneWizardLibrary
+## X-Library-Revision: 2
 
 ## Notes: This addon provides a detailed insight into wealth progression by tracking gold and currencies across all characters and displaying them over time.
 ## Notes-deDE: Dieses Addon bietet einen detaillierten Einblick in die Vermögensentwicklung, indem es Gold und Währungen über alle Charaktere hinweg verfolgt und im zeitlichen Verlauf darstellt.
@@ -26,5 +27,6 @@
 ## X-Curseforge: https://www.curseforge.com/wow/addons/aurarium
 ## X-Wago: https://addons.wago.io/addons/aurarium
 
+LibraryCompatibility.lua
 Aurarium.xml
 Aurarium.lua

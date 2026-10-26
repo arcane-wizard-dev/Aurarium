@@ -1,5 +1,7 @@
 local addonName, AUR = ...
 
+if AUR.State and AUR.State.libraryIncompatible then return end
+
 -- Library
 local AWL = ArcaneWizardLibrary
 local Addon = AWL:GetAddon(addonName)

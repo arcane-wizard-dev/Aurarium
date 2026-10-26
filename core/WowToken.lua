@@ -1,5 +1,7 @@
 local _, AUR = ...
 
+if AUR.State and AUR.State.libraryIncompatible then return end
+
 local AWL = ArcaneWizardLibrary
 local WowToken = AUR.Modules.WowToken
 local Utils = AUR.Modules.Utils

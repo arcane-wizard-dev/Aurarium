@@ -1,5 +1,7 @@
 local _, AUR = ...
 
+if AUR.State and AUR.State.libraryIncompatible then return end
+
 AUR.OPTIONS_DEFAULTS = {
 	["general"] = {
 		["minimap-button"] = {

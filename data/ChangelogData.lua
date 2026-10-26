@@ -1,5 +1,7 @@
 local addonName, AUR = ...
 
+if AUR.State and AUR.State.libraryIncompatible then return end
+
 local version = C_AddOns.GetAddOnMetadata(addonName, "Version") or ""
 local buildDate = C_AddOns.GetAddOnMetadata(addonName, "X-BuildDate") or ""
 
@@ -7,6 +9,7 @@ AUR.CHANGELOG = {
 	notices = {
 		"Migration of older character data will be removed at the end of 2026. Log in once with each character using an up-to-date version of Aurarium before then to preserve their gold and currency history."
 	},
+	-- BEGIN GENERATED CHANGELOG
 	{
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
@@ -115,4 +118,5 @@ AUR.CHANGELOG = {
 			"Minor code adjustments"
 		}
 	}
+	-- END GENERATED CHANGELOG
 }
