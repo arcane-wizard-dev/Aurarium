@@ -14,6 +14,17 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
+			"Added: Startup check for the minimum required Library revision",
+			"Updated: deDE, enUS, ruRU localizations",
+			"Updated: Addon description",
+			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility",
+			"Minor code adjustments"
+		}
+	},
+	{
+		version = "v2.38",
+		date = "2026-10-21",
+		entries = {
 			"Added: Table menu in the overview to hide unchanged entries",
 			"Changed: Improved chart rendering and tooltips",
 			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility"
@@ -108,14 +119,6 @@ AUR.CHANGELOG = {
 			"Removed: Currency 'Infinite Knowledge' [retail]",
 			"Removed: Currency 'Luminous Dust' [retail]",
 			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility"
-		}
-	},
-	{
-		version = "v2.29",
-		date = "2026-09-22",
-		entries = {
-			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility",
-			"Minor code adjustments"
 		}
 	}
 	-- END GENERATED CHANGELOG
