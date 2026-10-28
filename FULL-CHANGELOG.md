@@ -1,3 +1,10 @@
+**v2.39 (2026-10-28)**
+- Added: Startup check for the minimum required Library revision
+- Updated: deDE, enUS, ruRU localizations
+- Updated: Addon description
+- Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility
+- Minor code adjustments
+
 **v2.38 (2026-10-21)**
 - Added: Table menu in the overview to hide unchanged entries
 - Changed: Improved chart rendering and tooltips
