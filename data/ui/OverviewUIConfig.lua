@@ -18,6 +18,11 @@ AUR.UIConfig.Overview = {
 	monthHeading = {x = 5, y = 90},
 	history = {
 		rowHeight = 20,
+		changeColors = {
+			positive = {0, 1, 0},
+			negative = {1, 0.2, 0.2},
+			unchanged = {1, 1, 1}
+		},
 		highlightTexture = ArcaneWizardLibrary.Textures.tableActiveBackground,
 		hoverAlpha = 0.3,
 		columns = {
@@ -55,6 +60,7 @@ AUR.UIConfig.Overview = {
 	},
 	menu = {
 		factionIconSize = 18,
+		factionIcons = {Alliance = 136758, Horde = 136759},
 		characterWidthPadding = 20,
 		rowHeightPadding = 4
 	},

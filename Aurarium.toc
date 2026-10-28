@@ -8,11 +8,11 @@
 ## DefaultState: enabled
 
 ## Dependencies: ArcaneWizardLibrary
-## X-Library-Revision: 2
+## X-Library-Revision: 1
 
-## Notes: This addon provides a detailed insight into wealth progression by tracking gold and currencies across all characters and displaying them over time.
-## Notes-deDE: Dieses Addon bietet einen detaillierten Einblick in die Vermögensentwicklung, indem es Gold und Währungen über alle Charaktere hinweg verfolgt und im zeitlichen Verlauf darstellt.
-## Notes-ruRU: Аддон, который предоставляет подробную информацию о прогрессе состояния, отслеживая золото и валюту всех персонажей и отображая их с течением времени.
+## Notes: This addon keeps track of the wealth of all characters. It brings the recorded balances together and makes their development over time easier to follow.
+## Notes-deDE: Dieses Addon behält das Vermögen aller Charaktere im Blick. Es führt die aufgezeichneten Bestände zusammen und macht ihre Entwicklung über die Zeit nachvollziehbar.
+## Notes-ruRU: Этот аддон помогает следить за состоянием всех персонажей. Он объединяет записанные балансы и наглядно показывает, как они меняются со временем.
 
 ## LoadSavedVariablesFirst: 1
 ## SavedVariables: Aurarium_Options_v5, Aurarium_DataCharacter, Aurarium_DataDates, Aurarium_DataBalance, Aurarium_DataCharacter_v2, Aurarium_DataBalance_v2, Aurarium_DataTokenPrices

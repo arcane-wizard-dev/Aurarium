@@ -20,7 +20,7 @@ local OverviewConfig = AUR.UIConfig.Overview
 local TabIndex = OverviewConfig.tabIndices
 
 -- Variables
-local selectedCharacterKey
+local selectedCharacterKey = nil
 local currentMonthOffset = {}
 local selectedCurrency = {}
 selectedCurrency[TabIndex.character] = "gold"
@@ -32,7 +32,7 @@ selectedCurrency[TabIndex.token] = "token"
 --- Frames ---
 --------------
 
-local OverviewFrame
+local OverviewFrame = nil
 local OverviewScrollFrames = {}
 
 -----------------------
@@ -145,7 +145,7 @@ local function BuildGenericHistory(rawData, currencyKey)
 		lastValue = value
 	end
 
-	table.sort(entries, function(a,b) return a.date < b.date end)
+	table.sort(entries, function(a, b) return a.date < b.date end)
 
 	return entries
 end
@@ -247,7 +247,7 @@ local function BuildAccountHistory(currencyKey)
 		end
 	end
 
-	table.sort(entries, function(a,b) return a.date < b.date end)
+	table.sort(entries, function(a, b) return a.date < b.date end)
 
 	return entries
 end
@@ -256,12 +256,12 @@ local function BuildMonthHistory(history, monthPrefix)
 	local month = {}
 
 	for _, e in ipairs(history) do
-		if e.date:sub(1,7) == monthPrefix then
+		if e.date:sub(1, 7) == monthPrefix then
 			table.insert(month, e)
 		end
 	end
 
-	table.sort(month, function(a,b) return a.date > b.date end)
+	table.sort(month, function(a, b) return a.date > b.date end)
 
 	return month
 end
@@ -423,15 +423,15 @@ local function UpdateOverview(config)
 			rowDifference:SetText(FormatCurrencyDiff(diff, selectedCurrency))
 
 			if diff > 0 then
-				rowDifference:SetTextColor(0, 1, 0)
+				rowDifference:SetTextColor(unpack(OverviewConfig.history.changeColors.positive))
 			elseif diff < 0 then
-				rowDifference:SetTextColor(1, 0.2, 0.2)
+				rowDifference:SetTextColor(unpack(OverviewConfig.history.changeColors.negative))
 			else
-				rowDifference:SetTextColor(1, 1, 1)
+				rowDifference:SetTextColor(unpack(OverviewConfig.history.changeColors.unchanged))
 			end
 		else
 			rowDifference:SetText("-")
-			rowDifference:SetTextColor(1, 1, 1)
+			rowDifference:SetTextColor(unpack(OverviewConfig.history.changeColors.unchanged))
 		end
 
 		table.insert(scrollFrame.rows, {background, rowDate, rowAmount, rowDifference})
@@ -523,7 +523,7 @@ local function HandleCharacterDeleteConfirmed(characterKey)
 		UpdateWarbandOverview()
 	end
 
-	Utils:PrintMessage(string.format(L["chat.delete-character.deleted"], entry.name, entry.realm))
+	Utils:PrintMessage(L["chat.delete-character.deleted"]:format(entry.name, entry.realm))
 end
 
 local function ShowCharacterDeleteConfirm(characterKey)
@@ -538,7 +538,7 @@ local function ShowCharacterDeleteConfirm(characterKey)
 		return
 	end
 
-	local confirmText = string.format(L["currency-overview.delete-character.confirm"], entry.name, entry.realm)
+	local confirmText = L["currency-overview.delete-character.confirm"]:format(entry.name, entry.realm)
 
 	AWL.Dialogs:ShowConfirmDialog(confirmText, function()
 		HandleCharacterDeleteConfirmed(characterKey)
@@ -595,8 +595,8 @@ local function CreateCharacterDropdown(scrollFrame, background)
 			UpdateCharacterOverview()
 		end
 
-		local realmButton
-		local lastRealm
+		local realmButton = nil
+		local lastRealm = nil
 
 		for _, entry in ipairs(Utils:GetSortedCharacters()) do
 			if entry.realm ~= lastRealm then
@@ -621,11 +621,7 @@ local function CreateCharacterDropdown(scrollFrame, background)
 						classColor = RAID_CLASS_COLORS[class]
 					end
 
-					if faction == "Alliance" then
-						factionFileID = 136758
-					elseif faction == "Horde" then
-						factionFileID = 136759
-					end
+					factionFileID = OverviewConfig.menu.factionIcons[faction] or 0
 				end
 
 				local rightTexture = button:AttachTexture()
@@ -652,7 +648,7 @@ local function CreateCharacterDropdown(scrollFrame, background)
 		if entry then
 			root:CreateDivider()
 
-			local deleteAction = root:CreateButton(string.format(L["currency-overview.menu.delete-character"], entry.name), function()
+			local deleteAction = root:CreateButton(L["currency-overview.menu.delete-character"]:format(entry.name), function()
 				ShowCharacterDeleteConfirm(entry.key)
 			end)
 

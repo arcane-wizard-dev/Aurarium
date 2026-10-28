@@ -135,7 +135,7 @@ function Utils:InitializeCurrencies()
 
 	if not C_CurrencyInfo or not C_CurrencyInfo.GetCurrencyInfo then return end
 
-	local gameType
+	local gameType = nil
 
 	if AWL.GAME_TYPE_FOREVER then
 		gameType = "FOREVER"

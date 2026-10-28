@@ -119,7 +119,7 @@ local function AddOptions(root, options, context)
 			root:CreateDivider()
 		elseif option.children then
 			local category = root:CreateButton(option.label)
-			local previousPatch
+			local previousPatch = nil
 
 			for _, child in ipairs(option.children) do
 				local entry = child.entry
@@ -170,7 +170,7 @@ function CurrencyMenu:GetOptions(scope)
 				end
 
 				children = {}
-				options[#options + 1] = {label = L["currency-overview.category." .. category], category = category, children = children}
+				options[#options + 1] = {label = AUR.CURRENCY_EXPANSION_NAMES[category] or L["currency-overview.category." .. category], category = category, children = children}
 			end
 
 			for _, entry in ipairs(entries) do

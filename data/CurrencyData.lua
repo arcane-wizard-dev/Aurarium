@@ -26,6 +26,25 @@ AUR.CURRENCY_CATEGORY_ORDER = {
 	"mid"			-- 264, 283
 }
 
+local function GetLocalizedExpansionName(expansionID, fallback)
+	return _G["EXPANSION_NAME" .. expansionID] or fallback
+end
+
+AUR.CURRENCY_EXPANSION_NAMES = {
+	classic = GetLocalizedExpansionName(0, "Classic"),
+	tbc     = GetLocalizedExpansionName(1, "The Burning Crusade"),
+	wotlk   = GetLocalizedExpansionName(2, "Wrath of the Lich King"),
+	cata    = GetLocalizedExpansionName(3, "Cataclysm"),
+	mop     = GetLocalizedExpansionName(4, "Mists of Pandaria"),
+	wod     = GetLocalizedExpansionName(5, "Warlords of Draenor"),
+	legion  = GetLocalizedExpansionName(6, "Legion"),
+	bfa     = GetLocalizedExpansionName(7, "Battle for Azeroth"),
+	sl      = GetLocalizedExpansionName(8, "Shadowlands"),
+	df      = GetLocalizedExpansionName(9, "Dragonflight"),
+	tww     = GetLocalizedExpansionName(10, "The War Within"),
+	mid     = GetLocalizedExpansionName(11, "Midnight")
+}
+
 AUR.CURRENCY_PATCH_CATEGORIES = {
 	legion = true,
 	bfa = true,

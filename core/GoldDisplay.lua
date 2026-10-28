@@ -15,9 +15,9 @@ local Utils = AUR.Modules.Utils
 local GoldDisplayConfig = AUR.UIConfig.GoldDisplay
 
 -- Variables
-local GoldDisplayFrame
-local CurrentGoldText
-local DailyChangeText
+local GoldDisplayFrame = nil
+local CurrentGoldText = nil
+local DailyChangeText = nil
 
 -----------------------
 --- Local Functions ---
@@ -78,8 +78,8 @@ local function GetPreviousGold(characterGUID, today)
 		return nil
 	end
 
-	local lastDate
-	local previousGold
+	local lastDate = nil
+	local previousGold = nil
 
 	for dateKey, dayData in pairs(characterHistory) do
 		if dateKey < today and dayData["gold"] ~= nil and (not lastDate or dateKey > lastDate) then

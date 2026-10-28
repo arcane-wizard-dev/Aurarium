@@ -2,19 +2,19 @@
 
 [![GitHub Release](https://img.shields.io/github/v/release/arcane-wizard-dev/Aurarium?color=blue&logo=github&cacheSeconds=600)](https://github.com/arcane-wizard-dev/Aurarium/releases) [![GitHub Release Date](https://img.shields.io/github/release-date/arcane-wizard-dev/Aurarium?color=blue&logo=github&cacheSeconds=600)](https://github.com/arcane-wizard-dev/Aurarium/releases)
 
-_Your gold and currencies, tracked day by day._
+_Gold and currencies, always in view._
 
-Aurarium is a World of Warcraft addon that records your characters’ gold and supported currency balances as you play and shows how they change over time. In Retail, it also tracks Warband currencies and daily WoW Token prices for your game region.
+Aurarium is a World of Warcraft addon that keeps track of the wealth of all characters. It brings the recorded balances together and makes their development over time easier to follow.
 
 > ⚠️ **Important!** This addon requires **Arcane Wizard: Library**. See Installation & Quick Start for installation details.
 
 ## Key Features
 
-**Gold Display** - See your current gold and today’s change in a compact, movable display, with selectable coin denominations and quick access to the overview.
+**Gold Display** - Shows the current gold balance in a customizable display that fits any play style.
 
-**Gold and Currency Overview** - View recorded gold and supported currency balances by character or across your account, with a separate view for Warband currencies in Retail.
+**Gold and Currency Overview** - Presents the recorded balances in an organized overview, with different views of the characters' wealth.
 
-**Chart** - Explore your recorded gold and currency history and, in Retail, WoW Token prices using preset periods or a custom date range.
+**Chart** - Charts changes in the recorded wealth and shows its history over different periods.
 
 ## Features
 
@@ -22,22 +22,22 @@ Individual features and display options can be configured in the addon settings.
 
 ### Gold Display
 
-* Show or hide the compact gold display independently of balance tracking.
-* Choose which coins are shown in the gold display.
+* Shows or hides the compact gold display independently of balance tracking.
+* The coins shown in the gold display can be selected.
 
 ### Gold and Currency Overview
 
-* View gold and currency balances by day and month.\*
-* Save and view balances individually for each character.
-* View character and warband currencies separately.\*\*
-* View totals for the selected currency across your recorded characters.
-* Hide days without balance changes.
-* Track daily WoW Token prices for your region.\*\*
+* Shows gold and currency balances by day and month.\*
+* Saves and shows balances individually for each character.
+* Shows character and Warband currencies separately.\*\*
+* Shows totals for the selected currency across all recorded characters.
+* Can hide days without balance changes.
+* Tracks daily WoW Token prices for the current region.\*\*
 
 ### Chart
 
-* View a line chart for a character, the account, the warband\*\*, or WoW Token prices\*\*.
-* Choose preset periods or a custom date range.
+* Shows a line chart for a character, the account, the Warband\*\*, or WoW Token prices\*\*.
+* Offers preset periods or a custom date range.
 
 *\* In Classic only gold is tracked.*
 
@@ -50,9 +50,9 @@ Individual features and display options can be configured in the addon settings.
 
 ## Installation & Quick Start
 
-> **Required Dependency:** This addon requires the **Arcane Wizard: Library**. If you install Aurarium via the CurseForge client, the library will be downloaded automatically. If you install the addon manually, via Wago, or through another third-party updater that does not resolve dependencies, you must download and enable the library separately.
+> **Required Dependency:** This addon requires **Arcane Wizard: Library**. If you install Aurarium via the CurseForge client, the library will be downloaded automatically. If you install the addon manually, via Wago, or through another third-party updater that does not resolve dependencies, you must download and enable the library separately.
 
-To manage the addon, use the following commands in your chat and press enter:
+To manage the addon, type the following commands in chat and press Enter:
 
 * Type `/aur` or `/aurarium` to access the addon options menu.
 * Type `/aur changelog` or `/aurarium changelog` to open the changelog.
@@ -61,7 +61,7 @@ To manage the addon, use the following commands in your chat and press enter:
 
 ## Bugs & Feedback
 
-If you find a bug or have a suggestion, please use the GitHub Issues or the CurseForge comments.
+If you find a bug or have a suggestion, please open a GitHub issue or leave a comment on CurseForge.
 
 ## Translation Support
 

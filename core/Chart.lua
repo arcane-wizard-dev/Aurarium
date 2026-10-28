@@ -17,20 +17,36 @@ local OverviewConfig = AUR.UIConfig.Overview
 ---@field inset ArcaneWizardLibraryInsetFrame
 ---@field footerCloseButton Button
 ---@field artwork Texture
-local window
+local ChartFrame = nil
 
-local plot, scopeGroup, characterDropdown, currencyDropdown, periodDropdown
-local characterLabel
-local firstInput, lastInput, applyButton, statusText, captionText, customPanel, customButton
-local summaryValues = {}
-local selectedOwner, selectedCurrency = nil, "gold"
-local selectedCurrencyIcon
-local lastCharacterKey
+local PlotFrame = nil
+local ScopeGroupFrame = nil
+local CharacterDropdownFrame = nil
+local CurrencyDropdownFrame = nil
+local PeriodDropdownFrame = nil
+local CharacterLabel = nil
+local FirstInputFrame = nil
+local LastInputFrame = nil
+local ApplyButtonFrame = nil
+local StatusText = nil
+local CaptionText = nil
+local CustomPanelFrame = nil
+local CustomButtonFrame = nil
+local SummaryTexts = {}
+local selectedOwner = nil
+local selectedCurrency = "gold"
+local selectedCurrencyIcon = nil
+local lastCharacterKey = nil
 local selectedPeriod = ChartData.defaultPeriod
-local history, points, rangeFirst, rangeLast, minimum, maximum
+local history = nil
+local points = nil
+local rangeFirst = nil
+local rangeLast = nil
+local minimum = nil
+local maximum = nil
 local refreshPending = false
-local lines, axisLabels, gridLines = {}, {}, {}
-local lineJoins = {}
+local ChartLines, AxisLabels, GridTextures = {}, {}, {}
+local LineJoinTextures = {}
 
 local function DateParts(value)
 	local year, month, day = value:match("^(%d%d%d%d)%-(%d%d)%-(%d%d)$")
@@ -230,7 +246,8 @@ function Chart:GetSeries(history, first, last)
 	end
 
 	local day = first < history[1].date and history[1].date or first
-	local index, value = 1, nil
+	local index = 1
+	local value = nil
 
 	while day <= last do
 		while history[index] and history[index].date <= day do
@@ -384,7 +401,8 @@ end
 
 local function CharacterOptions()
 	local options = {}
-	local previousRealm, children
+	local previousRealm = nil
+	local children = nil
 
 	for _, entry in ipairs(Utils:GetSortedCharacters()) do
 		if entry.realm ~= previousRealm then
@@ -422,7 +440,7 @@ local function Label(parent, text)
 end
 
 local function CreateLineTexture(path)
-	local texture = plot:CreateTexture(nil, "ARTWORK")
+	local texture = PlotFrame:CreateTexture(nil, "ARTWORK")
 	texture:SetTexture(Addon:GetMediaPath(path), "CLAMP", "CLAMP", "LINEAR")
 	texture:SetVertexColor(unpack(ChartConfig.lineColor))
 	texture:SetBlendMode("BLEND")
@@ -441,15 +459,15 @@ local function DrawLine(config)
 	local radius = ChartConfig.lineThickness * config.pixel
 	local halfLength, halfX, halfY = length / 2, dx / 2, dy / 2
 	local normalX, normalY = -dy / length * radius, dx / length * radius
-	local line = lines[config.index]
+	local line = ChartLines[config.index]
 
 	if not line then
 		line = CreateLineTexture(ChartConfig.lineTexture)
-		lines[config.index] = line
+		ChartLines[config.index] = line
 	end
 
 	line:ClearAllPoints()
-	line:SetPoint("CENTER", plot, "BOTTOMLEFT", config.x1 + halfX, config.y1 + halfY)
+	line:SetPoint("CENTER", PlotFrame, "BOTTOMLEFT", config.x1 + halfX, config.y1 + halfY)
 	line:SetSize(length, radius * 2)
 	line:SetVertexOffset(1, halfLength - halfX + normalX, -halfY + normalY - radius)
 	line:SetVertexOffset(2, halfLength - halfX - normalX, -halfY - normalY + radius)
@@ -459,36 +477,36 @@ local function DrawLine(config)
 end
 
 local function DrawLineJoin(config)
-	local join = lineJoins[config.index]
+	local join = LineJoinTextures[config.index]
 
 	if not join then
 		join = CreateLineTexture(ChartConfig.lineJoinTexture)
-		lineJoins[config.index] = join
+		LineJoinTextures[config.index] = join
 	end
 
 	local size = ChartConfig.lineThickness * config.pixel * 2
 	join:ClearAllPoints()
-	join:SetPoint("CENTER", plot, "BOTTOMLEFT", config.x, config.y)
+	join:SetPoint("CENTER", PlotFrame, "BOTTOMLEFT", config.x, config.y)
 	join:SetSize(size, size)
 	join:Show()
 end
 
 local function DrawGridLine(config)
-	local texture = gridLines[config.index]
+	local texture = GridTextures[config.index]
 
 	if not texture then
-		texture = plot:CreateTexture(nil, "BACKGROUND")
-		gridLines[config.index] = texture
+		texture = PlotFrame:CreateTexture(nil, "BACKGROUND")
+		GridTextures[config.index] = texture
 	end
 
-	local pixel = PixelUtil.GetPixelToUIUnitFactor() / plot:GetEffectiveScale()
-	local left, bottom = plot:GetLeft(), plot:GetBottom()
+	local pixel = PixelUtil.GetPixelToUIUnitFactor() / PlotFrame:GetEffectiveScale()
+	local left, bottom = PlotFrame:GetLeft(), PlotFrame:GetBottom()
 	local x = math.floor((left + config.x) / pixel + 0.5) * pixel - left
 	local y = math.floor((bottom + config.y) / pixel + 0.5) * pixel - bottom
 	local right = math.floor((left + config.x + config.width) / pixel + 0.5) * pixel - left
 	local top = math.floor((bottom + config.y + config.height) / pixel + 0.5) * pixel - bottom
 	texture:ClearAllPoints()
-	texture:SetPoint("BOTTOMLEFT", plot, "BOTTOMLEFT", x, y)
+	texture:SetPoint("BOTTOMLEFT", PlotFrame, "BOTTOMLEFT", x, y)
 	texture:SetSize(math.max(pixel, right - x), math.max(pixel, top - y))
 	texture:SetColorTexture(unpack(config.color))
 	texture:SetDrawLayer("BACKGROUND", config.color == ChartConfig.grid.axisColor and 1 or 0)
@@ -499,18 +517,18 @@ end
 
 local function Coordinates(point)
 	local days = Chart:GetDayOffset(rangeFirst, rangeLast)
-	local x = days > 0 and Chart:GetDayOffset(rangeFirst, point.date) / days * plot:GetWidth() or plot:GetWidth() / 2
-	local y = (point.value - minimum) / (maximum - minimum) * plot:GetHeight()
+	local x = days > 0 and Chart:GetDayOffset(rangeFirst, point.date) / days * PlotFrame:GetWidth() or PlotFrame:GetWidth() / 2
+	local y = (point.value - minimum) / (maximum - minimum) * PlotFrame:GetHeight()
 
 	return x, y
 end
 
 local function ClearHover()
-	plot.cursor:Hide()
-	plot.hoverPoint:Hide()
-	plot.hoverIndex = nil
+	PlotFrame.cursor:Hide()
+	PlotFrame.hoverPoint:Hide()
+	PlotFrame.hoverIndex = nil
 
-	if GameTooltip:IsOwned(plot) then
+	if GameTooltip:IsOwned(PlotFrame) then
 		GameTooltip:Hide()
 	end
 end
@@ -521,9 +539,9 @@ local function UpdateHover()
 	end
 
 	local cursorX = GetCursorPosition()
-	local x = cursorX / plot:GetEffectiveScale() - plot:GetLeft()
+	local x = cursorX / PlotFrame:GetEffectiveScale() - PlotFrame:GetLeft()
 	local days = Chart:GetDayOffset(rangeFirst, rangeLast)
-	local offset = math.floor(math.max(0, math.min(1, x / plot:GetWidth())) * days + 0.5)
+	local offset = math.floor(math.max(0, math.min(1, x / PlotFrame:GetWidth())) * days + 0.5)
 	local index = offset - Chart:GetDayOffset(rangeFirst, points[1].date) + 1
 
 	if index < 1 or index > #points then
@@ -532,27 +550,27 @@ local function UpdateHover()
 		return
 	end
 
-	if plot.hoverIndex == index then
+	if PlotFrame.hoverIndex == index then
 		return
 	end
 
-	plot.hoverIndex = index
+	PlotFrame.hoverIndex = index
 
 	local point = points[index]
 	local px, py = Coordinates(point)
 
-	plot.cursor:ClearAllPoints()
-	plot.cursor:SetPoint("BOTTOMLEFT", plot, "BOTTOMLEFT", px, 0)
-	plot.cursor:SetSize(ChartConfig.gridThickness, plot:GetHeight())
-	plot.cursor:Show()
+	PlotFrame.cursor:ClearAllPoints()
+	PlotFrame.cursor:SetPoint("BOTTOMLEFT", PlotFrame, "BOTTOMLEFT", px, 0)
+	PlotFrame.cursor:SetSize(ChartConfig.gridThickness, PlotFrame:GetHeight())
+	PlotFrame.cursor:Show()
 
-	plot.hoverPoint:ClearAllPoints()
-	plot.hoverPoint:SetPoint("CENTER", plot, "BOTTOMLEFT", px, py)
-	plot.hoverPoint:Show()
+	PlotFrame.hoverPoint:ClearAllPoints()
+	PlotFrame.hoverPoint:SetPoint("CENTER", PlotFrame, "BOTTOMLEFT", px, py)
+	PlotFrame.hoverPoint:Show()
 
-	GameTooltip:SetOwner(plot, "ANCHOR_NONE")
+	GameTooltip:SetOwner(PlotFrame, "ANCHOR_NONE")
 	GameTooltip:ClearAllPoints()
-	GameTooltip:SetPoint("BOTTOMLEFT", plot.hoverPoint, "TOPRIGHT", ChartConfig.tooltipGap, ChartConfig.tooltipGap)
+	GameTooltip:SetPoint("BOTTOMLEFT", PlotFrame.hoverPoint, "TOPRIGHT", ChartConfig.tooltipGap, ChartConfig.tooltipGap)
 	GameTooltip:SetClampedToScreen(true)
 	GameTooltip:SetText(
 		Chart:FormatDate(point.date), ChartConfig.normalColor[1], ChartConfig.normalColor[2], ChartConfig.normalColor[3]
@@ -564,28 +582,28 @@ end
 local function DrawChart()
 	ClearHover()
 
-	for _, line in pairs(lines) do
+	for _, line in pairs(ChartLines) do
 		line:Hide()
 	end
 
-	for _, line in pairs(lineJoins) do
+	for _, line in pairs(LineJoinTextures) do
 		line:Hide()
 	end
 
-	for _, line in ipairs(gridLines) do
+	for _, line in ipairs(GridTextures) do
 		line:Hide()
 	end
 
-	for _, label in ipairs(axisLabels) do
+	for _, label in ipairs(AxisLabels) do
 		label:Hide()
 	end
 
-	plot.singlePoint:Hide()
-	plot.empty:SetText(L[Scope() == "token" and "wow-token.no-data" or "chart.no-data"])
-	plot.empty:SetShown(not points or #points == 0)
+	PlotFrame.singlePoint:Hide()
+	PlotFrame.empty:SetText(L[Scope() == "token" and "wow-token.no-data" or "chart.no-data"])
+	PlotFrame.empty:SetShown(not points or #points == 0)
 
 	if not points or #points == 0 then
-		for _, value in ipairs(summaryValues) do
+		for _, value in ipairs(SummaryTexts) do
 			value:SetText("-")
 			value:SetTextColor(unpack(ChartConfig.normalColor))
 		end
@@ -601,7 +619,7 @@ local function DrawChart()
 
 	minimum, maximum = GetReadableAxisBounds(minimum, maximum)
 
-	local width, height = plot:GetWidth(), plot:GetHeight()
+	local width, height = PlotFrame:GetWidth(), PlotFrame:GetHeight()
 	local gridIndex = 0
 
 	for i = 0, ChartConfig.gridSteps do
@@ -626,15 +644,15 @@ local function DrawChart()
 			color = ChartConfig.grid.axisColor
 		})
 
-		local label = axisLabels[i + 1]
+		local label = AxisLabels[i + 1]
 		label:ClearAllPoints()
-		label:SetPoint("RIGHT", plot, "BOTTOMLEFT", -ChartConfig.axisGap.x, y)
+		label:SetPoint("RIGHT", PlotFrame, "BOTTOMLEFT", -ChartConfig.axisGap.x, y)
 		label:SetText(FormatAxis(minimum + fraction * (maximum - minimum)))
 		label:Show()
 	end
 
 	local shortDates = rangeFirst:sub(1, 4) == rangeLast:sub(1, 4)
-	local sample = axisLabels[ChartConfig.gridSteps + 2]
+	local sample = AxisLabels[ChartConfig.gridSteps + 2]
 	sample:SetText(Chart:FormatDate(rangeFirst, shortDates))
 
 	local textWidth = sample:GetUnboundedStringWidth()
@@ -658,7 +676,7 @@ local function DrawChart()
 			color = isEdge and ChartConfig.grid.axisColor or ChartConfig.grid.verticalColor
 		})
 
-		local label = axisLabels[ChartConfig.gridSteps + 1 + i]
+		local label = AxisLabels[ChartConfig.gridSteps + 1 + i]
 		label:ClearAllPoints()
 
 		local anchor = "TOP"
@@ -671,7 +689,7 @@ local function DrawChart()
 			end
 		end
 
-		label:SetPoint(anchor, plot, "BOTTOMLEFT", x, -ChartConfig.axisGap.y)
+		label:SetPoint(anchor, PlotFrame, "BOTTOMLEFT", x, -ChartConfig.axisGap.y)
 		label:SetText(Chart:FormatDate(day, shortDates))
 		label:Show()
 	end
@@ -689,7 +707,7 @@ local function DrawChart()
 		end
 	end
 
-	local pixel = PixelUtil.GetPixelToUIUnitFactor() / plot:GetEffectiveScale()
+	local pixel = PixelUtil.GetPixelToUIUnitFactor() / PlotFrame:GetEffectiveScale()
 	local firstX = Coordinates(points[1])
 	local lastX = Coordinates(points[#points])
 	local spacing = math.max(ChartConfig.pointSpacing, ChartConfig.pointSpacing * pixel)
@@ -728,17 +746,17 @@ local function DrawChart()
 
 	if #points == 1 then
 		local x, y = Coordinates(points[1])
-		plot.singlePoint:ClearAllPoints()
-		plot.singlePoint:SetPoint("CENTER", plot, "BOTTOMLEFT", x, y)
-		plot.singlePoint:Show()
+		PlotFrame.singlePoint:ClearAllPoints()
+		PlotFrame.singlePoint:SetPoint("CENTER", PlotFrame, "BOTTOMLEFT", x, y)
+		PlotFrame.singlePoint:Show()
 	end
 
 	local first, last = points[1].value, points[#points].value
 	local change = last - first
-	summaryValues[1]:SetText(FormatAmount(first))
-	summaryValues[2]:SetText(FormatAmount(last))
-	summaryValues[3]:SetText((change > 0 and "+" or "") .. FormatAmount(change))
-	summaryValues[3]:SetTextColor(unpack(
+	SummaryTexts[1]:SetText(FormatAmount(first))
+	SummaryTexts[2]:SetText(FormatAmount(last))
+	SummaryTexts[3]:SetText((change > 0 and "+" or "") .. FormatAmount(change))
+	SummaryTexts[3]:SetTextColor(unpack(
 		change > 0 and ChartConfig.positiveColor or change < 0 and ChartConfig.errorColor or ChartConfig.normalColor
 	))
 end
@@ -757,7 +775,7 @@ local function CreateScopeGroup(sidebar)
 		scopes[#scopes + 1] = {label = L["wow-token.title"], value = "token"}
 	end
 
-	scopeGroup = AWL.Controls:CreateOptionGroup({
+	ScopeGroupFrame = AWL.Controls:CreateOptionGroup({
 		parent = sidebar,
 		width = ChartConfig.sidebar.controlWidth,
 		options = scopes,
@@ -767,17 +785,18 @@ local function CreateScopeGroup(sidebar)
 			Chart:Refresh(true)
 		end
 	})
-	scopeGroup:SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.sidebar.scopeTop)
+	ScopeGroupFrame:SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.sidebar.scopeTop)
 end
 
 function Chart:Refresh(rebuildHistory)
-	if not window then
+	if not ChartFrame then
 		return
 	end
 
 	if selectedOwner == "warband" and not AWL.GAME_TYPE_RETAIL
 		or selectedOwner == "token" and not WowToken:IsSupported()
-		or Scope() == "character" and not Utils:GetCharacterEntry(selectedOwner) then
+		or Scope() == "character" and not Utils:GetCharacterEntry(selectedOwner)
+	then
 		selectedOwner = AWL.Utils:GetCharacterGUID()
 
 		if not Utils:GetCharacterEntry(selectedOwner) then
@@ -795,18 +814,18 @@ function Chart:Refresh(rebuildHistory)
 			or characters[1] and characters[1].key
 	end
 
-	if WowToken:IsSupported() and not scopeGroup.buttonsByValue.token then
-		local sidebar = scopeGroup:GetParent()
-		scopeGroup:Hide()
+	if WowToken:IsSupported() and not ScopeGroupFrame.buttonsByValue.token then
+		local sidebar = ScopeGroupFrame:GetParent()
+		ScopeGroupFrame:Hide()
 		CreateScopeGroup(sidebar)
 	end
 
-	scopeGroup:SetValue(Scope())
+	ScopeGroupFrame:SetValue(Scope())
 	local characterEnabled = Scope() == "character" and lastCharacterKey ~= nil
-	characterLabel:SetText(L[Scope() == "token" and "wow-token.region" or "currency-overview.tab.character"])
-	characterDropdown:SetDefaultText(Scope() == "token" and L["wow-token.region"] .. ": " .. WowToken:GetRegionName() or "-")
-	characterDropdown:SetValue(characterEnabled and lastCharacterKey or nil)
-	characterDropdown:SetEnabled(characterEnabled)
+	CharacterLabel:SetText(L[Scope() == "token" and "wow-token.region" or "currency-overview.tab.character"])
+	CharacterDropdownFrame:SetDefaultText(Scope() == "token" and L["wow-token.region"] .. ": " .. WowToken:GetRegionName() or "-")
+	CharacterDropdownFrame:SetValue(characterEnabled and lastCharacterKey or nil)
+	CharacterDropdownFrame:SetEnabled(characterEnabled)
 
 	local options = CurrencyMenu:GetOptions(Scope())
 
@@ -823,36 +842,36 @@ function Chart:Refresh(rebuildHistory)
 		rebuildHistory = true
 	end
 
-	currencyDropdown:SetDefaultText(L[Scope() == "token" and "wow-token.title" or "chart.currency"])
-	currencyDropdown:SetOptions(options)
-	currencyDropdown:SetValue(selectedCurrency)
-	currencyDropdown:SetEnabled(Scope() ~= "token")
+	CurrencyDropdownFrame:SetDefaultText(L[Scope() == "token" and "wow-token.title" or "chart.currency"])
+	CurrencyDropdownFrame:SetOptions(options)
+	CurrencyDropdownFrame:SetValue(selectedCurrency)
+	CurrencyDropdownFrame:SetEnabled(Scope() ~= "token")
 	local caption = option and option.label or ""
 
 	if Scope() == "token" then
 		caption = caption .. " (" .. WowToken:GetRegionName() .. ")"
 	end
 
-	captionText:SetText(option and caption .. " - " .. L["chart.period." .. selectedPeriod] or "")
+	CaptionText:SetText(option and caption .. " - " .. L["chart.period." .. selectedPeriod] or "")
 
 	if rebuildHistory or not history then
 		history = selectedCurrency and self:GetHistory(Scope(), selectedOwner, selectedCurrency) or {}
 	end
 
-	local errorKey
+	local errorKey = nil
 	rangeFirst, rangeLast, errorKey = self:GetRange({
 		period = selectedPeriod,
 		history = history,
-		first = firstInput:GetText(),
-		last = lastInput:GetText()
+		first = FirstInputFrame:GetText(),
+		last = LastInputFrame:GetText()
 	})
 
 	local custom = selectedPeriod == "custom"
-	firstInput:SetEnabled(custom)
-	lastInput:SetEnabled(custom)
-	applyButton:SetEnabled(custom)
-	customButton:SetEnabled(not custom)
-	customPanel:SetShown(custom)
+	FirstInputFrame:SetEnabled(custom)
+	LastInputFrame:SetEnabled(custom)
+	ApplyButtonFrame:SetEnabled(custom)
+	CustomButtonFrame:SetEnabled(not custom)
+	CustomPanelFrame:SetShown(custom)
 
 	if not rangeFirst then
 		local message = L["chart.error." .. errorKey]
@@ -861,14 +880,14 @@ function Chart:Refresh(rebuildHistory)
 			message = string.format(message, Utils:GetDateFormatHint())
 		end
 
-		statusText:SetText(message)
+		StatusText:SetText(message)
 		points = {}
 	else
-		statusText:SetText("")
+		StatusText:SetText("")
 
 		if not custom then
-			firstInput:SetText(self:FormatDate(rangeFirst))
-			lastInput:SetText(self:FormatDate(rangeLast))
+			FirstInputFrame:SetText(self:FormatDate(rangeFirst))
+			LastInputFrame:SetText(self:FormatDate(rangeLast))
 		end
 
 		points = self:GetSeries(history, rangeFirst, rangeLast)
@@ -878,9 +897,9 @@ function Chart:Refresh(rebuildHistory)
 end
 
 function Chart:RefreshDateFormat()
-	if not window then return end
+	if not ChartFrame then return end
 
-	for _, input in ipairs({firstInput, lastInput}) do
+	for _, input in ipairs({FirstInputFrame, LastInputFrame}) do
 		local value = self:ParseDate(input:GetText())
 
 		if value then
@@ -902,7 +921,7 @@ local function CreateSidebar(content)
 
 	CreateScopeGroup(sidebar)
 
-	characterDropdown = AWL.Controls:CreateDropdown({
+	CharacterDropdownFrame = AWL.Controls:CreateDropdown({
 		parent = sidebar,
 		width = ChartConfig.sidebar.controlWidth,
 		options = CharacterOptions,
@@ -911,22 +930,22 @@ local function CreateSidebar(content)
 			Chart:Refresh(true)
 		end
 	})
-	characterDropdown:SetDefaultText(L["currency-overview.tab.character"])
-	characterDropdown:SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.sidebar.characterTop)
-	characterLabel = Label(sidebar, L["currency-overview.tab.character"])
-	characterLabel:SetPoint("BOTTOMLEFT", characterDropdown, "TOPLEFT", 0, ChartConfig.labelGap)
+	CharacterDropdownFrame:SetDefaultText(L["currency-overview.tab.character"])
+	CharacterDropdownFrame:SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.sidebar.characterTop)
+	CharacterLabel = Label(sidebar, L["currency-overview.tab.character"])
+	CharacterLabel:SetPoint("BOTTOMLEFT", CharacterDropdownFrame, "TOPLEFT", 0, ChartConfig.labelGap)
 
-	currencyDropdown = AWL.Controls:CreateDropdown({
+	CurrencyDropdownFrame = AWL.Controls:CreateDropdown({
 		parent = sidebar,
 		width = ChartConfig.sidebar.controlWidth,
 		options = {},
 		onValueChanged = function(value)
 			selectedCurrency = value
 			Chart:Refresh(true)
-			currencyDropdown:CloseMenu()
+			CurrencyDropdownFrame:CloseMenu()
 		end
 	})
-	currencyDropdown:SetupMenu(function(owner, root)
+	CurrencyDropdownFrame:SetupMenu(function(owner, root)
 		if Scope() == "token" then return end
 
 		CurrencyMenu:Populate(root, {
@@ -940,10 +959,10 @@ local function CreateSidebar(content)
 			end
 		})
 	end)
-	currencyDropdown:SetDefaultText(L["chart.currency"])
-	currencyDropdown:SetEmptyText(L["chart.no-currencies"])
-	currencyDropdown:SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.sidebar.currencyTop)
-	Label(sidebar, L["chart.currency"]):SetPoint("BOTTOMLEFT", currencyDropdown, "TOPLEFT", 0, ChartConfig.labelGap)
+	CurrencyDropdownFrame:SetDefaultText(L["chart.currency"])
+	CurrencyDropdownFrame:SetEmptyText(L["chart.no-currencies"])
+	CurrencyDropdownFrame:SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.sidebar.currencyTop)
+	Label(sidebar, L["chart.currency"]):SetPoint("BOTTOMLEFT", CurrencyDropdownFrame, "TOPLEFT", 0, ChartConfig.labelGap)
 
 	local periods = {}
 
@@ -951,7 +970,7 @@ local function CreateSidebar(content)
 		periods[#periods + 1] = {label = L["chart.period." .. period], value = period}
 	end
 
-	periodDropdown = AWL.Controls:CreateDropdown({
+	PeriodDropdownFrame = AWL.Controls:CreateDropdown({
 		parent = sidebar,
 		width = ChartConfig.sidebar.controlWidth,
 		options = periods,
@@ -961,73 +980,73 @@ local function CreateSidebar(content)
 			Chart:Refresh()
 		end
 	})
-	periodDropdown:SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.sidebar.periodTop)
-	Label(sidebar, L["chart.period"]):SetPoint("BOTTOMLEFT", periodDropdown, "TOPLEFT", 0, ChartConfig.labelGap)
+	PeriodDropdownFrame:SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.sidebar.periodTop)
+	Label(sidebar, L["chart.period"]):SetPoint("BOTTOMLEFT", PeriodDropdownFrame, "TOPLEFT", 0, ChartConfig.labelGap)
 
-	customButton = AWL.Controls:CreateButton({
+	CustomButtonFrame = AWL.Controls:CreateButton({
 		parent = sidebar,
 		width = ChartConfig.sidebar.buttonWidth,
 		label = L["chart.period.custom"],
 		onClick = function()
 			selectedPeriod = "custom"
-			periodDropdown:SetValue(selectedPeriod)
+			PeriodDropdownFrame:SetValue(selectedPeriod)
 			Chart:Refresh()
-			firstInput:SetFocus()
+			FirstInputFrame:SetFocus()
 		end
 	})
-	customButton:SetWidth(math.max(
+	CustomButtonFrame:SetWidth(math.max(
 		ChartConfig.sidebar.buttonWidth,
-		customButton:GetFontString():GetUnboundedStringWidth() + ChartConfig.sidebar.buttonTextPadding
+		CustomButtonFrame:GetFontString():GetUnboundedStringWidth() + ChartConfig.sidebar.buttonTextPadding
 	))
-	customButton:SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.sidebar.customButtonTop)
+	CustomButtonFrame:SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.sidebar.customButtonTop)
 
-	customPanel = CreateFrame("Frame", nil, sidebar)
-	customPanel:SetSize(ChartConfig.sidebar.controlWidth, ChartConfig.sidebar.customPanelHeight)
-	customPanel:SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.sidebar.customPanelTop)
+	CustomPanelFrame = CreateFrame("Frame", nil, sidebar)
+	CustomPanelFrame:SetSize(ChartConfig.sidebar.controlWidth, ChartConfig.sidebar.customPanelHeight)
+	CustomPanelFrame:SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.sidebar.customPanelTop)
 
 	local function ApplyRange()
 		Chart:RefreshDateFormat()
 	end
 
-	firstInput = AWL.Controls:CreateInput({
-		parent = customPanel,
+	FirstInputFrame = AWL.Controls:CreateInput({
+		parent = CustomPanelFrame,
 		width = ChartConfig.sidebar.inputWidth,
 		text = "",
 		placeholder = Utils:GetDateFormatHint(),
 		maxLetters = 10,
 		onEnterPressed = ApplyRange
 	})
-	firstInput:SetPoint("TOPLEFT", ChartConfig.sidebar.inputLeft, -ChartConfig.sidebar.firstInputTop)
-	Label(customPanel, L["chart.from"]):SetPoint("BOTTOMLEFT", firstInput, "TOPLEFT", -ChartConfig.sidebar.inputLeft, ChartConfig.labelGap)
+	FirstInputFrame:SetPoint("TOPLEFT", ChartConfig.sidebar.inputLeft, -ChartConfig.sidebar.firstInputTop)
+	Label(CustomPanelFrame, L["chart.from"]):SetPoint("BOTTOMLEFT", FirstInputFrame, "TOPLEFT", -ChartConfig.sidebar.inputLeft, ChartConfig.labelGap)
 
-	lastInput = AWL.Controls:CreateInput({
-		parent = customPanel,
+	LastInputFrame = AWL.Controls:CreateInput({
+		parent = CustomPanelFrame,
 		width = ChartConfig.sidebar.inputWidth,
 		text = "",
 		placeholder = Utils:GetDateFormatHint(),
 		maxLetters = 10,
 		onEnterPressed = ApplyRange
 	})
-	lastInput:SetPoint("TOPLEFT", ChartConfig.sidebar.inputLeft, -ChartConfig.sidebar.lastInputTop)
-	Label(customPanel, L["chart.to"]):SetPoint("BOTTOMLEFT", lastInput, "TOPLEFT", -ChartConfig.sidebar.inputLeft, ChartConfig.labelGap)
+	LastInputFrame:SetPoint("TOPLEFT", ChartConfig.sidebar.inputLeft, -ChartConfig.sidebar.lastInputTop)
+	Label(CustomPanelFrame, L["chart.to"]):SetPoint("BOTTOMLEFT", LastInputFrame, "TOPLEFT", -ChartConfig.sidebar.inputLeft, ChartConfig.labelGap)
 
-	applyButton = AWL.Controls:CreateButton({
-		parent = customPanel,
+	ApplyButtonFrame = AWL.Controls:CreateButton({
+		parent = CustomPanelFrame,
 		width = ChartConfig.sidebar.buttonWidth,
 		label = L["chart.apply"],
 		onClick = ApplyRange
 	})
-	applyButton:SetWidth(math.max(
+	ApplyButtonFrame:SetWidth(math.max(
 		ChartConfig.sidebar.buttonWidth,
-		applyButton:GetFontString():GetUnboundedStringWidth() + ChartConfig.sidebar.buttonTextPadding
+		ApplyButtonFrame:GetFontString():GetUnboundedStringWidth() + ChartConfig.sidebar.buttonTextPadding
 	))
-	applyButton:SetPoint("TOPLEFT", 0, -ChartConfig.sidebar.applyTop)
+	ApplyButtonFrame:SetPoint("TOPLEFT", 0, -ChartConfig.sidebar.applyTop)
 
-	statusText = Label(customPanel, "")
-	statusText:SetTextColor(unpack(ChartConfig.errorColor))
-	statusText:SetPoint("TOPLEFT", 0, -ChartConfig.sidebar.statusTop)
-	statusText:SetWidth(ChartConfig.sidebar.controlWidth)
-	statusText:SetWordWrap(true)
+	StatusText = Label(CustomPanelFrame, "")
+	StatusText:SetTextColor(unpack(ChartConfig.errorColor))
+	StatusText:SetPoint("TOPLEFT", 0, -ChartConfig.sidebar.statusTop)
+	StatusText:SetWidth(ChartConfig.sidebar.controlWidth)
+	StatusText:SetWordWrap(true)
 end
 
 local function CreateSummary(parent)
@@ -1046,7 +1065,7 @@ local function CreateSummary(parent)
 		value:SetPoint("TOPRIGHT", 0, -ChartConfig.summary.valueTop)
 		value:SetHeight(ChartConfig.summary.valueHeight)
 		value:SetJustifyH("CENTER")
-		summaryValues[index] = value
+		SummaryTexts[index] = value
 	end
 end
 
@@ -1058,53 +1077,53 @@ local function CreateWindow()
 	windowConfig.height = ArtworkConfig.height
 	windowConfig.title = addonName .. " - " .. L["chart.title"]
 
-	window = AWL.Frames:CreateWindow(windowConfig) --[[@as AurariumChartWindow]]
-	window:SetFrameStrata("HIGH")
-	window.portrait:SetPoint("TOPLEFT", OverviewConfig.portrait.x, OverviewConfig.portrait.y)
-	window.portrait:SetTexture(Addon:GetMediaPath("icon-round.tga"))
-	window:SetScript("OnHide", function(self)
+	ChartFrame = AWL.Frames:CreateWindow(windowConfig) --[[@as AurariumChartWindow]]
+	ChartFrame:SetFrameStrata("HIGH")
+	ChartFrame.portrait:SetPoint("TOPLEFT", OverviewConfig.portrait.x, OverviewConfig.portrait.y)
+	ChartFrame.portrait:SetTexture(Addon:GetMediaPath("icon-round.tga"))
+	ChartFrame:SetScript("OnHide", function(self)
 		self:StopMovingOrSizing()
 	end)
 
 	local insetConfig = AWL.Utils:CopyTable(OverviewConfig.inset)
-	insetConfig.parent = window
+	insetConfig.parent = ChartFrame
 	insetConfig.width = ArtworkConfig.artworkRight - ArtworkConfig.artworkLeft
 	insetConfig.height = ArtworkConfig.height - ArtworkConfig.artworkTop - OverviewConfig.inset.bottom
 	insetConfig.backgroundStyle = ChartConfig.inset.backgroundStyle
 
-	window.inset = AWL.Frames:CreateInset(insetConfig)
-	window.inset:SetPoint("TOPLEFT", ArtworkConfig.artworkLeft, -ArtworkConfig.artworkTop)
+	ChartFrame.inset = AWL.Frames:CreateInset(insetConfig)
+	ChartFrame.inset:SetPoint("TOPLEFT", ArtworkConfig.artworkLeft, -ArtworkConfig.artworkTop)
 
-	window.footerCloseButton = AWL.Controls:CreateButton({
-		parent = window,
+	ChartFrame.footerCloseButton = AWL.Controls:CreateButton({
+		parent = ChartFrame,
 		width = ChartConfig.footer.buttonWidth,
 		label = CLOSE,
 		onClick = function()
-			window:Hide()
+			ChartFrame:Hide()
 		end
 	})
-	window.footerCloseButton:SetWidth(math.max(
+	ChartFrame.footerCloseButton:SetWidth(math.max(
 		ChartConfig.footer.buttonWidth,
-		window.footerCloseButton:GetFontString():GetUnboundedStringWidth() + ChartConfig.footer.buttonTextPadding
+		ChartFrame.footerCloseButton:GetFontString():GetUnboundedStringWidth() + ChartConfig.footer.buttonTextPadding
 	))
-	window.footerCloseButton:SetPoint("TOPRIGHT", window.inset, "BOTTOMRIGHT", -OverviewConfig.buttonOffset.x, OverviewConfig.buttonOffset.y)
+	ChartFrame.footerCloseButton:SetPoint("TOPRIGHT", ChartFrame.inset, "BOTTOMRIGHT", -OverviewConfig.buttonOffset.x, OverviewConfig.buttonOffset.y)
 
-	local body = window.content
+	local body = ChartFrame.content
 	body:ClearAllPoints()
 	body:SetPoint("TOPLEFT", ArtworkConfig.bodyLeft, -ArtworkConfig.bodyTop)
 	body:SetPoint("BOTTOMRIGHT", ArtworkConfig.bodyRight - ArtworkConfig.width, ArtworkConfig.height - ArtworkConfig.bodyBottom)
 
-	window.artwork = body:CreateTexture(nil, "BACKGROUND")
-	window.artwork:SetPoint("TOPLEFT", window, "TOPLEFT", ArtworkConfig.artworkLeft, -ArtworkConfig.artworkTop)
-	window.artwork:SetPoint(
-		"BOTTOMRIGHT", window, "BOTTOMRIGHT",
+	ChartFrame.artwork = body:CreateTexture(nil, "BACKGROUND")
+	ChartFrame.artwork:SetPoint("TOPLEFT", ChartFrame, "TOPLEFT", ArtworkConfig.artworkLeft, -ArtworkConfig.artworkTop)
+	ChartFrame.artwork:SetPoint(
+		"BOTTOMRIGHT", ChartFrame, "BOTTOMRIGHT",
 		ArtworkConfig.artworkRight - ArtworkConfig.width,
 		ArtworkConfig.height - ArtworkConfig.artworkBottom
 	)
-	window.artwork:SetTexture(Addon:GetMediaPath(ChartConfig.window.texture))
+	ChartFrame.artwork:SetTexture(Addon:GetMediaPath(ChartConfig.window.texture))
 
 	local textureScale = ArtworkConfig.textureScale / ArtworkConfig.textureSize
-	window.artwork:SetTexCoord(
+	ChartFrame.artwork:SetTexCoord(
 		ArtworkConfig.artworkLeft * textureScale,
 		ArtworkConfig.artworkRight * textureScale,
 		ArtworkConfig.artworkTop * textureScale,
@@ -1117,38 +1136,38 @@ local function CreateWindow()
 	chartPanel:SetPoint("TOPLEFT", ArtworkConfig.chartLeft - ArtworkConfig.bodyLeft, 0)
 	chartPanel:SetPoint("BOTTOMRIGHT", ArtworkConfig.chartRight - ArtworkConfig.bodyRight, 0)
 
-	captionText = Label(chartPanel, "")
-	captionText:SetFontObject("GameFontNormalLarge")
-	captionText:SetPoint("TOPLEFT", 0, -ChartConfig.header.top)
-	captionText:SetHeight(ChartConfig.header.height)
-	captionText:SetWordWrap(false)
+	CaptionText = Label(chartPanel, "")
+	CaptionText:SetFontObject("GameFontNormalLarge")
+	CaptionText:SetPoint("TOPLEFT", 0, -ChartConfig.header.top)
+	CaptionText:SetHeight(ChartConfig.header.height)
+	CaptionText:SetWordWrap(false)
 
 	CreateSummary(chartPanel)
 
-	plot = CreateFrame("Frame", nil, chartPanel)
-	plot:SetPoint("TOPLEFT", ChartConfig.plot.left, -ChartConfig.plot.top)
-	plot:SetPoint("BOTTOMRIGHT", -ChartConfig.plot.right, ChartConfig.plot.bottom)
+	PlotFrame = CreateFrame("Frame", nil, chartPanel)
+	PlotFrame:SetPoint("TOPLEFT", ChartConfig.plot.left, -ChartConfig.plot.top)
+	PlotFrame:SetPoint("BOTTOMRIGHT", -ChartConfig.plot.right, ChartConfig.plot.bottom)
 
-	plot.empty = Label(plot, L["chart.no-data"])
-	plot.empty:SetPoint("LEFT", ChartConfig.margin, 0)
-	plot.empty:SetPoint("RIGHT", -ChartConfig.margin, 0)
-	plot.empty:SetJustifyH("CENTER")
-	plot.empty:SetWordWrap(true)
+	PlotFrame.empty = Label(PlotFrame, L["chart.no-data"])
+	PlotFrame.empty:SetPoint("LEFT", ChartConfig.margin, 0)
+	PlotFrame.empty:SetPoint("RIGHT", -ChartConfig.margin, 0)
+	PlotFrame.empty:SetJustifyH("CENTER")
+	PlotFrame.empty:SetWordWrap(true)
 
 	for i = 1, ChartConfig.gridSteps + 1 + ChartConfig.dateAxis.maximumLabels do
-		axisLabels[i] = Label(chartPanel, "")
-		axisLabels[i]:SetFontObject("GameFontHighlightSmall")
+		AxisLabels[i] = Label(chartPanel, "")
+		AxisLabels[i]:SetFontObject("GameFontHighlightSmall")
 	end
 
 	for _, key in ipairs({"singlePoint", "hoverPoint", "cursor"}) do
-		plot[key] = plot:CreateTexture(nil, "OVERLAY")
-		plot[key]:SetColorTexture(unpack(ChartConfig.lineColor))
-		plot[key]:SetSize(ChartConfig.pointSize, ChartConfig.pointSize)
-		plot[key]:Hide()
+		PlotFrame[key] = PlotFrame:CreateTexture(nil, "OVERLAY")
+		PlotFrame[key]:SetColorTexture(unpack(ChartConfig.lineColor))
+		PlotFrame[key]:SetSize(ChartConfig.pointSize, ChartConfig.pointSize)
+		PlotFrame[key]:Hide()
 	end
 
-	plot:EnableMouse(true)
-	plot:SetScript("OnEnter", function(self)
+	PlotFrame:EnableMouse(true)
+	PlotFrame:SetScript("OnEnter", function(self)
 		self:SetScript("OnUpdate", UpdateHover)
 	end)
 
@@ -1157,14 +1176,14 @@ local function CreateWindow()
 		ClearHover()
 	end
 
-	plot:SetScript("OnLeave", StopHover)
-	plot:SetScript("OnHide", StopHover)
+	PlotFrame:SetScript("OnLeave", StopHover)
+	PlotFrame:SetScript("OnHide", StopHover)
 
 	local infoButton = CreateFrame("Button", nil, chartPanel, "UIPanelInfoButton")
 	infoButton:SetSize(ArtworkConfig.infoSize, ArtworkConfig.infoSize)
 	infoButton:SetPoint("TOPLEFT", ArtworkConfig.infoLeft - ArtworkConfig.chartLeft, ArtworkConfig.bodyTop - ArtworkConfig.infoTop)
 
-	captionText:SetPoint("TOPRIGHT", -ArtworkConfig.infoSize - ChartConfig.header.infoGap, -ChartConfig.header.top)
+	CaptionText:SetPoint("TOPRIGHT", -ArtworkConfig.infoSize - ChartConfig.header.infoGap, -ChartConfig.header.top)
 
 	infoButton:SetScript("OnEnter", function(self)
 		local r, g, b = NORMAL_FONT_COLOR:GetRGB()
@@ -1203,17 +1222,17 @@ function Chart:Show(config)
 		selectedCurrency = config.currencyKey
 	end
 
-	if not window then
+	if not ChartFrame then
 		CreateWindow()
 	end
 
-	window:Show()
+	ChartFrame:Show()
 	self:Refresh(true)
-	window:Raise()
+	ChartFrame:Raise()
 end
 
 function Chart:IsShown()
-	return window and window:IsShown()
+	return ChartFrame and ChartFrame:IsShown()
 end
 
 function Chart:OnBalanceUpdated(update)
@@ -1244,7 +1263,7 @@ end
 function Chart:OnTokenUpdated()
 	if not self:IsShown() then return end
 
-	if Scope() == "token" or not scopeGroup.buttonsByValue.token then
+	if Scope() == "token" or not ScopeGroupFrame.buttonsByValue.token then
 		self:Refresh(true)
 	end
 end

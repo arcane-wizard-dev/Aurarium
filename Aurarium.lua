@@ -80,7 +80,8 @@ local function TrackCurrencyBalance(currency, characterGUID, today)
 
 	AUR.Data.balance[ownerKey] = AUR.Data.balance[ownerKey] or {}
 	local history = AUR.Data.balance[ownerKey]
-	local prevQty, lastDate = 0, nil
+	local prevQty = 0
+	local lastDate = nil
 
 	for dateKey, dayData in pairs(history) do
 		if dateKey < today and dayData[currency.key] ~= nil and (not lastDate or dateKey > lastDate) then
@@ -135,7 +136,7 @@ local function SaveBalance(update)
 		end
 	elseif update.currencies then
 		for currencyID, entry in pairs(AUR.State.currencyByID) do
-			local currency
+			local currency = nil
 
 			if update.useCache then
 				currency = entry

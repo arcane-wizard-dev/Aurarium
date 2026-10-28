@@ -7,7 +7,10 @@ local WowToken = AUR.Modules.WowToken
 local Utils = AUR.Modules.Utils
 local TokenData = AUR.WOW_TOKEN_DATA
 
-local eventFrame, ticker, pollSeconds, lastRequest
+local EventFrame = nil
+local ticker = nil
+local pollSeconds = nil
+local lastRequest = nil
 local supported = false
 
 local function HasAPI()
@@ -26,6 +29,7 @@ local function StorePrice(result)
 	if result == nil or result ~= LE_TOKEN_RESULT_SUCCESS or not C_WowTokenPublic.GetCommerceSystemStatus() then return end
 
 	local price = C_WowTokenPublic.GetCurrentMarketPrice()
+	-- Der Selbstvergleich erkennt NaN und verhindert ungültige Preise in der Historie.
 	if type(price) ~= "number" or price <= 0 or price == math.huge or price ~= price then return end
 
 	Aurarium_DataTokenPrices = Aurarium_DataTokenPrices or {}
@@ -67,7 +71,7 @@ function WowToken:GetHistory()
 end
 
 function WowToken:RequestPrice()
-	if not eventFrame or not C_WowTokenPublic.GetCommerceSystemStatus() then return end
+	if not EventFrame or not C_WowTokenPublic.GetCommerceSystemStatus() then return end
 
 	local now = GetTime()
 	if lastRequest and now - lastRequest < pollSeconds then return end
@@ -77,7 +81,7 @@ function WowToken:RequestPrice()
 end
 
 function WowToken:RefreshStatus()
-	if not eventFrame then return end
+	if not EventFrame then return end
 
 	local enabled, interval = C_WowTokenPublic.GetCommerceSystemStatus()
 	local nextInterval = type(interval) == "number" and interval > 0 and interval < math.huge
@@ -107,19 +111,22 @@ function WowToken:RefreshStatus()
 end
 
 function WowToken:Initialize()
-	if not AWL.GAME_TYPE_RETAIL or eventFrame or not HasAPI() then return end
+	if not AWL.GAME_TYPE_RETAIL or EventFrame or not HasAPI() then return end
 
 	if C_EventUtils and C_EventUtils.IsEventValid then
 		if not C_EventUtils.IsEventValid("TOKEN_STATUS_CHANGED")
-			or not C_EventUtils.IsEventValid("TOKEN_MARKET_PRICE_UPDATED") then return end
+			or not C_EventUtils.IsEventValid("TOKEN_MARKET_PRICE_UPDATED")
+		then
+			return
+		end
 	end
 
 	AUR.Data.tokenPrices = Aurarium_DataTokenPrices
 	supported = next(AUR.Data.tokenPrices or {}) ~= nil
-	eventFrame = CreateFrame("Frame")
-	eventFrame:RegisterEvent("TOKEN_STATUS_CHANGED")
-	eventFrame:RegisterEvent("TOKEN_MARKET_PRICE_UPDATED")
-	eventFrame:SetScript("OnEvent", function(_, event, result)
+	EventFrame = CreateFrame("Frame")
+	EventFrame:RegisterEvent("TOKEN_STATUS_CHANGED")
+	EventFrame:RegisterEvent("TOKEN_MARKET_PRICE_UPDATED")
+	EventFrame:SetScript("OnEvent", function(_, event, result)
 		if event == "TOKEN_MARKET_PRICE_UPDATED" then
 			StorePrice(result)
 		else

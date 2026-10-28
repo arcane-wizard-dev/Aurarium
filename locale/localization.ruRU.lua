@@ -10,19 +10,19 @@ local L = AUR.Localization
 
 L["options.general"] = "Общие параметры"
 L["options.general.date-format.name"] = "Формат даты"
-L["options.general.date-format.tooltip"] = "Выберите формат даты для всех таблиц, графиков, подсказок и полей ввода даты."
+L["options.general.date-format.tooltip"] = "Задаёт формат даты для всех таблиц, графиков, подсказок и полей ввода даты."
 L["options.general.minimap-button.name"] = "Кнопка у мини-карты"
-L["options.general.minimap-button.tooltip"] = "Если этот параметр включен, кнопка отображается у мини-карты."
+L["options.general.minimap-button.tooltip"] = "Показывает кнопку у мини-карты."
 L["options.general.debug-mode.name"] = "Режим отладки"
-L["options.general.debug-mode.tooltip"] = "Если режим отладки включен, в чате отображается дополнительная информация."
+L["options.general.debug-mode.tooltip"] = "Показывает дополнительную отладочную информацию в чате."
 
 L["options.currency-overview"] = "Обзор золота и валюты"
 L["options.currency-overview.open-on-login.name"] = "Открывать автоматически"
-L["options.currency-overview.open-on-login.tooltip"] = "Если этот параметр включен, обзор золота и валюты будет автоматически открываться при входе в игру."
+L["options.currency-overview.open-on-login.tooltip"] = "Автоматически открывает обзор золота и валюты при входе в игру."
 
 L["options.gold-display"] = "Индикатор золота"
 L["options.gold-display.show.name"] = "Показывать индикатор золота"
-L["options.gold-display.show.tooltip"] = "Если этот параметр включен, небольшой перемещаемый индикатор показывает текущее золото и изменение за сегодня."
+L["options.gold-display.show.tooltip"] = "Показывает небольшой перемещаемый индикатор с текущим золотом и изменением за сегодня."
 L["options.gold-display.show-border.name"] = "Показывать рамку"
 L["options.gold-display.show-border.tooltip"] = "Показывает рамку вокруг индикатора золота."
 L["options.gold-display.display-mode.name"] = "Отображаемые монеты"
@@ -30,7 +30,7 @@ L["options.gold-display.display-mode.tooltip"] = "Определяет, каки
 
 -- General
 
-L["minimap-button.tooltip"] = "|cnLINK_FONT_COLOR:Щелкните левой кнопкой мыши|r, чтобы открыть обзор золота и валюты.\n|cnLINK_FONT_COLOR:Щелкните правой кнопкой мыши|r, чтобы открыть настройки."
+L["minimap-button.tooltip"] = "|cnLINK_FONT_COLOR:Щёлкните левой кнопкой мыши|r, чтобы открыть обзор золота и валюты.\n|cnLINK_FONT_COLOR:Щёлкните правой кнопкой мыши|r, чтобы открыть настройки."
 
 L["button.next"] = "Вперёд"
 L["button.prev"] = "Назад"
@@ -54,8 +54,8 @@ L["month.dec"] = "Декабрь"
 
 -- Chat
 
-L["chat.delete-character.deleted"] = "Персонаж '%s' на сервере '%s' удалён."
-L["chat.delete-character.current-not-allowed"] = "Нельзя удалить персонажа, которым вы сейчас играете."
+L["chat.delete-character.deleted"] = "Персонаж «%s» на сервере «%s» удалён."
+L["chat.delete-character.current-not-allowed"] = "Нельзя удалить текущего персонажа."
 
 -- Currency Overview
 
@@ -67,24 +67,12 @@ L["currency-overview.category.pvp"] = "Игрок против игрока"
 L["currency-overview.category.dungeonraid"] = "Подземелье и рейд"
 L["currency-overview.category.delves"] = "Вылазки"
 L["currency-overview.category.season"] = "Сезон"
-L["currency-overview.category.timerunning"] = "Путешествие во времени"
+L["currency-overview.category.timerunning"] = "Путешественники во времени"
 L["currency-overview.category.profession"] = "Профессия"
-L["currency-overview.category.tradeskills"] = "Профессии и ремесла"
-L["currency-overview.category.classic"] = "Classic"
-L["currency-overview.category.tbc"] = "Burning Crusade"
-L["currency-overview.category.wotlk"] = "Гнев Короля-лича"
-L["currency-overview.category.cata"] = "Катаклизм"
-L["currency-overview.category.mop"] = "Пандария"
-L["currency-overview.category.wod"] = "Дренор"
-L["currency-overview.category.legion"] = "Легион"
-L["currency-overview.category.bfa"] = "Битва за Азерот"
-L["currency-overview.category.sl"] = "Темные Земли"
-L["currency-overview.category.df"] = "Драконы"
-L["currency-overview.category.tww"] = "Война Внутри"
-L["currency-overview.category.mid"] = "Полночь"
+L["currency-overview.category.tradeskills"] = "Профессии и ремёсла"
 
 L["currency-overview.tab.character"] = "Персонаж"
-L["currency-overview.tab.account"] = "Аккаунт"
+L["currency-overview.tab.account"] = "Учётная запись"
 L["currency-overview.tab.warband"] = "Отряд"
 
 L["currency-overview.table.date"] = "Дата"
@@ -94,10 +82,10 @@ L["currency-overview.table.no-entries"] = "Нет записей за этот �
 
 L["currency-overview.menu.more"] = "Ещё"
 L["currency-overview.menu.hide-unchanged-entries"] = "Скрывать записи без изменений"
-L["currency-overview.menu.delete-character"] = "Удалить данные персонажа '%s'…"
+L["currency-overview.menu.delete-character"] = "Удалить данные персонажа «%s»…"
 L["currency-overview.menu.patch"] = "Обновление %s"
 
-L["currency-overview.delete-character.confirm"] = "Удалить персонажа '%s' на сервере '%s' и все сохраненные данные?"
+L["currency-overview.delete-character.confirm"] = "Удалить персонажа «%s» на сервере «%s» и все сохранённые данные?"
 
 -- Chart
 
@@ -141,4 +129,4 @@ L["wow-token.title"] = "Жетон WoW"
 L["wow-token.region"] = "Регион"
 L["wow-token.price"] = "Цена в золоте"
 L["wow-token.no-data"] = "За выбранный период цены жетона WoW ещё не записаны."
-L["wow-token.history-note"] = "График показывает последнюю записанную за каждый день цену жетона WoW в золоте для вашего игрового региона. Цены записываются, пока вы в игре. В дни без новой цены отображается последняя записанная цена. Запись начинается с первого успешного запроса."
+L["wow-token.history-note"] = "График показывает последнюю записанную за каждый день цену жетона WoW в золоте для текущего игрового региона. Цены записываются, пока персонаж в игре. В дни без новой цены отображается последняя записанная цена. Запись начинается с первого успешного запроса."

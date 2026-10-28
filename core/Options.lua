@@ -13,6 +13,7 @@ local L = AUR.Localization
 local Options = AUR.Modules.Options
 
 -- Module imports
+local GoldDisplayConfig = AUR.UIConfig.GoldDisplay
 local GoldDisplay = AUR.Modules.GoldDisplay
 local Utils = AUR.Modules.Utils
 
@@ -23,7 +24,6 @@ for _, format in ipairs(AUR.DATE_FORMATS) do
 end
 
 local goldDisplayModeOptions = {}
-local GoldDisplayConfig = AUR.UIConfig.GoldDisplay
 
 for _, option in ipairs(GoldDisplayConfig.displayModeOptions) do
 	local previewParts = {}
