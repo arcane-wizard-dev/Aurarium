@@ -23,7 +23,7 @@ Individual features and display options can be configured in the addon settings.
 ### Gold Display
 
 * Shows or hides the compact gold display independently of balance tracking.
-* The coins shown in the gold display can be selected.
+* Lets you choose which coins appear in the gold display.
 
 ### Gold and Currency Overview
 
