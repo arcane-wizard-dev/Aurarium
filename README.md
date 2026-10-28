@@ -4,17 +4,17 @@
 
 _Gold and currencies, always in view._
 
-Aurarium is a World of Warcraft addon that keeps track of the wealth of all characters. It brings the recorded balances together and makes their development over time easier to follow.
+Aurarium is a World of Warcraft addon that tracks gold and currencies across characters. It brings recorded balances together in clear overviews and makes changes over time easy to follow.
 
 > ⚠️ **Important!** This addon requires **Arcane Wizard: Library**. See Installation & Quick Start for installation details.
 
 ## Key Features
 
-**Gold Display** - Shows the current gold balance in a customizable display that fits any play style.
+**Gold Display** - Shows the current gold balance in a customizable display that fits into the game interface.
 
-**Gold and Currency Overview** - Presents the recorded balances in an organized overview, with different views of the characters' wealth.
+**Gold and Currency Overview** - Brings recorded balances together in different views, providing an overview of individual characters and the account.
 
-**Chart** - Charts changes in the recorded wealth and shows its history over different periods.
+**Chart** - Explore your balance history in a chart and choose the period you want to examine.
 
 ## Features
 
