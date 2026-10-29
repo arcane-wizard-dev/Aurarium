@@ -4,8 +4,5 @@
 
 **Important note: Migration of older character data will be removed at the end of 2026. Log in once with each character using an up-to-date version of Aurarium before then to preserve their gold and currency history.**
 
-- Added: Startup check for the minimum required Library revision
-- Updated: deDE, enUS, ruRU localizations
-- Updated: Addon description
-- Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility
-- Minor code adjustments
+- Added: TOC version for patch 12.1.7 [retail]
+- Removed: TOC version for patch 12.1.0 [retail]
