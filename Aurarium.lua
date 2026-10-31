@@ -288,6 +288,10 @@ function AurariumFrame:CURRENCY_DISPLAY_UPDATE(_, currencyType, quantity, quanti
 	end
 end
 
+--------------------------
+--- Event Registration ---
+--------------------------
+
 AurariumFrame:RegisterEvent("ADDON_LOADED")
 AurariumFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 AurariumFrame:RegisterEvent("PLAYER_MONEY")

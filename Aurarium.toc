@@ -1,4 +1,5 @@
 ## Interface: 120107, 120105, 50504, 20506, 16001, 11509
+## AllowLoadGameType: standard, wowhack, forever, classic
 ## Title: Aurarium
 ## Author: Arcane Wizard | created by diomsg
 

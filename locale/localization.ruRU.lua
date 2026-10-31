@@ -54,8 +54,8 @@ L["month.dec"] = "Декабрь"
 
 -- Chat
 
-L["chat.delete-character.deleted"] = "Персонаж «%s» на сервере «%s» удалён."
-L["chat.delete-character.current-not-allowed"] = "Нельзя удалить текущего персонажа."
+L["chat.delete-character.deleted"] = "Сохранённые данные персонажа «%s» на сервере «%s» удалены."
+L["chat.delete-character.current-not-allowed"] = "Нельзя удалить сохранённые данные текущего персонажа."
 
 -- Currency Overview
 
@@ -85,7 +85,7 @@ L["currency-overview.menu.hide-unchanged-entries"] = "Скрывать запи�
 L["currency-overview.menu.delete-character"] = "Удалить данные персонажа «%s»…"
 L["currency-overview.menu.patch"] = "Обновление %s"
 
-L["currency-overview.delete-character.confirm"] = "Удалить персонажа «%s» на сервере «%s» и все сохранённые данные?"
+L["currency-overview.delete-character.confirm"] = "Удалить все данные Aurarium о персонаже «%s» на сервере «%s»?"
 
 -- Chart
 

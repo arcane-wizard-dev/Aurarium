@@ -54,8 +54,8 @@ L["month.dec"] = "Dezember"
 
 -- Chat
 
-L["chat.delete-character.deleted"] = "Charakter „%s“ auf Realm „%s“ wurde gelöscht."
-L["chat.delete-character.current-not-allowed"] = "Der aktuell eingeloggte Charakter kann nicht gelöscht werden."
+L["chat.delete-character.deleted"] = "Die gespeicherten Daten von „%s“ auf Realm „%s“ wurden gelöscht."
+L["chat.delete-character.current-not-allowed"] = "Die gespeicherten Daten des aktuell eingeloggten Charakters können nicht gelöscht werden."
 
 -- Currency Overview
 
@@ -85,7 +85,7 @@ L["currency-overview.menu.hide-unchanged-entries"] = "Unveränderte Einträge au
 L["currency-overview.menu.delete-character"] = "Daten von „%s“ löschen …"
 L["currency-overview.menu.patch"] = "Patch %s"
 
-L["currency-overview.delete-character.confirm"] = "Charakter „%s“ auf Realm „%s“ und alle erfassten Daten löschen?"
+L["currency-overview.delete-character.confirm"] = "Alle von Aurarium gespeicherten Daten für „%s“ auf Realm „%s“ löschen?"
 
 -- Chart
 

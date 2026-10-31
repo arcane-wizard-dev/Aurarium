@@ -2,10 +2,19 @@ local _, AUR = ...
 
 if AUR.State and AUR.State.libraryIncompatible then return end
 
+-- Library
 local AWL = ArcaneWizardLibrary
+
+-- Current module
 local CurrencyMenu = AUR.Modules.CurrencyMenu
+
+-- Module imports
 local Utils = AUR.Modules.Utils
 local CurrencyMenuConfig = AUR.UIConfig.CurrencyMenu
+
+-----------------------
+--- Local Functions ---
+-----------------------
 
 local function GetCharacterBalances(characterKey)
 	local balances = {}
@@ -99,8 +108,7 @@ local function AddEntry(parent, option, context)
 	if not entry then return end
 
 	local info = context.useLiveBalances and entry.info or nil
-	---@type number|nil
-	local quantity = context.balances[entry.key] or 0
+	local quantity = context.balances[entry.key] or 0 ---@type number|nil
 
 	if context.useLiveBalances then
 		quantity = info and info.quantity
@@ -140,6 +148,10 @@ local function AddOptions(root, options, context)
 		end
 	end
 end
+
+------------------------
+--- Module Functions ---
+------------------------
 
 function CurrencyMenu:GetOptions(scope)
 	local L, options = AUR.Localization, {}

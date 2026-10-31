@@ -2,16 +2,31 @@ local _, AUR = ...
 
 if AUR.State and AUR.State.libraryIncompatible then return end
 
+-- Library
 local AWL = ArcaneWizardLibrary
+
+-- Current module
 local WowToken = AUR.Modules.WowToken
+
+-- Module imports
 local Utils = AUR.Modules.Utils
 local TokenData = AUR.WOW_TOKEN_DATA
 
-local EventFrame = nil
+-- Variables
 local ticker = nil
 local pollSeconds = nil
 local lastRequest = nil
 local supported = false
+
+--------------
+--- Frames ---
+--------------
+
+local EventFrame = nil
+
+-----------------------
+--- Local Functions ---
+-----------------------
 
 local function HasAPI()
 	return C_WowTokenPublic
@@ -44,6 +59,10 @@ local function StorePrice(result)
 		NotifyViews()
 	end
 end
+
+------------------------
+--- Module Functions ---
+------------------------
 
 function WowToken:IsSupported()
 	return AWL.GAME_TYPE_RETAIL and supported

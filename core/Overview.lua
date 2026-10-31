@@ -32,7 +32,7 @@ selectedCurrency[TabIndex.token] = "token"
 --- Frames ---
 --------------
 
-local OverviewFrame = nil
+local OverviewFrame = nil ---@type AurariumOverviewFrame
 local OverviewScrollFrames = {}
 
 -----------------------
@@ -599,7 +599,7 @@ local function CreateCharacterDropdown(scrollFrame, background)
 		local lastRealm = nil
 
 		for _, entry in ipairs(Utils:GetSortedCharacters()) do
-			if entry.realm ~= lastRealm then
+			if not realmButton or entry.realm ~= lastRealm then
 				realmButton = root:CreateButton(entry.realm)
 				lastRealm = entry.realm
 			end
@@ -731,11 +731,7 @@ local function CreateOverviewPage(tabs, tabIndex)
 		column.text = L[column.text]
 	end
 
-	---@class AurariumOverviewTable: ArcaneWizardLibraryTable
-	---@field nextButton Button
-	---@field prevButton Button
-	---@field regionDropdown? ArcaneWizardLibraryDropdown
-	---@field characterDropdown? ArcaneWizardLibraryDropdown
+	---@type AurariumOverviewTable
 	local scrollFrame = AWL.Tables:CreateTable({
 		parent = page,
 		width = OverviewConfig.inset.width,
@@ -818,7 +814,7 @@ local function InitializeFrames()
 	local windowConfig = AWL.Utils:CopyTable(OverviewConfig.window)
 	windowConfig.addonName = addonName
 	windowConfig.title = addonName
-	OverviewFrame = AWL.Frames:CreateWindow(windowConfig)
+	OverviewFrame = AWL.Frames:CreateWindow(windowConfig) --[[@as AurariumOverviewFrame]]
 	OverviewFrame:SetFrameStrata("HIGH")
 	OverviewFrame.portrait:SetPoint("TOPLEFT", OverviewConfig.portrait.x, OverviewConfig.portrait.y)
 	OverviewFrame.portrait:SetTexture(Addon:GetMediaPath("icon-round.tga"))

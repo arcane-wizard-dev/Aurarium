@@ -14,10 +14,13 @@ local Overview = AUR.Modules.Overview
 local Utils = AUR.Modules.Utils
 local GoldDisplayConfig = AUR.UIConfig.GoldDisplay
 
--- Variables
-local GoldDisplayFrame = nil
-local CurrentGoldText = nil
-local DailyChangeText = nil
+--------------
+--- Frames ---
+--------------
+
+local GoldDisplayFrame = nil ---@type ArcaneWizardLibraryPopupFrame
+local CurrentGoldText = nil ---@type FontString
+local DailyChangeText = nil ---@type FontString
 
 -----------------------
 --- Local Functions ---
@@ -129,6 +132,10 @@ local function RestorePosition()
 	GoldDisplayFrame:ClearAllPoints()
 	GoldDisplayFrame:SetPoint(position.point, UIParent, position.relativePoint, position.x, position.y)
 end
+
+----------------------
+--- Frame Functions ---
+----------------------
 
 local function CreateLogoButton(frame)
 	local LogoConfig = GoldDisplayConfig.logo

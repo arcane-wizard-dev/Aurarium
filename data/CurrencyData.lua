@@ -2,6 +2,8 @@ local _, AUR = ...
 
 if AUR.State and AUR.State.libraryIncompatible then return end
 
+-- Categories
+
 AUR.CURRENCY_CATEGORY_ORDER = {
 	"misc",         -- 1
 	"profession",	-- 280
@@ -53,6 +55,8 @@ AUR.CURRENCY_PATCH_CATEGORIES = {
 	tww = true,
 	mid = true
 }
+
+-- Character Currencies
 
 AUR.CURRENCIES = {
 	CLASSIC = {},
@@ -241,6 +245,9 @@ AUR.CURRENCIES = {
 	}
 }
 
+-- Warband Currencies
+
 AUR.WARBAND_CURRENCIES = {
 	{id = 2032, category = "misc", patch = "10.0.5"},                      -- Händlerdevisen
+	{id = 3361, category = "misc", patch = "12.1.7"},                      -- Gebundenes Silber
 }

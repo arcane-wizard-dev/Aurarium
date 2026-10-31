@@ -4,5 +4,8 @@
 
 **Important note: Migration of older character data will be removed at the end of 2026. Log in once with each character using an up-to-date version of Aurarium before then to preserve their gold and currency history.**
 
-- Added: TOC version for patch 12.1.7 [retail]
-- Removed: TOC version for patch 12.1.0 [retail]
+- Added: Currency 'Bound Silver' [retail]
+- Changed: Clarified labels in the options menu
+- Changed: Limited loading to Retail, Forever, Classic, and Talebound
+- Updated: deDE, enUS, ruRU localizations
+- Minor code adjustments

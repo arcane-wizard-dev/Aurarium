@@ -62,8 +62,8 @@ L["month.dec"] = "December"
 
 -- Chat
 
-L["chat.delete-character.deleted"] = "Character \"%s\" from realm \"%s\" has been deleted."
-L["chat.delete-character.current-not-allowed"] = "The currently logged-in character cannot be deleted."
+L["chat.delete-character.deleted"] = "Stored data for character \"%s\" on realm \"%s\" has been deleted."
+L["chat.delete-character.current-not-allowed"] = "Stored data for the currently logged-in character cannot be deleted."
 
 -- Currency Overview
 
@@ -93,7 +93,7 @@ L["currency-overview.menu.hide-unchanged-entries"] = "Hide Unchanged Entries"
 L["currency-overview.menu.delete-character"] = "Delete data for \"%s\"…"
 L["currency-overview.menu.patch"] = "Patch %s"
 
-L["currency-overview.delete-character.confirm"] = "Delete character \"%s\" from realm \"%s\" and all recorded data?"
+L["currency-overview.delete-character.confirm"] = "Delete all Aurarium data for character \"%s\" on realm \"%s\"?"
 
 -- Chart
 

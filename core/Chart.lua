@@ -2,10 +2,17 @@ local addonName, AUR = ...
 
 if AUR.State and AUR.State.libraryIncompatible then return end
 
+-- Library
 local AWL = ArcaneWizardLibrary
 local Addon = AWL:GetAddon(addonName)
+
+-- Localization
 local L = AUR.Localization
+
+-- Current module
 local Chart = AUR.Modules.Chart
+
+-- Module imports
 local Utils = AUR.Modules.Utils
 local CurrencyMenu = AUR.Modules.CurrencyMenu
 local WowToken = AUR.Modules.WowToken
@@ -13,26 +20,7 @@ local ChartData = AUR.CHART_DATA
 local ChartConfig = AUR.UIConfig.Chart
 local OverviewConfig = AUR.UIConfig.Overview
 
----@class AurariumChartWindow: ArcaneWizardLibraryWindowFrame
----@field inset ArcaneWizardLibraryInsetFrame
----@field footerCloseButton Button
----@field artwork Texture
-local ChartFrame = nil
-
-local PlotFrame = nil
-local ScopeGroupFrame = nil
-local CharacterDropdownFrame = nil
-local CurrencyDropdownFrame = nil
-local PeriodDropdownFrame = nil
-local CharacterLabel = nil
-local FirstInputFrame = nil
-local LastInputFrame = nil
-local ApplyButtonFrame = nil
-local StatusText = nil
-local CaptionText = nil
-local CustomPanelFrame = nil
-local CustomButtonFrame = nil
-local SummaryTexts = {}
+-- Variables
 local selectedOwner = nil
 local selectedCurrency = "gold"
 local selectedCurrencyIcon = nil
@@ -40,13 +28,37 @@ local lastCharacterKey = nil
 local selectedPeriod = ChartData.defaultPeriod
 local history = nil
 local points = nil
-local rangeFirst = nil
-local rangeLast = nil
+local rangeFirst = nil ---@type string|nil
+local rangeLast = nil ---@type string|nil
 local minimum = nil
 local maximum = nil
 local refreshPending = false
+
+--------------
+--- Frames ---
+--------------
+
+local ChartFrame = nil ---@type AurariumChartWindow
+local PlotFrame = nil ---@type AurariumPlotFrame
+local ScopeGroupFrame = nil ---@type ArcaneWizardLibraryOptionGroup
+local CharacterDropdownFrame = nil ---@type ArcaneWizardLibraryDropdown
+local CurrencyDropdownFrame = nil ---@type ArcaneWizardLibraryDropdown
+local PeriodDropdownFrame = nil
+local CharacterLabel = nil ---@type FontString
+local FirstInputFrame = nil ---@type ArcaneWizardLibraryInput
+local LastInputFrame = nil ---@type ArcaneWizardLibraryInput
+local ApplyButtonFrame = nil ---@type ArcaneWizardLibraryActionButton
+local StatusText = nil ---@type FontString
+local CaptionText = nil ---@type FontString
+local CustomPanelFrame = nil ---@type Frame
+local CustomButtonFrame = nil ---@type ArcaneWizardLibraryActionButton
+local SummaryTexts = {}
 local ChartLines, AxisLabels, GridTextures = {}, {}, {}
 local LineJoinTextures = {}
+
+-----------------------
+--- Local Functions ---
+-----------------------
 
 local function DateParts(value)
 	local year, month, day = value:match("^(%d%d%d%d)%-(%d%d)%-(%d%d)$")
@@ -70,6 +82,10 @@ end
 local function ShiftDate(value, days)
 	return date("%Y-%m-%d", Timestamp(value) + days * 86400)
 end
+
+------------------
+--- Chart Data ---
+------------------
 
 function Chart:ParseDate(value)
 	if type(value) ~= "string" then
@@ -322,6 +338,10 @@ function Chart:ReduceSeries(series, limit)
 
 	return result
 end
+
+-----------------------
+--- Frame Functions ---
+-----------------------
 
 local function Scope()
 	if selectedOwner == "account" or selectedOwner == "warband" or selectedOwner == "token" then return selectedOwner end
@@ -600,9 +620,9 @@ local function DrawChart()
 
 	PlotFrame.singlePoint:Hide()
 	PlotFrame.empty:SetText(L[Scope() == "token" and "wow-token.no-data" or "chart.no-data"])
-	PlotFrame.empty:SetShown(not points or #points == 0)
+	PlotFrame.empty:SetShown(not points or #points == 0 or not rangeFirst or not rangeLast)
 
-	if not points or #points == 0 then
+	if not points or #points == 0 or not rangeFirst or not rangeLast then
 		for _, value in ipairs(SummaryTexts) do
 			value:SetText("-")
 			value:SetTextColor(unpack(ChartConfig.normalColor))
@@ -1202,6 +1222,10 @@ local function CreateWindow()
 	infoButton:SetScript("OnLeave", HideInfoTooltip)
 	infoButton:SetScript("OnHide", HideInfoTooltip)
 end
+
+------------------------
+--- Module Functions ---
+------------------------
 
 function Chart:Show(config)
 	config = config or {}
