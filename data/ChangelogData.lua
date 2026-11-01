@@ -14,6 +14,15 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
+			"Changed: The TOC no longer restricts loading by game type",
+			"Requires Arcane Wizard: Library revision 3 or later",
+			"Minor code adjustments"
+		}
+	},
+	{
+		version = "v2.41",
+		date = "2026-11-01",
+		entries = {
 			"Added: Currency 'Bound Silver' [retail]",
 			"Changed: Clarified labels in the options menu",
 			"Changed: Limited loading to Retail, Forever, Classic, and Talebound",
@@ -88,13 +97,6 @@ AUR.CHANGELOG = {
 			"Changed: Overview and Gold Display now use the native Blizzard UI appearance, with an optional border for the Gold Display",
 			"Changed: Character data can now be deleted from the character selection menu",
 			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility"
-		}
-	},
-	{
-		version = "v2.32",
-		date = "2026-10-03",
-		entries = {
-			"Updated: Logo"
 		}
 	}
 	-- END GENERATED CHANGELOG
