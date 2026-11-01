@@ -1205,22 +1205,9 @@ local function CreateWindow()
 
 	CaptionText:SetPoint("TOPRIGHT", -ArtworkConfig.infoSize - ChartConfig.header.infoGap, -ChartConfig.header.top)
 
-	infoButton:SetScript("OnEnter", function(self)
-		local r, g, b = NORMAL_FONT_COLOR:GetRGB()
-		GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-		GameTooltip:SetText(L["chart.title"], unpack(ChartConfig.normalColor))
-		GameTooltip:AddLine(L[Scope() == "token" and "wow-token.history-note" or "chart.history-note"], r, g, b, true)
-		GameTooltip:Show()
+	AWL.Controls:AttachInfoTooltip(infoButton, function()
+		return L[Scope() == "token" and "wow-token.history-note" or "chart.history-note"]
 	end)
-
-	local function HideInfoTooltip(self)
-		if GameTooltip:IsOwned(self) then
-			GameTooltip:Hide()
-		end
-	end
-
-	infoButton:SetScript("OnLeave", HideInfoTooltip)
-	infoButton:SetScript("OnHide", HideInfoTooltip)
 end
 
 ------------------------
