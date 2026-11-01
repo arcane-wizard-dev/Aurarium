@@ -1,3 +1,8 @@
+**v2.42 (2026-11-01)**
+- Changed: The TOC no longer restricts loading by game type
+- Requires Arcane Wizard: Library revision 3 or later
+- Minor code adjustments
+
 **v2.41 (2026-11-01)**
 - Added: Currency 'Bound Silver' [retail]
 - Changed: Clarified labels in the options menu
