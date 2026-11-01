@@ -1,3 +1,10 @@
+**v2.41 (2026-11-01)**
+- Added: Currency 'Bound Silver' [retail]
+- Changed: Clarified labels in the options menu
+- Changed: Limited loading to Retail, Forever, Classic, and Talebound
+- Updated: deDE, enUS, ruRU localizations
+- Minor code adjustments
+
 **v2.40 (2026-10-29)**
 - Added: TOC version for patch 12.1.7 [retail]
 - Removed: TOC version for patch 12.1.0 [retail]
