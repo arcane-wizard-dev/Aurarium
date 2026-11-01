@@ -14,6 +14,17 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
+			"Added: Currency 'Bound Silver' [retail]",
+			"Changed: Clarified labels in the options menu",
+			"Changed: Limited loading to Retail, Forever, Classic, and Talebound",
+			"Updated: deDE, enUS, ruRU localizations",
+			"Minor code adjustments"
+		}
+	},
+	{
+		version = "v2.40",
+		date = "2026-10-29",
+		entries = {
 			"Added: TOC version for patch 12.1.7 [retail]",
 			"Removed: TOC version for patch 12.1.0 [retail]"
 		}
@@ -84,16 +95,6 @@ AUR.CHANGELOG = {
 		date = "2026-10-03",
 		entries = {
 			"Updated: Logo"
-		}
-	},
-	{
-		version = "v2.31",
-		date = "2026-09-27",
-		entries = {
-			"Added: Explicit New badge control per currency",
-			"Changed: Mark currencies added in v2.30 as New",
-			"Fixed: Show today's balance immediately after login or reload",
-			"Minor code adjustments"
 		}
 	}
 	-- END GENERATED CHANGELOG
