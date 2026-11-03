@@ -14,6 +14,15 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
+			"Changed: The debug mode option now combines an enable checkbox with a Basic or Advanced level selector",
+			"Updated: deDE, enUS, ruRU localizations",
+			"Minor code adjustments"
+		}
+	},
+	{
+		version = "v2.42",
+		date = "2026-11-01",
+		entries = {
 			"Changed: The TOC no longer restricts loading by game type",
 			"Requires Arcane Wizard: Library revision 3 or later",
 			"Minor code adjustments"
@@ -88,15 +97,6 @@ AUR.CHANGELOG = {
 			"Added: Chart - Visualize gold and currency balances over selectable date ranges",
 			"Added: Configurable date format",
 			"Minor code adjustments"
-		}
-	},
-	{
-		version = "v2.33",
-		date = "2026-10-05",
-		entries = {
-			"Changed: Overview and Gold Display now use the native Blizzard UI appearance, with an optional border for the Gold Display",
-			"Changed: Character data can now be deleted from the character selection menu",
-			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility"
 		}
 	}
 	-- END GENERATED CHANGELOG
