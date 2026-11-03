@@ -1,3 +1,8 @@
+**v2.43 (2026-11-03)**
+- Changed: The debug mode option now combines an enable checkbox with a Basic or Advanced level selector
+- Updated: deDE, enUS, ruRU localizations
+- Minor code adjustments
+
 **v2.42 (2026-11-01)**
 - Changed: The TOC no longer restricts loading by game type
 - Requires Arcane Wizard: Library revision 3 or later
