@@ -44,9 +44,9 @@ AUR.UIConfig.GoldDisplay = {
 		}
 	},
 	displayModeOptions = {
-		{ value = "gold", coins = { "gold" } },
-		{ value = "gold-silver", coins = { "gold", "silver" } },
-		{ value = "all", coins = { "gold", "silver", "copper" } }
+		{value = "gold", coins = {"gold"}},
+		{value = "gold-silver", coins = {"gold", "silver"}},
+		{value = "all", coins = {"gold", "silver", "copper"}}
 	},
 	displayModePreviewValues = {
 		gold = 1,

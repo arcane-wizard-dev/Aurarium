@@ -117,5 +117,5 @@ AUR.UIConfig.Chart = {
 	normalColor = {1, 1, 1},
 	gridSteps = ArtworkConfig.gridSteps,
 	maxSegments = 600,
-	lineColor = { 1, 0.78, 0.2, 1 }
+	lineColor = {1, 0.78, 0.2, 1}
 }

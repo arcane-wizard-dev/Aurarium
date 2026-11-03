@@ -129,7 +129,7 @@ function Utils:GetGold()
 end
 
 function Utils:InitializeCurrencies()
-	local currencies = { character = {}, warband = {} }
+	local currencies = {character = {}, warband = {}}
 	AUR.State.currencies = currencies
 	AUR.State.currencyByID = {}
 

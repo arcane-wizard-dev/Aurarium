@@ -102,6 +102,7 @@ function Options:Initialize()
 
 	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L["options.general"]))
 
+	-- Date Format
 	AWL.Settings:AddDropdown(category, {
 		variableTable	= dateFormatProxy,
 		settingKey		= addonName .. "_date-format",
@@ -123,13 +124,22 @@ function Options:Initialize()
 	})
 
 	-- Debug Mode
-	AWL.Settings:AddCheckbox(category, {
-		variableTable	= AUR.Settings.general,
-		settingKey		= addonName .. "_debug-mode",
-		variableName	= "debug-mode",
-		name			= L["options.general.debug-mode.name"],
-		tooltip			= L["options.general.debug-mode.tooltip"],
-		default			= AUR.OPTIONS_DEFAULTS["general"]["debug-mode"]
+	AWL.Settings:AddCheckboxDropdownCombo(category, layout, {
+		variableTable			= AUR.Settings.general,
+		checkboxSettingKey		= addonName .. "_debug-mode",
+		checkboxVariableName	= "debug-mode",
+		checkboxName			= L["options.general.debug-mode.name"],
+		checkboxTooltip			= L["options.general.debug-mode.tooltip"],
+		checkboxDefault			= AUR.OPTIONS_DEFAULTS.general["debug-mode"],
+		dropdownSettingKey		= addonName .. "_debug-level",
+		dropdownVariableName	= "debug-level",
+		dropdownName			= L["options.general.debug-mode.level.name"],
+		dropdownTooltip			= L["options.general.debug-mode.level.tooltip"],
+		dropdownDefault			= AUR.OPTIONS_DEFAULTS.general["debug-level"],
+		dropdownOptions			= {
+			{value = "basic", label = L["options.general.debug-mode.level.value.basic"]},
+			{value = "advanced", label = L["options.general.debug-mode.level.value.advanced"]}
+		}
 	})
 
 	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L["options.currency-overview"]))

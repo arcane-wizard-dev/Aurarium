@@ -11,6 +11,7 @@ AUR.OPTIONS_DEFAULTS = {
 			["showInCompartment"] = false
 		},
 		["debug-mode"] = false,
+		["debug-level"] = "basic",
 		["date-format"] = "ymd",
 	},
 	["currency-overview"] = {
