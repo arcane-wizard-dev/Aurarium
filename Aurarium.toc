@@ -8,7 +8,7 @@
 ## DefaultState: enabled
 
 ## Dependencies: ArcaneWizardLibrary
-## X-Library-Revision: 3
+## X-Library-Revision: 4
 
 ## Notes: This addon tracks gold and currencies across characters. It brings recorded balances together in clear overviews and makes changes over time easy to follow.
 ## Notes-deDE: Dieses Addon erfasst Gold und Währungen verschiedener Charaktere. Es führt aufgezeichnete Bestände in übersichtlichen Ansichten zusammen und macht ihre Entwicklung im Zeitverlauf nachvollziehbar.

@@ -221,22 +221,22 @@ function AurariumFrame:ADDON_LOADED(_, addOnName)
 
 	isInitialized = true
 
-	Utils:PrintDebug(string.format(
+	Utils:PrintDebug(
 		"InitializeDatabase: key=%s, createdProfile=%s, createdProfileKey=%s, cleanedOptions=%s, activeProfile=%s",
-		tostring(dbInit.characterGUID),
-		tostring(dbInit.createdProfile),
-		tostring(dbInit.createdProfileKey),
-		tostring(dbInit.cleanedOptions),
-		tostring(dbInit.activeProfile)
-	))
+		dbInit.characterGUID,
+		dbInit.createdProfile,
+		dbInit.createdProfileKey,
+		dbInit.cleanedOptions,
+		dbInit.activeProfile
+	)
 	Utils:PrintDebug("Addon fully loaded.")
 end
 
 function AurariumFrame:PLAYER_ENTERING_WORLD(_, isInitialLogin, isReloadingUi)
-	Utils:PrintDebug(string.format(
+	Utils:PrintDebug(
 		"Event 'PLAYER_ENTERING_WORLD' fired. Payload: isInitialLogin=%s, isReloadingUi=%s",
-		tostring(isInitialLogin), tostring(isReloadingUi)
-	))
+		isInitialLogin, isReloadingUi
+	)
 
 	if isInitialized and (isInitialLogin or isReloadingUi) then
 		SaveBalance({gold = true})
@@ -269,10 +269,10 @@ function AurariumFrame:PLAYER_MONEY(...)
 end
 
 function AurariumFrame:CURRENCY_DISPLAY_UPDATE(_, currencyType, quantity, quantityChange, quantityGainSource, quantityLostSource)
-	Utils:PrintDebug(string.format(
+	Utils:PrintDebug(
 		"Event 'CURRENCY_DISPLAY_UPDATE' fired. Payload: currencyType=%s, quantity=%s, quantityChange=%s, quantityGainSource=%s, quantityLostSource=%s",
-		tostring(currencyType), tostring(quantity), tostring(quantityChange), tostring(quantityGainSource), tostring(quantityLostSource)
-	))
+		currencyType, quantity, quantityChange, quantityGainSource, quantityLostSource
+	)
 
 	if not isInitialized or currencyRefreshPending then return end
 
