@@ -221,7 +221,7 @@ function AurariumFrame:ADDON_LOADED(_, addOnName)
 
 	isInitialized = true
 
-	Utils:PrintDebug(
+	Utils:PrintDebugAdvanced(
 		"InitializeDatabase: key=%s, createdProfile=%s, createdProfileKey=%s, cleanedOptions=%s, activeProfile=%s",
 		dbInit.characterGUID,
 		dbInit.createdProfile,
@@ -233,7 +233,7 @@ function AurariumFrame:ADDON_LOADED(_, addOnName)
 end
 
 function AurariumFrame:PLAYER_ENTERING_WORLD(_, isInitialLogin, isReloadingUi)
-	Utils:PrintDebug(
+	Utils:PrintDebugAdvanced(
 		"Event 'PLAYER_ENTERING_WORLD' fired. Payload: isInitialLogin=%s, isReloadingUi=%s",
 		isInitialLogin, isReloadingUi
 	)
@@ -263,13 +263,13 @@ function AurariumFrame:PLAYER_ENTERING_WORLD(_, isInitialLogin, isReloadingUi)
 end
 
 function AurariumFrame:PLAYER_MONEY(...)
-	Utils:PrintDebug("Event 'PLAYER_MONEY' fired. No payload.")
+	Utils:PrintDebugAdvanced("Event 'PLAYER_MONEY' fired. No payload.")
 
 	SaveBalance({gold = true})
 end
 
 function AurariumFrame:CURRENCY_DISPLAY_UPDATE(_, currencyType, quantity, quantityChange, quantityGainSource, quantityLostSource)
-	Utils:PrintDebug(
+	Utils:PrintDebugAdvanced(
 		"Event 'CURRENCY_DISPLAY_UPDATE' fired. Payload: currencyType=%s, quantity=%s, quantityChange=%s, quantityGainSource=%s, quantityLostSource=%s",
 		currencyType, quantity, quantityChange, quantityGainSource, quantityLostSource
 	)

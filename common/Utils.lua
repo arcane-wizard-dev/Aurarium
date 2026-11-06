@@ -209,6 +209,12 @@ function Utils:PrintDebug(msg, ...)
 	Addon:PrintDebug(msg, ...)
 end
 
+function Utils:PrintDebugAdvanced(msg, ...)
+	if not AUR.Settings.general["debug-mode"] or AUR.Settings.general["debug-level"] ~= "advanced" then return end
+
+	Addon:PrintDebug(msg, ...)
+end
+
 function Utils:OpenSettings()
 	if not Addon:OpenCategory() then
 		self:PrintDebug("In combat. The options menu cannot be opened.")
