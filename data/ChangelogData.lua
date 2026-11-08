@@ -14,6 +14,15 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
+			"Fixed: Characters with an unknown class now appear in white in the character menu",
+			"Fixed: The Character and Account tabs now return to the current month after a character is deleted",
+			"Minor code adjustments"
+		}
+	},
+	{
+		version = "v2.45",
+		date = "2026-11-06",
+		entries = {
 			"Changed: The Basic debug level now shows important messages, while Advanced also includes technical details",
 			"Updated: deDE, enUS, ruRU localizations"
 		}
@@ -90,13 +99,6 @@ AUR.CHANGELOG = {
 			"Added: Daily WoW Token price history in the overview and chart [retail]",
 			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility",
 			"Minor code adjustments"
-		}
-	},
-	{
-		version = "v2.36",
-		date = "2026-10-14",
-		entries = {
-			"Fixed: Repeated error messages for missing translations"
 		}
 	}
 	-- END GENERATED CHANGELOG
