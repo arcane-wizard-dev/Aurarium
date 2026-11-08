@@ -6,3 +6,4 @@
 
 - Fixed: Characters with an unknown class now appear in white in the character menu
 - Fixed: The Character and Account tabs now return to the current month after a character is deleted
+- Minor code adjustments

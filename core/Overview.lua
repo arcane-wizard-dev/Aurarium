@@ -732,7 +732,6 @@ local function CreateOverviewPage(tabs, tabIndex)
 		column.text = L[column.text]
 	end
 
-	---@type AurariumOverviewTable
 	local scrollFrame = AWL.Tables:CreateTable({
 		parent = page,
 		width = OverviewConfig.inset.width,
@@ -745,6 +744,7 @@ local function CreateOverviewPage(tabs, tabIndex)
 	scrollFrame:SetAllPoints(page)
 	scrollFrame:SetScrollStep(OverviewConfig.scrollStep)
 
+	---@cast scrollFrame AurariumOverviewTable
 	scrollFrame.nextButton = AWL.Controls:CreateButton({
 		parent = scrollFrame,
 		width = OverviewConfig.buttonWidth,
