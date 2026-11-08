@@ -113,6 +113,8 @@ function Options:Initialize()
 		options			= dateFormatOptions
 	})
 
+	AWL.Settings:AddSeparator(layout)
+
 	-- Minimap Button
 	AWL.Settings:AddCheckbox(category, {
 		variableTable	= minimapButtonProxy,
