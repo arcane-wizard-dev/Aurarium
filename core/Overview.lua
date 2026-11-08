@@ -512,6 +512,7 @@ local function HandleCharacterDeleteConfirmed(characterKey)
 	end
 
 	currentMonthOffset[TabIndex.character] = 0
+	currentMonthOffset[TabIndex.account] = 0
 	UpdateCharacterOverview()
 	UpdateAccountOverview()
 
@@ -608,19 +609,19 @@ local function CreateCharacterDropdown(scrollFrame, background)
 
 			charButton:AddInitializer(function(button, description, menu)
 				local factionFileID = 0
-				local classColor = WHITE_FONT_COLOR
+				local classColor = WHITE_FONT_COLOR ---@type colorRGB
+				local class = entry.metadata.class
 
-				if entry.metadata.class then
-					local class = entry.metadata.class
-					local faction = entry.metadata.faction
-
+				if type(class) == "string" and class ~= "" then
 					if AWL.GAME_TYPE_RETAIL or AWL.GAME_TYPE_FOREVER then
-						---@diagnostic disable-next-line: cast-local-type
-						classColor = C_ClassColor.GetClassColor(class)
+						classColor = C_ClassColor.GetClassColor(class) or WHITE_FONT_COLOR
 					else
-						classColor = RAID_CLASS_COLORS[class]
+						classColor = RAID_CLASS_COLORS[class] or WHITE_FONT_COLOR
 					end
+				end
 
+				if class then
+					local faction = entry.metadata.faction
 					factionFileID = OverviewConfig.menu.factionIcons[faction] or 0
 				end
 
