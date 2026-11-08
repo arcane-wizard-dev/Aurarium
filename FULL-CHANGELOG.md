@@ -1,3 +1,8 @@
+**v2.46 (2026-11-08)**
+- Fixed: Characters with an unknown class now appear in white in the character menu
+- Fixed: The Character and Account tabs now return to the current month after a character is deleted
+- Minor code adjustments
+
 **v2.45 (2026-11-06)**
 - Changed: The Basic debug level now shows important messages, while Advanced also includes technical details
 - Updated: deDE, enUS, ruRU localizations
