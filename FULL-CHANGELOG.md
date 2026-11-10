@@ -1,3 +1,8 @@
+**v2.47 (2026-11-10)**
+- Changed: Reworked the options menu to prevent errors in Blizzard's settings and added a button to restore default values
+- Removed: Addon options from Blizzard's settings search
+- Requires Arcane Wizard: Library revision 5 or later
+
 **v2.46 (2026-11-08)**
 - Fixed: Characters with an unknown class now appear in white in the character menu
 - Fixed: The Character and Account tabs now return to the current month after a character is deleted
