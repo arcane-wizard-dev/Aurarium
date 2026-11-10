@@ -4,6 +4,6 @@
 
 **Important note: Migration of older character data will be removed at the end of 2026. Log in once with each character using an up-to-date version of Aurarium before then to preserve their gold and currency history.**
 
-- Fixed: Characters with an unknown class now appear in white in the character menu
-- Fixed: The Character and Account tabs now return to the current month after a character is deleted
-- Minor code adjustments
+- Changed: Reworked the options menu to prevent errors in Blizzard's settings and added a button to restore default values
+- Removed: Addon options from Blizzard's settings search
+- Requires Arcane Wizard: Library revision 5 or later
