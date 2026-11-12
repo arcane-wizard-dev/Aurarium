@@ -310,6 +310,7 @@ function Utils:UpdateCharacterData(characterGUID, refreshMetadata)
 	end
 
 	AUR.State.characterEntries = entries
+	AUR.State.sortedCharacters = nil
 end
 
 function Utils:GetCharacterEntry(characterKey)
@@ -317,7 +318,10 @@ function Utils:GetCharacterEntry(characterKey)
 end
 
 function Utils:GetSortedCharacters()
-	local characters = {}
+	local characters = AUR.State.sortedCharacters
+	if characters then return characters end
+
+	characters = {}
 
 	for _, entry in pairs(AUR.State.characterEntries) do
 		table.insert(characters, entry)
@@ -329,6 +333,8 @@ function Utils:GetSortedCharacters()
 
 		return a.key < b.key
 	end)
+
+	AUR.State.sortedCharacters = characters
 
 	return characters
 end
@@ -344,6 +350,7 @@ function Utils:DeleteCharacterData(characterKey)
 	AUR.Data.balance[characterKey] = nil
 	AUR.Data.character[characterKey] = nil
 	AUR.State.characterEntries[characterKey] = nil
+	AUR.State.sortedCharacters = nil
 
 	if AUR.State.latestBalances then
 		AUR.State.latestBalances[characterKey] = nil

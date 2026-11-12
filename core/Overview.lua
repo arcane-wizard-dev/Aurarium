@@ -343,8 +343,7 @@ end
 --- Frame Functions ---
 ----------------------
 
-local function LayoutHistoryCell(cell, tableFrame, index)
-	local x, width, align = tableFrame:GetColumnLayout(index)
+local function LayoutHistoryCell(cell, x, width, align)
 	cell:ClearAllPoints()
 	cell:SetPoint("LEFT", cell:GetParent(), "LEFT", x, 0)
 	cell:SetWidth(width)
@@ -439,6 +438,9 @@ local function UpdateOverview(config)
 	local contentWidth = scrollFrame:GetContentWidth()
 	local firstDate = history[1].date
 	local changeColors = OverviewConfig.history.changeColors
+	local dateX, dateWidth, dateAlign = scrollFrame:GetColumnLayout(1)
+	local amountX, amountWidth, amountAlign = scrollFrame:GetColumnLayout(2)
+	local differenceX, differenceWidth, differenceAlign = scrollFrame:GetColumnLayout(3)
 
 	for i, entry in ipairs(monthHistory) do
 		local background = GetHistoryRow(scrollFrame, i)
@@ -450,9 +452,9 @@ local function UpdateOverview(config)
 
 		local rowDate, rowAmount, rowDifference = background.cells[1], background.cells[2], background.cells[3]
 
-		for cellIndex, cell in ipairs(background.cells) do
-			LayoutHistoryCell(cell, scrollFrame, cellIndex)
-		end
+		LayoutHistoryCell(rowDate, dateX, dateWidth, dateAlign)
+		LayoutHistoryCell(rowAmount, amountX, amountWidth, amountAlign)
+		LayoutHistoryCell(rowDifference, differenceX, differenceWidth, differenceAlign)
 
 		local currentValue = entry.value
 		local prevValue = GetPreviousValueFromHistory(history, entry.date) or 0

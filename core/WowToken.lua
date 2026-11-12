@@ -17,6 +17,8 @@ local ticker = nil
 local pollSeconds = nil
 local lastRequest = nil
 local supported = false
+local cachedHistory = nil
+local cachedHistoryDay = nil
 
 --------------
 --- Frames ---
@@ -55,6 +57,7 @@ local function StorePrice(result)
 	supported = true
 
 	if changed then
+		cachedHistory = nil
 		NotifyViews()
 	end
 end
@@ -74,8 +77,10 @@ function WowToken:GetRegionName()
 end
 
 function WowToken:GetHistory()
-	local history = {}
 	local today = Utils:GetToday()
+	if cachedHistory and cachedHistoryDay == today then return cachedHistory end
+
+	local history = {}
 
 	for day, price in pairs(AUR.Data.tokenPrices or {}) do
 		if day <= today then
@@ -84,6 +89,8 @@ function WowToken:GetHistory()
 	end
 
 	table.sort(history, function(a, b) return a.date < b.date end)
+
+	cachedHistory, cachedHistoryDay = history, today
 
 	return history
 end
@@ -141,6 +148,7 @@ function WowToken:Initialize()
 
 	AUR.Data.tokenPrices = Aurarium_DataTokenPrices
 	supported = next(AUR.Data.tokenPrices or {}) ~= nil
+	cachedHistory = nil
 	EventFrame = CreateFrame("Frame")
 	EventFrame:RegisterEvent("TOKEN_STATUS_CHANGED")
 	EventFrame:RegisterEvent("TOKEN_MARKET_PRICE_UPDATED")

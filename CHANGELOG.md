@@ -5,5 +5,5 @@
 **Important note: Migration of older character data will be removed at the end of 2026. Log in once with each character using an up-to-date version of Aurarium before then to preserve their gold and currency history.**
 
 - Changed: Reduced repeated calculations when tracking gold and currencies and updating the gold display
-- Changed: Reduced repeated calculations in the currency overview and charts and reused table rows when refreshing the overview
+- Changed: Reduced repeated sorting, calculations, and layout queries in character lists, currency overviews, charts, and WoW Token price history, and reused table rows when refreshing the overview
 - Minor code adjustments
