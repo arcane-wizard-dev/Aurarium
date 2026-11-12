@@ -44,7 +44,6 @@ local function StorePrice(result)
 	if result == nil or result ~= LE_TOKEN_RESULT_SUCCESS or not C_WowTokenPublic.GetCommerceSystemStatus() then return end
 
 	local price = C_WowTokenPublic.GetCurrentMarketPrice()
-	-- Der Selbstvergleich erkennt NaN und verhindert ungültige Preise in der Historie.
 	if type(price) ~= "number" or price <= 0 or price == math.huge or price ~= price then return end
 
 	Aurarium_DataTokenPrices = Aurarium_DataTokenPrices or {}

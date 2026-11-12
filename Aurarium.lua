@@ -31,6 +31,8 @@ local AurariumFrame = CreateFrame("Frame", "Aurarium")
 local function UpdateDateHistory(today)
 	local dates = AUR.Data.dates
 
+	if dates[#dates] == today then return end
+
 	for _, d in ipairs(dates) do
 		if d == today then return end
 	end
@@ -40,20 +42,11 @@ local function UpdateDateHistory(today)
 end
 
 local function TrackGoldBalance(characterGUID, today)
-	local characterHistory = AUR.Data.balance[characterGUID]
 	AUR.Data.balance[characterGUID][today] = AUR.Data.balance[characterGUID][today] or {}
 
 	local newGold = Utils:GetGold()
 	AUR.State.gold = newGold
-	local prevGold = 0
-	local lastDate = nil
-
-	for dateKey, dayData in pairs(characterHistory) do
-		if dateKey < today and dayData["gold"] ~= nil and (not lastDate or dateKey > lastDate) then
-			lastDate = dateKey
-			prevGold = dayData["gold"]
-		end
-	end
+	local prevGold = Utils:GetPreviousBalance(characterGUID, "gold", today) or 0
 
 	if newGold ~= prevGold then
 		AUR.Data.balance[characterGUID][today]["gold"] = newGold
@@ -80,14 +73,7 @@ local function TrackCurrencyBalance(currency, characterGUID, today)
 
 	AUR.Data.balance[ownerKey] = AUR.Data.balance[ownerKey] or {}
 	local history = AUR.Data.balance[ownerKey]
-	local prevQty = 0
-	local lastDate = nil
-
-	for dateKey, dayData in pairs(history) do
-		if dateKey < today and dayData[currency.key] ~= nil and (not lastDate or dateKey > lastDate) then
-			lastDate, prevQty = dateKey, dayData[currency.key]
-		end
-	end
+	local prevQty = Utils:GetPreviousBalance(ownerKey, currency.key, today) or 0
 
 	if info.quantity ~= prevQty then
 		history[today] = history[today] or {}
@@ -162,7 +148,7 @@ local function SaveBalance(update)
 
 	Utils:PrintDebug("Balance saved.")
 
-	if update.gold and GoldDisplay and GoldDisplay.Refresh then
+	if update.gold and GoldDisplay and GoldDisplay.Refresh and GoldDisplay:IsShown() then
 		GoldDisplay:Refresh()
 	end
 

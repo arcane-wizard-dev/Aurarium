@@ -119,8 +119,8 @@ local function BuildGenericHistory(rawData, currencyKey)
 	local startIndex = nil
 
 	for i, date in ipairs(dates) do
-		local dayData = rawData[date] or {}
-		local v = dayData[currencyKey]
+		local dayData = rawData[date]
+		local v = dayData and dayData[currencyKey]
 
 		if v ~= nil then
 			startIndex = i
@@ -132,20 +132,28 @@ local function BuildGenericHistory(rawData, currencyKey)
 		return entries
 	end
 
+	local isSorted, lastDate = true, nil
+
 	for i = startIndex, #dates do
 		local date = dates[i]
-		local dayData = rawData[date] or {}
-		local value = dayData[currencyKey]
+		local dayData = rawData[date]
+		local value = dayData and dayData[currencyKey]
 
 		if value == nil then
 			value = lastValue
 		end
 
+		if isSorted and lastDate and date < lastDate then
+			isSorted = false
+		end
+
 		table.insert(entries, {date = date, value = value})
-		lastValue = value
+		lastValue, lastDate = value, date
 	end
 
-	table.sort(entries, function(a, b) return a.date < b.date end)
+	if not isSorted then
+		table.sort(entries, function(a, b) return a.date < b.date end)
+	end
 
 	return entries
 end
@@ -157,8 +165,8 @@ local function BuildGenericHistoryLookup(rawData, currencyKey)
 	local startIndex = nil
 
 	for i, date in ipairs(dates) do
-		local dayData = rawData[date] or {}
-		local v = dayData[currencyKey]
+		local dayData = rawData[date]
+		local v = dayData and dayData[currencyKey]
 
 		if v ~= nil then
 			startIndex = i
@@ -172,8 +180,8 @@ local function BuildGenericHistoryLookup(rawData, currencyKey)
 
 	for i = startIndex, #dates do
 		local date = dates[i]
-		local dayData = rawData[date] or {}
-		local value = dayData[currencyKey]
+		local dayData = rawData[date]
+		local value = dayData and dayData[currencyKey]
 
 		if value == nil then
 			value = lastValue
@@ -229,6 +237,8 @@ local function BuildAccountHistory(currencyKey)
 		table.insert(temp, {characterHistory = characterHistory})
 	end
 
+	local isSorted, lastDate = true, nil
+
 	for _, date in ipairs(dates) do
 		local value = 0
 		local hasValue = false
@@ -243,11 +253,18 @@ local function BuildAccountHistory(currencyKey)
 		end
 
 		if hasValue then
+			if isSorted and lastDate and date < lastDate then
+				isSorted = false
+			end
+
 			table.insert(entries, {date = date, value = value})
+			lastDate = date
 		end
 	end
 
-	table.sort(entries, function(a, b) return a.date < b.date end)
+	if not isSorted then
+		table.sort(entries, function(a, b) return a.date < b.date end)
+	end
 
 	return entries
 end
@@ -326,15 +343,49 @@ end
 --- Frame Functions ---
 ----------------------
 
-local function CreateHistoryCell(parent, tableFrame, index)
+local function LayoutHistoryCell(cell, tableFrame, index)
 	local x, width, align = tableFrame:GetColumnLayout(index)
-	local cell = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	cell:SetPoint("LEFT", parent, "LEFT", x, 0)
+	cell:ClearAllPoints()
+	cell:SetPoint("LEFT", cell:GetParent(), "LEFT", x, 0)
 	cell:SetWidth(width)
 	cell:SetJustifyH(align)
-	cell:SetWordWrap(false)
+end
 
-	return cell
+local function HighlightHistoryRow(row)
+	row.texture:SetAlpha(OverviewConfig.history.hoverAlpha)
+end
+
+local function ClearHistoryRow(row)
+	row.texture:SetAlpha(0)
+end
+
+local function GetHistoryRow(scrollFrame, index)
+	scrollFrame.historyRows = scrollFrame.historyRows or {}
+
+	local row = scrollFrame.historyRows[index]
+	if row then return row end
+
+	row = CreateFrame("Frame", nil, scrollFrame.content)
+
+	row.texture = row:CreateTexture(nil, "BACKGROUND")
+	row.texture:SetAllPoints()
+	row.texture:SetTexture(OverviewConfig.history.highlightTexture)
+	row.texture:SetAlpha(0)
+
+	row:SetScript("OnEnter", HighlightHistoryRow)
+	row:SetScript("OnLeave", ClearHistoryRow)
+
+	row.cells = {}
+
+	for cellIndex = 1, 3 do
+		local cell = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+		cell:SetWordWrap(false)
+		row.cells[cellIndex] = cell
+	end
+
+	scrollFrame.historyRows[index] = row
+
+	return row
 end
 
 local function UpdateOverview(config)
@@ -351,30 +402,27 @@ local function UpdateOverview(config)
 	local displayHistory = FilterUnchangedHistory(history)
 	local monthHistory = BuildMonthHistory(displayHistory, filterPrefix)
 
-	if scrollFrame.rows then
-		for _, row in ipairs(scrollFrame.rows) do
-			for _, element in ipairs(row) do
-				element:Hide()
-				element:SetParent(nil)
-			end
-		end
+	if not scrollFrame.monthHeader then
+		scrollFrame.monthHeader = scrollFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		scrollFrame.monthHeader:SetPoint("TOP", scrollFrame.scrollFrame, "TOP", OverviewConfig.monthHeading.x, OverviewConfig.monthHeading.y)
 	end
 
-	scrollFrame.rows = {}
-
-	local header = scrollFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	header:SetPoint("TOP", scrollFrame.scrollFrame, "TOP", OverviewConfig.monthHeading.x, OverviewConfig.monthHeading.y)
-	header:SetText(FormatMonthText(filterPrefix))
-	table.insert(scrollFrame.rows, {header})
+	scrollFrame.monthHeader:SetText(FormatMonthText(filterPrefix))
 
 	scrollFrame:SetColumnText(2, L[selectedCurrency == "token" and "wow-token.price" or "currency-overview.table.amount"])
 
-	if #monthHistory == 0 then
-		local noEntry = scrollFrame.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-		noEntry:SetPoint("TOP", 0, 0)
-		noEntry:SetText(L["currency-overview.table.no-entries"])
-		table.insert(scrollFrame.rows, {noEntry})
+	for index = #monthHistory + 1, #(scrollFrame.historyRows or {}) do
+		scrollFrame.historyRows[index]:Hide()
+	end
 
+	if #monthHistory == 0 then
+		if not scrollFrame.noEntryText then
+			scrollFrame.noEntryText = scrollFrame.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+			scrollFrame.noEntryText:SetPoint("TOP", 0, 0)
+			scrollFrame.noEntryText:SetText(L["currency-overview.table.no-entries"])
+		end
+
+		scrollFrame.noEntryText:Show()
 		scrollFrame:SetContentHeight(OverviewConfig.history.rowHeight)
 
 		scrollFrame.prevButton:SetEnabled(HasAnyDataBeforeMonth(displayHistory, filterPrefix))
@@ -383,58 +431,51 @@ local function UpdateOverview(config)
 		return
 	end
 
+	if scrollFrame.noEntryText then
+		scrollFrame.noEntryText:Hide()
+	end
+
 	local offsetY = 0
+	local contentWidth = scrollFrame:GetContentWidth()
+	local firstDate = history[1].date
+	local changeColors = OverviewConfig.history.changeColors
 
 	for i, entry in ipairs(monthHistory) do
-		local background = CreateFrame("Frame", nil, scrollFrame.content)
-		background:SetSize(scrollFrame:GetContentWidth(), OverviewConfig.history.rowHeight)
+		local background = GetHistoryRow(scrollFrame, i)
+		background:SetSize(contentWidth, OverviewConfig.history.rowHeight)
+		background:ClearAllPoints()
 		background:SetPoint("TOPLEFT", scrollFrame.content, "TOPLEFT", 0, offsetY)
+		background.texture:SetAlpha(background:IsMouseOver() and OverviewConfig.history.hoverAlpha or 0)
+		background:Show()
 
-		background.texture = background:CreateTexture(nil, "BACKGROUND")
-		background.texture:SetAllPoints()
-		background.texture:SetTexture(OverviewConfig.history.highlightTexture)
-		background.texture:SetAlpha(0)
+		local rowDate, rowAmount, rowDifference = background.cells[1], background.cells[2], background.cells[3]
 
-		background:SetScript("OnEnter", function(self)
-			self.texture:SetAlpha(OverviewConfig.history.hoverAlpha)
-		end)
+		for cellIndex, cell in ipairs(background.cells) do
+			LayoutHistoryCell(cell, scrollFrame, cellIndex)
+		end
 
-		background:SetScript("OnLeave", function(self)
-			self.texture:SetAlpha(0)
-		end)
-
-		local dateStr = entry.date
 		local currentValue = entry.value
+		local prevValue = GetPreviousValueFromHistory(history, entry.date) or 0
 
-		local prevValue = GetPreviousValueFromHistory(history, dateStr) or 0
-
-		local rowDate = CreateHistoryCell(background, scrollFrame, 1)
 		rowDate:SetText(Utils:FormatDate(entry.date))
-
-		local rowAmount = CreateHistoryCell(background, scrollFrame, 2)
 		rowAmount:SetText(FormatCurrency(currentValue, selectedCurrency))
-
-		local rowDifference = CreateHistoryCell(background, scrollFrame, 3)
-
-		local firstDate = history[1].date
 
 		if entry.date ~= firstDate then
 			local diff = currentValue - prevValue
 			rowDifference:SetText(FormatCurrencyDiff(diff, selectedCurrency))
 
 			if diff > 0 then
-				rowDifference:SetTextColor(unpack(OverviewConfig.history.changeColors.positive))
+				rowDifference:SetTextColor(unpack(changeColors.positive))
 			elseif diff < 0 then
-				rowDifference:SetTextColor(unpack(OverviewConfig.history.changeColors.negative))
+				rowDifference:SetTextColor(unpack(changeColors.negative))
 			else
-				rowDifference:SetTextColor(unpack(OverviewConfig.history.changeColors.unchanged))
+				rowDifference:SetTextColor(unpack(changeColors.unchanged))
 			end
 		else
 			rowDifference:SetText("-")
-			rowDifference:SetTextColor(unpack(OverviewConfig.history.changeColors.unchanged))
+			rowDifference:SetTextColor(unpack(changeColors.unchanged))
 		end
 
-		table.insert(scrollFrame.rows, {background, rowDate, rowAmount, rowDifference})
 		offsetY = offsetY - OverviewConfig.history.rowHeight
 	end
 
@@ -487,6 +528,18 @@ local function UpdateTokenOverview()
 		history = WowToken:GetHistory(),
 		tableFrame = scrollFrame
 	})
+end
+
+local function UpdateTabOverview(tabIndex)
+	if tabIndex == TabIndex.character then
+		UpdateCharacterOverview()
+	elseif tabIndex == TabIndex.account then
+		UpdateAccountOverview()
+	elseif tabIndex == TabIndex.warband then
+		UpdateWarbandOverview()
+	else
+		UpdateTokenOverview()
+	end
 end
 
 local function HandleCharacterDeleteConfirmed(characterKey)
@@ -557,14 +610,7 @@ local function CreateCurrencyDropdown(scrollFrame, background, tabIndex)
 		local function SetSelected(value)
 			selectedCurrency[tabIndex] = value
 			currentMonthOffset[tabIndex] = 0
-
-			if tabIndex == TabIndex.character then
-				UpdateCharacterOverview()
-			elseif tabIndex == TabIndex.account then
-				UpdateAccountOverview()
-			else
-				UpdateWarbandOverview()
-			end
+			UpdateTabOverview(tabIndex)
 		end
 
 		CurrencyMenu:Populate(root, {
@@ -751,16 +797,7 @@ local function CreateOverviewPage(tabs, tabIndex)
 		label = L["button.next"],
 		onClick = function()
 			currentMonthOffset[tabIndex] = currentMonthOffset[tabIndex] - 1
-
-			if tabIndex == TabIndex.character then
-				UpdateCharacterOverview()
-			elseif tabIndex == TabIndex.account then
-				UpdateAccountOverview()
-			elseif tabIndex == TabIndex.warband then
-				UpdateWarbandOverview()
-			else
-				UpdateTokenOverview()
-			end
+			UpdateTabOverview(tabIndex)
 		end
 	})
 
@@ -772,16 +809,7 @@ local function CreateOverviewPage(tabs, tabIndex)
 		label = L["button.prev"],
 		onClick = function()
 			currentMonthOffset[tabIndex] = currentMonthOffset[tabIndex] + 1
-
-			if tabIndex == TabIndex.character then
-				UpdateCharacterOverview()
-			elseif tabIndex == TabIndex.account then
-				UpdateAccountOverview()
-			elseif tabIndex == TabIndex.warband then
-				UpdateWarbandOverview()
-			else
-				UpdateTokenOverview()
-			end
+			UpdateTabOverview(tabIndex)
 		end
 	})
 

@@ -74,26 +74,6 @@ local function SetDiffTextColor(fontString, diff)
 	fontString:SetTextColor(color[1], color[2], color[3])
 end
 
-local function GetPreviousGold(characterGUID, today)
-	local characterHistory = AUR.Data.balance and AUR.Data.balance[characterGUID]
-
-	if not characterHistory then
-		return nil
-	end
-
-	local lastDate = nil
-	local previousGold = nil
-
-	for dateKey, dayData in pairs(characterHistory) do
-		if dateKey < today and dayData["gold"] ~= nil and (not lastDate or dateKey > lastDate) then
-			lastDate = dateKey
-			previousGold = dayData["gold"]
-		end
-	end
-
-	return previousGold
-end
-
 local function GetPosition()
 	local settings = AUR.Settings.goldDisplay or {}
 	local position = settings.position or {}
@@ -237,7 +217,7 @@ function GoldDisplay:Refresh()
 
 	local currentGold = Utils:GetGold()
 	local characterGUID = AWL.Utils:GetCharacterGUID()
-	local previousGold = GetPreviousGold(characterGUID, Utils:GetToday())
+	local previousGold = characterGUID and Utils:GetPreviousBalance(characterGUID, "gold", Utils:GetToday())
 
 	CurrentGoldText:SetText(FormatGold(currentGold))
 

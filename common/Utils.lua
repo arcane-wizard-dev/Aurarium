@@ -199,6 +199,43 @@ function Utils:GetLatestBalances(ownerKey)
 	return balances
 end
 
+function Utils:GetPreviousBalance(ownerKey, key, today)
+	local cache = AUR.State.previousBalances
+
+	if not cache or cache.day ~= today then
+		cache = {day = today, owners = {}}
+		AUR.State.previousBalances = cache
+	end
+
+	local previous = cache.owners[ownerKey]
+
+	if not previous then
+		local history = AUR.Data.balance and AUR.Data.balance[ownerKey]
+		if not history then return nil end
+
+		local latestDates = {}
+		previous = {}
+
+		for day, values in pairs(history) do
+			if day < today then
+				for valueKey, value in pairs(values) do
+					if not latestDates[valueKey] or day > latestDates[valueKey] then
+						previous[valueKey], latestDates[valueKey] = value, day
+					end
+				end
+			end
+		end
+
+		cache.owners[ownerKey] = previous
+	end
+
+	return previous[key]
+end
+
+function Utils:ResetPreviousBalances()
+	AUR.State.previousBalances = nil
+end
+
 function Utils:PrintMessage(msg)
 	PrintChatMessage(NORMAL_FONT_COLOR, addonName, msg)
 end
@@ -312,6 +349,10 @@ function Utils:DeleteCharacterData(characterKey)
 		AUR.State.latestBalances[characterKey] = nil
 	end
 
+	if AUR.State.previousBalances then
+		AUR.State.previousBalances.owners[characterKey] = nil
+	end
+
 	return true
 end
 
@@ -359,6 +400,7 @@ function Utils:InitializeDatabase(isLogin)
 	AUR.Data.character = Aurarium_DataCharacter_v2
 	AUR.Data.balance = Aurarium_DataBalance_v2
 	AUR.State.latestBalances = {}
+	self:ResetPreviousBalances()
 
 	local createdCharacter = not AUR.Data.character[characterGUID]
 	AUR.Data.character[characterGUID] = AUR.Data.character[characterGUID] or {}

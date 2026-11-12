@@ -32,6 +32,8 @@ local rangeFirst = nil ---@type string|nil
 local rangeLast = nil ---@type string|nil
 local minimum = nil
 local maximum = nil
+local rangeDays = nil
+local seriesStartOffset = nil
 local refreshPending = false
 
 --------------
@@ -262,6 +264,8 @@ function Chart:GetSeries(history, first, last)
 	end
 
 	local day = first < history[1].date and history[1].date or first
+	local stamp = Timestamp(day)
+	local dayIndex = 0
 	local index = 1
 	local value = nil
 
@@ -272,10 +276,11 @@ function Chart:GetSeries(history, first, last)
 		end
 
 		if value ~= nil then
-			series[#series + 1] = {date = day, value = value}
+			series[#series + 1] = {date = day, value = value, dayIndex = dayIndex}
 		end
 
-		day = ShiftDate(day, 1)
+		dayIndex = dayIndex + 1
+		day = date("%Y-%m-%d", stamp + dayIndex * 86400)
 	end
 
 	return series
@@ -536,8 +541,7 @@ local function DrawGridLine(config)
 end
 
 local function Coordinates(point)
-	local days = Chart:GetDayOffset(rangeFirst, rangeLast)
-	local x = days > 0 and Chart:GetDayOffset(rangeFirst, point.date) / days * PlotFrame:GetWidth() or PlotFrame:GetWidth() / 2
+	local x = rangeDays > 0 and (seriesStartOffset + point.dayIndex) / rangeDays * PlotFrame:GetWidth() or PlotFrame:GetWidth() / 2
 	local y = (point.value - minimum) / (maximum - minimum) * PlotFrame:GetHeight()
 
 	return x, y
@@ -554,15 +558,14 @@ local function ClearHover()
 end
 
 local function UpdateHover()
-	if not points or #points == 0 then
+	if not points or #points == 0 or not rangeDays then
 		return
 	end
 
 	local cursorX = GetCursorPosition()
 	local x = cursorX / PlotFrame:GetEffectiveScale() - PlotFrame:GetLeft()
-	local days = Chart:GetDayOffset(rangeFirst, rangeLast)
-	local offset = math.floor(math.max(0, math.min(1, x / PlotFrame:GetWidth())) * days + 0.5)
-	local index = offset - Chart:GetDayOffset(rangeFirst, points[1].date) + 1
+	local offset = math.floor(math.max(0, math.min(1, x / PlotFrame:GetWidth())) * rangeDays + 0.5)
+	local index = offset - (seriesStartOffset + points[1].dayIndex) + 1
 
 	if index < 1 or index > #points then
 		ClearHover()
@@ -601,6 +604,7 @@ end
 
 local function DrawChart()
 	ClearHover()
+	rangeDays, seriesStartOffset = nil, nil
 
 	for _, line in pairs(ChartLines) do
 		line:Hide()
@@ -631,6 +635,8 @@ local function DrawChart()
 		return
 	end
 
+	rangeDays = Chart:GetDayOffset(rangeFirst, rangeLast)
+	seriesStartOffset = Chart:GetDayOffset(rangeFirst, points[1].date) - points[1].dayIndex
 	minimum, maximum = points[1].value, points[1].value
 
 	for _, point in ipairs(points) do
