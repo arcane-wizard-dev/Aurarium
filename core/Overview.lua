@@ -339,9 +339,9 @@ local function GetPreviousValueFromHistory(history, currentDate)
 	return idx > 0 and history[idx].value or nil
 end
 
-----------------------
+-----------------------
 --- Frame Functions ---
-----------------------
+-----------------------
 
 local function LayoutHistoryCell(cell, x, width, align)
 	cell:ClearAllPoints()

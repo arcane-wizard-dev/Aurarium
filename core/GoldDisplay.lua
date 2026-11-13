@@ -113,9 +113,9 @@ local function RestorePosition()
 	GoldDisplayFrame:SetPoint(position.point, UIParent, position.relativePoint, position.x, position.y)
 end
 
-----------------------
+-----------------------
 --- Frame Functions ---
-----------------------
+-----------------------
 
 local function CreateLogoButton(frame)
 	local LogoConfig = GoldDisplayConfig.logo
