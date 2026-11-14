@@ -1,3 +1,8 @@
+**v2.48 (2026-11-14)**
+- Changed: Reduced repeated calculations when tracking gold and currencies and updating the gold display
+- Changed: Reduced repeated sorting, calculations, and layout queries in character lists, currency overviews, charts, and WoW Token price history, and reused table rows when refreshing the overview
+- Minor code adjustments
+
 **v2.47 (2026-11-10)**
 - Changed: Reworked the options menu to prevent errors in Blizzard's settings and added a button to restore default values
 - Removed: Addon options from Blizzard's settings search
