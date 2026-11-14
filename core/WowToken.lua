@@ -46,6 +46,7 @@ local function StorePrice(result)
 	if result == nil or result ~= LE_TOKEN_RESULT_SUCCESS or not C_WowTokenPublic.GetCommerceSystemStatus() then return end
 
 	local price = C_WowTokenPublic.GetCurrentMarketPrice()
+
 	if type(price) ~= "number" or price <= 0 or price == math.huge or price ~= price then return end
 
 	Aurarium_DataTokenPrices = Aurarium_DataTokenPrices or {}
@@ -78,7 +79,10 @@ end
 
 function WowToken:GetHistory()
 	local today = Utils:GetToday()
-	if cachedHistory and cachedHistoryDay == today then return cachedHistory end
+
+	if cachedHistory and cachedHistoryDay == today then
+		return cachedHistory
+	end
 
 	local history = {}
 
@@ -99,6 +103,7 @@ function WowToken:RequestPrice()
 	if not EventFrame or not C_WowTokenPublic.GetCommerceSystemStatus() then return end
 
 	local now = GetTime()
+
 	if lastRequest and now - lastRequest < pollSeconds then return end
 
 	lastRequest = now

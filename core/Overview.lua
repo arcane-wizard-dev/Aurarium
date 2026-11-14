@@ -62,7 +62,9 @@ end
 local function FormatMonthText(prefix)
 	local year, month = strsplit("-", prefix)
 
-	if not month or not year then return prefix end
+	if not month or not year then
+		return prefix
+	end
 
 	local key = AUR.MONTH_KEYS[tonumber(month)]
 
@@ -362,7 +364,10 @@ local function GetHistoryRow(scrollFrame, index)
 	scrollFrame.historyRows = scrollFrame.historyRows or {}
 
 	local row = scrollFrame.historyRows[index]
-	if row then return row end
+
+	if row then
+		return row
+	end
 
 	row = CreateFrame("Frame", nil, scrollFrame.content)
 
@@ -403,7 +408,10 @@ local function UpdateOverview(config)
 
 	if not scrollFrame.monthHeader then
 		scrollFrame.monthHeader = scrollFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-		scrollFrame.monthHeader:SetPoint("TOP", scrollFrame.scrollFrame, "TOP", OverviewConfig.monthHeading.x, OverviewConfig.monthHeading.y)
+		scrollFrame.monthHeader:SetPoint(
+			"TOP", scrollFrame.scrollFrame, "TOP",
+			OverviewConfig.monthHeading.x, OverviewConfig.monthHeading.y
+		)
 	end
 
 	scrollFrame.monthHeader:SetText(FormatMonthText(filterPrefix))
@@ -521,6 +529,7 @@ end
 
 local function UpdateTokenOverview()
 	local scrollFrame = OverviewScrollFrames[TabIndex.token]
+
 	if not scrollFrame then return end
 
 	scrollFrame.regionDropdown:SetDefaultText(L["wow-token.region"] .. ": " .. WowToken:GetRegionName())
@@ -546,6 +555,7 @@ end
 
 local function HandleCharacterDeleteConfirmed(characterKey)
 	local entry = Utils:GetCharacterEntry(characterKey)
+
 	if not entry then return end
 
 	local removed, errorCode = Utils:DeleteCharacterData(characterKey)
@@ -584,6 +594,7 @@ end
 
 local function ShowCharacterDeleteConfirm(characterKey)
 	local entry = Utils:GetCharacterEntry(characterKey)
+
 	if not entry or IsCurrentCharacter(characterKey) then
 		return
 	end
@@ -724,7 +735,10 @@ local function CreateMoreMenu(tabs)
 	button.resizeToText = false
 	button:SetPoint("TOPRIGHT", OverviewFrame, "TOPRIGHT", MoreMenuConfig.x, MoreMenuConfig.y)
 	button:SetText(L["currency-overview.menu.more"])
-	local width = math.max(MoreMenuConfig.minimumWidth, math.ceil(button.Text:GetUnboundedStringWidth()) + MoreMenuConfig.arrowSize + MoreMenuConfig.textInset * 2)
+	local width = math.max(
+		MoreMenuConfig.minimumWidth,
+		math.ceil(button.Text:GetUnboundedStringWidth()) + MoreMenuConfig.arrowSize + MoreMenuConfig.textInset * 2
+	)
 	button:SetSize(width, MoreMenuConfig.height)
 	button.Text:ClearAllPoints()
 	button.Text:SetPoint("LEFT", MoreMenuConfig.textInset, 0)
@@ -751,7 +765,11 @@ local function CreateMoreMenu(tabs)
 			local text = menuButton.fontString
 			local textWidth = text:GetUnboundedStringWidth()
 			text:ClearAllPoints()
-			text:SetPoint("LEFT", MoreMenuConfig.itemPadding + MoreMenuConfig.icon.size + MoreMenuConfig.iconGap, MoreMenuConfig.itemTextOffsetY)
+			text:SetPoint(
+				"LEFT",
+				MoreMenuConfig.itemPadding + MoreMenuConfig.icon.size + MoreMenuConfig.iconGap,
+				MoreMenuConfig.itemTextOffsetY
+			)
 			text:SetWidth(textWidth)
 
 			return textWidth + MoreMenuConfig.icon.size + MoreMenuConfig.iconGap + MoreMenuConfig.itemPadding * 2, MoreMenuConfig.itemHeight

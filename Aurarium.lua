@@ -61,6 +61,7 @@ end
 
 local function TrackCurrencyBalance(currency, characterGUID, today)
 	local info = currency.info
+
 	if not info or info.quantity == nil then return end
 
 	local ownerKey = characterGUID
@@ -93,9 +94,11 @@ end
 
 local function SaveBalance(update)
 	if not isInitialized then return end
+
 	if update.currencyID and not AUR.State.currencyByID[update.currencyID] then return end
 
 	local characterGUID = AWL.Utils:GetCharacterGUID()
+
 	if not characterGUID then return end
 
 	local today = Utils:GetToday()
@@ -284,6 +287,6 @@ AurariumFrame:RegisterEvent("PLAYER_MONEY")
 AurariumFrame:RegisterEvent("CURRENCY_DISPLAY_UPDATE")
 AurariumFrame:SetScript("OnEvent", AurariumFrame.OnEvent)
 
-SLASH_Aurarium1, SLASH_Aurarium2 = '/aur', '/aurarium'
+SLASH_Aurarium1, SLASH_Aurarium2 = "/aur", "/aurarium"
 
 SlashCmdList["Aurarium"] = SlashCommand

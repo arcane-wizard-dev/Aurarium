@@ -14,7 +14,6 @@ AUR.CURRENCY_CATEGORY_ORDER = {
 	"season",		-- 268, 263, 265
 	"timerunning",	-- 266
 	false,          -- Separator between general and expansion currencies
-	--"classic",    -- 4
 	"tbc",          -- 23
 	"wotlk",        -- 21
 	"cata",         -- 81

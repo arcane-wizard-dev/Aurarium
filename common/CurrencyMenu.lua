@@ -39,11 +39,16 @@ local function GetCharacterBalances(characterKey)
 end
 
 local function GetBalances(scope, characterKey)
-	if scope == "warband" then return {}, true end
+	if scope == "warband" then
+		return {}, true
+	end
 
 	if scope == "character" then
 		characterKey = characterKey or AWL.Utils:GetCharacterGUID()
-		if characterKey == AWL.Utils:GetCharacterGUID() then return {gold = AUR.State.gold}, true end
+
+		if characterKey == AWL.Utils:GetCharacterGUID() then
+			return {gold = AUR.State.gold}, true
+		end
 
 		return Utils:GetLatestBalances(characterKey), false
 	end
@@ -60,7 +65,9 @@ local function GetBalances(scope, characterKey)
 end
 
 local function FormatAmount(quantity, info)
-	if quantity == nil then return "-" end
+	if quantity == nil then
+		return "-"
+	end
 
 	local amount = BreakUpLargeNumbers(quantity)
 
@@ -105,6 +112,7 @@ end
 local function AddEntry(parent, option, context)
 	local currencyButton = parent:CreateRadio(option.label, context.isSelected, context.onSelected, option.value)
 	local entry = option.entry
+
 	if not entry then return end
 
 	local info = context.useLiveBalances and entry.info or nil
@@ -161,7 +169,10 @@ function CurrencyMenu:GetOptions(scope)
 	end
 
 	local categories = AUR.State.currencies[scope == "warband" and "warband" or "character"] or {}
-	if not next(categories) then return options end
+
+	if not next(categories) then
+		return options
+	end
 
 	local dividerPending = #options > 0
 
@@ -182,7 +193,11 @@ function CurrencyMenu:GetOptions(scope)
 				end
 
 				children = {}
-				options[#options + 1] = {label = AUR.CURRENCY_EXPANSION_NAMES[category] or L["currency-overview.category." .. category], category = category, children = children}
+				options[#options + 1] = {
+					label = AUR.CURRENCY_EXPANSION_NAMES[category] or L["currency-overview.category." .. category],
+					category = category,
+					children = children
+				}
 			end
 
 			for _, entry in ipairs(entries) do
@@ -201,6 +216,7 @@ function CurrencyMenu:Populate(root, config)
 		if config.emptyText then
 			root:CreateButton(config.emptyText):SetEnabled(false)
 		end
+
 		return
 	end
 

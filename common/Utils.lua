@@ -81,7 +81,9 @@ local function AddAvailableCurrencies(definitions, categories, keyPrefix)
 end
 
 local function GetPatchOrder(patch)
-	if not patch then return 0 end
+	if not patch then
+		return 0
+	end
 
 	local major, minor, revision = patch:match("^(%d+)%.(%d+)%.(%d+)$")
 
@@ -98,9 +100,13 @@ end
 
 function Utils:GetDateFormat()
 	local selected = AUR.Settings.general["date-format"]
+
 	for _, format in ipairs(AUR.DATE_FORMATS) do
-		if selected == format then return format end
+		if selected == format then
+			return format
+		end
 	end
+
 	return AUR.OPTIONS_DEFAULTS.general["date-format"]
 end
 
@@ -110,17 +116,31 @@ end
 
 function Utils:FormatDate(value, short)
 	local format = self:GetDateFormat()
+
 	if format == "dmy" then
 		local formatted = value:sub(9, 10) .. "." .. value:sub(6, 7) .. "."
-		if short then return formatted end
+
+		if short then
+			return formatted
+		end
+
 		return formatted .. value:sub(1, 4)
 	end
+
 	if format == "mdy" then
 		local formatted = value:sub(6, 7) .. "/" .. value:sub(9, 10)
-		if short then return formatted end
+
+		if short then
+			return formatted
+		end
+
 		return formatted .. "/" .. value:sub(1, 4)
 	end
-	if short then return value:sub(6) end
+
+	if short then
+		return value:sub(6)
+	end
+
 	return value
 end
 
@@ -170,9 +190,11 @@ end
 
 function Utils:RefreshCurrency(currencyID)
 	local entry = AUR.State.currencyByID[currencyID]
+
 	if not entry or not C_CurrencyInfo or not C_CurrencyInfo.GetCurrencyInfo then return end
 
 	local info = C_CurrencyInfo.GetCurrencyInfo(currencyID)
+
 	if not info or info.quantity == nil then return end
 
 	entry.info = GetCurrencyBalanceInfo(info)
@@ -182,7 +204,10 @@ end
 
 function Utils:GetLatestBalances(ownerKey)
 	AUR.State.latestBalances = AUR.State.latestBalances or {}
-	if AUR.State.latestBalances[ownerKey] then return AUR.State.latestBalances[ownerKey] end
+
+	if AUR.State.latestBalances[ownerKey] then
+		return AUR.State.latestBalances[ownerKey]
+	end
 
 	local balances, latestDates = {}, {}
 
@@ -211,7 +236,10 @@ function Utils:GetPreviousBalance(ownerKey, key, today)
 
 	if not previous then
 		local history = AUR.Data.balance and AUR.Data.balance[ownerKey]
-		if not history then return nil end
+
+		if not history then
+			return nil
+		end
 
 		local latestDates = {}
 		previous = {}
@@ -319,7 +347,10 @@ end
 
 function Utils:GetSortedCharacters()
 	local characters = AUR.State.sortedCharacters
-	if characters then return characters end
+
+	if characters then
+		return characters
+	end
 
 	characters = {}
 
@@ -328,8 +359,13 @@ function Utils:GetSortedCharacters()
 	end
 
 	table.sort(characters, function(a, b)
-		if a.realm ~= b.realm then return a.realm < b.realm end
-		if a.name ~= b.name then return a.name < b.name end
+		if a.realm ~= b.realm then
+			return a.realm < b.realm
+		end
+
+		if a.name ~= b.name then
+			return a.name < b.name
+		end
 
 		return a.key < b.key
 	end)
@@ -345,7 +381,10 @@ function Utils:DeleteCharacterData(characterKey)
 	end
 
 	local entry = self:GetCharacterEntry(characterKey)
-	if not entry then return false, "not-found" end
+
+	if not entry then
+		return false, "not-found"
+	end
 
 	AUR.Data.balance[characterKey] = nil
 	AUR.Data.character[characterKey] = nil

@@ -112,7 +112,9 @@ function Chart:ParseDate(value)
 
 	local ok, stamp = pcall(Timestamp, value)
 
-	if ok and stamp and date("%Y-%m-%d", stamp) == value then return value end
+	if ok and stamp and date("%Y-%m-%d", stamp) == value then
+		return value
+	end
 end
 
 function Chart:FormatDate(value, short)
@@ -148,14 +150,20 @@ function Chart:GetRange(config)
 	local today = Utils:GetToday()
 	local days = ChartData.days[config.period]
 
-	if days then return ShiftDate(today, 1 - days), today end
+	if days then
+		return ShiftDate(today, 1 - days), today
+	end
 
 	if config.period == "custom" then
 		local first, last = self:ParseDate(config.first), self:ParseDate(config.last)
 
-		if not first or not last then return nil, nil, "date" end
+		if not first or not last then
+			return nil, nil, "date"
+		end
 
-		if first > last or last > today then return nil, nil, "range" end
+		if first > last or last > today then
+			return nil, nil, "range"
+		end
 
 		return first, last
 	elseif config.period == "month" then
@@ -177,12 +185,18 @@ function Chart:GetHistory(scope, characterKey, currencyKey)
 	if scope == "token" then
 		return WowToken:IsSupported() and WowToken:GetHistory() or {}
 	end
-	if currencyKey == "token" then return {} end
+
+	if currencyKey == "token" then
+		return {}
+	end
 
 	local owners = {}
 
 	if scope == "warband" then
-		if not AWL.GAME_TYPE_RETAIL or currencyKey:sub(1, 2) ~= "w-" then return {} end
+		if not AWL.GAME_TYPE_RETAIL or currencyKey:sub(1, 2) ~= "w-" then
+			return {}
+		end
+
 		owners[1] = {key = "Warband", history = AUR.Data.balance.Warband or {}}
 	elseif currencyKey:sub(1, 2) == "w-" then
 		return {}
@@ -257,7 +271,9 @@ end
 function Chart:GetSeries(history, first, last)
 	local series = {}
 
-	if #history == 0 or history[1].date > last then return series end
+	if #history == 0 or history[1].date > last then
+		return series
+	end
 
 	if #history == 1 and history[1].date == Utils:GetToday() and history[1].value == 0 then
 		return series
@@ -291,7 +307,9 @@ function Chart:GetDayOffset(first, last)
 end
 
 function Chart:GetDateTicks(first, last, limit)
-	if first == last then return {first} end
+	if first == last then
+		return {first}
+	end
 
 	local days = self:GetDayOffset(first, last)
 	local steps = math.min(days, math.max(2, math.floor(limit)) - 1)
@@ -307,7 +325,9 @@ end
 function Chart:ReduceSeries(series, limit)
 	limit = math.max(4, math.floor(limit))
 
-	if #series <= limit then return series end
+	if #series <= limit then
+		return series
+	end
 
 	local result = {series[1]}
 	local buckets = math.floor((limit - 2) / 2)
@@ -349,7 +369,9 @@ end
 -----------------------
 
 local function Scope()
-	if selectedOwner == "account" or selectedOwner == "warband" or selectedOwner == "token" then return selectedOwner end
+	if selectedOwner == "account" or selectedOwner == "warband" or selectedOwner == "token" then
+		return selectedOwner
+	end
 
 	return "character"
 end
@@ -446,12 +468,16 @@ end
 
 local function FindOption(options, value)
 	for _, option in ipairs(options) do
-		if option.value ~= nil and (value == nil or option.value == value) then return option end
+		if option.value ~= nil and (value == nil or option.value == value) then
+			return option
+		end
 
 		if option.children then
 			local child = FindOption(option.children, value)
 
-			if child then return child end
+			if child then
+				return child
+			end
 		end
 	end
 end
@@ -1043,7 +1069,10 @@ local function CreateSidebar(content)
 		onEnterPressed = ApplyRange
 	})
 	FirstInputFrame:SetPoint("TOPLEFT", ChartConfig.sidebar.inputLeft, -ChartConfig.sidebar.firstInputTop)
-	Label(CustomPanelFrame, L["chart.from"]):SetPoint("BOTTOMLEFT", FirstInputFrame, "TOPLEFT", -ChartConfig.sidebar.inputLeft, ChartConfig.labelGap)
+	Label(CustomPanelFrame, L["chart.from"]):SetPoint(
+		"BOTTOMLEFT", FirstInputFrame, "TOPLEFT",
+		-ChartConfig.sidebar.inputLeft, ChartConfig.labelGap
+	)
 
 	LastInputFrame = AWL.Controls:CreateInput({
 		parent = CustomPanelFrame,
@@ -1054,7 +1083,10 @@ local function CreateSidebar(content)
 		onEnterPressed = ApplyRange
 	})
 	LastInputFrame:SetPoint("TOPLEFT", ChartConfig.sidebar.inputLeft, -ChartConfig.sidebar.lastInputTop)
-	Label(CustomPanelFrame, L["chart.to"]):SetPoint("BOTTOMLEFT", LastInputFrame, "TOPLEFT", -ChartConfig.sidebar.inputLeft, ChartConfig.labelGap)
+	Label(CustomPanelFrame, L["chart.to"]):SetPoint(
+		"BOTTOMLEFT", LastInputFrame, "TOPLEFT",
+		-ChartConfig.sidebar.inputLeft, ChartConfig.labelGap
+	)
 
 	ApplyButtonFrame = AWL.Controls:CreateButton({
 		parent = CustomPanelFrame,
@@ -1132,7 +1164,10 @@ local function CreateWindow()
 		ChartConfig.footer.buttonWidth,
 		ChartFrame.footerCloseButton:GetFontString():GetUnboundedStringWidth() + ChartConfig.footer.buttonTextPadding
 	))
-	ChartFrame.footerCloseButton:SetPoint("TOPRIGHT", ChartFrame.inset, "BOTTOMRIGHT", -OverviewConfig.buttonOffset.x, OverviewConfig.buttonOffset.y)
+	ChartFrame.footerCloseButton:SetPoint(
+		"TOPRIGHT", ChartFrame.inset, "BOTTOMRIGHT",
+		-OverviewConfig.buttonOffset.x, OverviewConfig.buttonOffset.y
+	)
 
 	local body = ChartFrame.content
 	body:ClearAllPoints()
@@ -1263,6 +1298,7 @@ function Chart:OnBalanceUpdated(update)
 
 	local affected = update.currencies or selectedCurrency == "gold" and update.gold
 		or update.currencyID and selectedCurrency and tonumber(selectedCurrency:sub(3)) == update.currencyID
+
 	if not affected then
 		return
 	end

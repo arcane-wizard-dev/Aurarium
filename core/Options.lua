@@ -19,6 +19,7 @@ local Utils = AUR.Modules.Utils
 
 -- Variables
 local dateFormatOptions = {}
+
 for _, format in ipairs(AUR.DATE_FORMATS) do
 	dateFormatOptions[#dateFormatOptions + 1] = {value = format, label = L["date-format." .. format]}
 end
@@ -65,14 +66,19 @@ local minimapButtonProxy = setmetatable({}, {
 
 local dateFormatProxy = setmetatable({}, {
 	__index = function(_, key)
-		if key == "date-format" then return Utils:GetDateFormat() end
+		if key == "date-format" then
+			return Utils:GetDateFormat()
+		end
 	end,
 	__newindex = function(_, key, value)
 		if key ~= "date-format" then return end
+
 		AUR.Settings.general[key] = value
+
 		if AUR.Modules.Overview:IsShown() then
 			AUR.Modules.Overview:Refresh()
 		end
+
 		AUR.Modules.Chart:RefreshDateFormat()
 	end,
 })
