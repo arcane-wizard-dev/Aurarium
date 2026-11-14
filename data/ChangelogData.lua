@@ -14,6 +14,15 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
+			"Changed: Reduced repeated calculations when tracking gold and currencies and updating the gold display",
+			"Changed: Reduced repeated sorting, calculations, and layout queries in character lists, currency overviews, charts, and WoW Token price history, and reused table rows when refreshing the overview",
+			"Minor code adjustments"
+		}
+	},
+	{
+		version = "v2.47",
+		date = "2026-11-10",
+		entries = {
 			"Changed: Reworked the options menu to prevent errors in Blizzard's settings and added a button to restore default values",
 			"Removed: Addon options from Blizzard's settings search",
 			"Requires Arcane Wizard: Library revision 5 or later"
@@ -90,15 +99,6 @@ AUR.CHANGELOG = {
 			"Updated: Addon description",
 			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility",
 			"Minor code adjustments"
-		}
-	},
-	{
-		version = "v2.38",
-		date = "2026-10-21",
-		entries = {
-			"Added: Table menu in the overview to hide unchanged entries",
-			"Changed: Improved chart rendering and tooltips",
-			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility"
 		}
 	}
 	-- END GENERATED CHANGELOG
