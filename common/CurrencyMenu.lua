@@ -5,6 +5,9 @@ if AUR.State and AUR.State.libraryIncompatible then return end
 -- Library
 local AWL = ArcaneWizardLibrary
 
+-- Localization
+local L = AUR.Localization
+
 -- Current module
 local CurrencyMenu = AUR.Modules.CurrencyMenu
 
@@ -56,12 +59,72 @@ local function GetBalances(scope, characterKey)
 	local balances = {}
 
 	for _, character in ipairs(Utils:GetSortedCharacters()) do
-		for key, value in pairs(GetCharacterBalances(character.key)) do
-			balances[key] = (balances[key] or 0) + value
+		if CurrencyMenu:IncludesCharacter(scope, character) then
+			for key, value in pairs(GetCharacterBalances(character.key)) do
+				balances[key] = (balances[key] or 0) + value
+			end
 		end
 	end
 
 	return balances, false
+end
+
+function CurrencyMenu:GetViewScope(owner)
+	if owner == "alliance" or owner == "horde" or owner == "account" then
+		return owner
+	end
+
+	return "character"
+end
+
+function CurrencyMenu:IncludesCharacter(scope, entry)
+	if scope == "alliance" then return entry.metadata and entry.metadata.faction == "Alliance" end
+	if scope == "horde" then return entry.metadata and entry.metadata.faction == "Horde" end
+
+	return scope == "account"
+end
+
+function CurrencyMenu:GetViewLabel(owner)
+	local scope = self:GetViewScope(owner)
+
+	if scope == "character" then
+		local entry = Utils:GetCharacterEntry(owner)
+
+		return entry and entry.name or L["chart.scope"]
+	end
+
+	return L["currency-overview.view." .. scope]
+end
+
+function CurrencyMenu:PopulateViews(root, config)
+	for _, scope in ipairs({"account", "alliance", "horde"}) do
+		root:CreateRadio(self:GetViewLabel(scope), config.isSelected, config.onSelected, scope)
+	end
+
+	root:CreateDivider()
+	local characterMenu = root:CreateButton(L["currency-overview.view.character"])
+	characterMenu:SetScrollMode(CurrencyMenuConfig.viewMenuMaximumHeight)
+	local realmMenu = nil
+	local lastRealm = nil
+
+	for _, entry in ipairs(Utils:GetSortedCharacters()) do
+		if not realmMenu or entry.realm ~= lastRealm then
+			local realm = entry.realm
+			realmMenu = characterMenu:CreateButton(realm and realm ~= "" and realm or L["currency-overview.view.unknown-realm"])
+			realmMenu:SetScrollMode(CurrencyMenuConfig.viewMenuMaximumHeight)
+			lastRealm = realm
+		end
+
+		local button = realmMenu:CreateRadio(entry.name, config.isSelected, config.onSelected, entry.key)
+
+		if config.initializeCharacter then
+			button:AddInitializer(function(row)
+				return config.initializeCharacter(row, entry)
+			end)
+		end
+	end
+
+	characterMenu:SetEnabled(realmMenu ~= nil)
 end
 
 local function FormatAmount(quantity, info)

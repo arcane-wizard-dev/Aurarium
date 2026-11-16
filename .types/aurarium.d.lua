@@ -23,7 +23,7 @@
 ---@field nextButton Button
 ---@field prevButton Button
 ---@field regionDropdown? ArcaneWizardLibraryDropdown
----@field characterDropdown? ArcaneWizardLibraryDropdown
+---@field viewDropdown? DropdownButton
 ---@field monthHeader? FontString
 ---@field noEntryText? FontString
 ---@field historyRows? Frame[]

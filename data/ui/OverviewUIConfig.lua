@@ -53,7 +53,7 @@ AUR.UIConfig.Overview = {
 		}
 	},
 	dropdown = {
-		characterWidth = 125,
+		viewWidth = 165,
 		currencyWidth = 200,
 		height = 25,
 		offset = {x = 6, y = 24}
@@ -65,10 +65,9 @@ AUR.UIConfig.Overview = {
 		rowHeightPadding = 4
 	},
 	tokenPriceFormat = "%s |T237618:0|t",
-	tabIndices = {character = 1, account = 2, warband = 3, token = 4},
+	tabIndices = {balances = 1, warband = 2, token = 3},
 	tabs = {
-		{id = "character", label = "currency-overview.tab.character"},
-		{id = "account", label = "currency-overview.tab.account"},
+		{id = "balances", label = "currency-overview.tab.balances"},
 		{id = "warband", label = "currency-overview.tab.warband"},
 		{id = "token", label = "wow-token.title"}
 	}

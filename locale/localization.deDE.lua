@@ -75,9 +75,13 @@ L["currency-overview.category.timerunning"] = "Zeitläufer"
 L["currency-overview.category.profession"] = "Beruf"
 L["currency-overview.category.tradeskills"] = "Berufe und Berufsfertigkeiten"
 
-L["currency-overview.tab.character"] = "Charakter"
-L["currency-overview.tab.account"] = "Account"
+L["currency-overview.tab.balances"] = "Gold & Währungen"
 L["currency-overview.tab.warband"] = "Kriegsmeute"
+L["currency-overview.view.character"] = "Charakter"
+L["currency-overview.view.alliance"] = "Allianz"
+L["currency-overview.view.horde"] = "Horde"
+L["currency-overview.view.account"] = "Gesamt"
+L["currency-overview.view.unknown-realm"] = "Unbekannter Realm"
 
 L["currency-overview.table.date"] = "Datum"
 L["currency-overview.table.amount"] = "Betrag"
@@ -94,6 +98,7 @@ L["currency-overview.delete-character.confirm"] = "Alle von Aurarium gespeichert
 -- Chart
 
 L["chart.title"] = "Diagramm"
+L["chart.section"] = "Bereich"
 L["chart.scope"] = "Ansicht"
 L["chart.currency"] = "Währung"
 
@@ -110,6 +115,9 @@ L["chart.period.custom"] = "Eigener Zeitraum"
 L["chart.from"] = "Von"
 L["chart.to"] = "Bis"
 L["chart.apply"] = "Übernehmen"
+
+L["chart.highest"] = "Höchster Wert"
+L["chart.lowest"] = "Niedrigster Wert"
 
 L["chart.decimal-separator"] = ","
 L["chart.unit.thousand"] = "k"

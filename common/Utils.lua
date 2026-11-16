@@ -317,6 +317,16 @@ function Utils:UpdateCharacterData(characterGUID, refreshMetadata)
 
 	if refreshMetadata or migratedCharacter or migratedBalance then
 		metadata.name = name
+
+		if AWL.GAME_TYPE_FOREVER then
+			local GetUnitName = _G["GetUnitName"] ---@type fun(unit: UnitToken, showSurname: boolean): string|nil
+			local fullName = GetUnitName("player", true)
+
+			if fullName and fullName ~= "" then
+				metadata.name = fullName
+			end
+		end
+
 		metadata.realm = realm
 		metadata.class = UnitClassBase("player")
 		metadata.faction = UnitFactionGroup("player")

@@ -3,6 +3,7 @@ local _, AUR = ...
 if AUR.State and AUR.State.libraryIncompatible then return end
 
 AUR.UIConfig.CurrencyMenu = {
+	viewMenuMaximumHeight = 300,
 	currencyIconSize = 16,
 	warbandIconSize = 18,
 	amountSpacing = 5,

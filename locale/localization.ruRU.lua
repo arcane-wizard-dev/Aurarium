@@ -75,9 +75,13 @@ L["currency-overview.category.timerunning"] = "Путешественники в
 L["currency-overview.category.profession"] = "Профессия"
 L["currency-overview.category.tradeskills"] = "Профессии и ремёсла"
 
-L["currency-overview.tab.character"] = "Персонаж"
-L["currency-overview.tab.account"] = "Учётная запись"
+L["currency-overview.tab.balances"] = "Золото и валюты"
 L["currency-overview.tab.warband"] = "Отряд"
+L["currency-overview.view.character"] = "Персонаж"
+L["currency-overview.view.alliance"] = "Альянс"
+L["currency-overview.view.horde"] = "Орда"
+L["currency-overview.view.account"] = "Всего"
+L["currency-overview.view.unknown-realm"] = "Неизвестный игровой мир"
 
 L["currency-overview.table.date"] = "Дата"
 L["currency-overview.table.amount"] = "Количество"
@@ -94,6 +98,7 @@ L["currency-overview.delete-character.confirm"] = "Удалить все дан�
 -- Chart
 
 L["chart.title"] = "График"
+L["chart.section"] = "Раздел"
 L["chart.scope"] = "Режим"
 L["chart.currency"] = "Валюта"
 
@@ -110,6 +115,9 @@ L["chart.period.custom"] = "Выбрать даты"
 L["chart.from"] = "С"
 L["chart.to"] = "По"
 L["chart.apply"] = "Применить"
+
+L["chart.highest"] = "Максимальное значение"
+L["chart.lowest"] = "Минимальное значение"
 
 L["chart.decimal-separator"] = ","
 L["chart.unit.thousand"] = "k"

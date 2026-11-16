@@ -12,7 +12,7 @@ Aurarium is a World of Warcraft addon that tracks gold and currencies across cha
 
 **Gold Display** - Shows the current gold balance in a customizable display that fits into the game interface.
 
-**Gold and Currency Overview** - Brings recorded balances together in different views, providing an overview of individual characters and the account.
+**Gold and Currency Overview** - Browse recorded balances by character, faction, or account total.
 
 **Chart** - Explore your balance history in a chart and choose the period you want to examine.
 
@@ -36,7 +36,7 @@ Individual features and display options can be configured in the addon settings.
 
 ### Chart
 
-* Shows a line chart for a character, the account, the Warband\*\*, or WoW Token prices\*\*.
+* Shows a line chart for a character, Alliance, Horde, the account total, the Warband\*\*, or WoW Token prices\*\*.
 * Offers preset periods or a custom date range.
 
 *\* In Classic only gold is tracked.*
@@ -55,6 +55,7 @@ Individual features and display options can be configured in the addon settings.
 To manage the addon, type the following commands in chat and press Enter:
 
 * Type `/aur` or `/aurarium` to access the addon options menu.
+* Type `/aur help` or `/aurarium help` to list the available commands.
 * Type `/aur changelog` or `/aurarium changelog` to open the changelog.
 * Type `/aur overview` or `/aurarium overview` to manually display the Gold and Currency Overview.
 * Type `/aur chart` or `/aurarium chart` to manually display the Chart.

@@ -61,34 +61,34 @@ AUR.CURRENCIES = {
 	CLASSIC = {},
 
 	TBC = {
-		{id = 1900, category = "pvp", isNew = true},                       -- Arenapunkte
-		{id = 1901, category = "pvp", isNew = true},                       -- Ehrenpunkte
+		{id = 1900, category = "pvp"},                                     -- Arenapunkte
+		{id = 1901, category = "pvp"},                                     -- Ehrenpunkte
 	},
 
 	MISTS = {
 		{id = 515, category = "misc"},                                     -- Gewinnlos des Dunkelmond-Jahrmarkts
-		{id = 241, category = "misc", isNew = true},                       -- Siegel des Champions
-		{id = 416, category = "misc", isNew = true},                       -- Abzeichen des Weltenbaums
+		{id = 241, category = "misc"},                                     -- Siegel des Champions
+		{id = 416, category = "misc"},                                     -- Abzeichen des Weltenbaums
 
-		{id = 1901, category = "pvp", isNew = true},                       -- Ehrenpunkte
-		{id = 390, category = "pvp", isNew = true},                        -- Eroberungspunkte
+		{id = 1901, category = "pvp"},                                     -- Ehrenpunkte
+		{id = 390, category = "pvp"},                                      -- Eroberungspunkte
 		{id = 391, category = "pvp"},                                      -- Belobigungsabzeichen von Tol Barad
 
-		{id = 395, category = "dungeonraid", isNew = true},                -- Gerechtigkeitspunkte
-		{id = 396, category = "dungeonraid", isNew = true},                -- Tapferkeitspunkte
-		{id = 614, category = "dungeonraid", isNew = true},                -- Partikel der Dunkelheit
-		{id = 615, category = "dungeonraid", isNew = true},                -- Essenz des verderbten Todesschwinge
+		{id = 395, category = "dungeonraid"},                              -- Gerechtigkeitspunkte
+		{id = 396, category = "dungeonraid"},                              -- Tapferkeitspunkte
+		{id = 614, category = "dungeonraid"},                              -- Partikel der Dunkelheit
+		{id = 615, category = "dungeonraid"},                              -- Essenz des verderbten Todesschwinge
 
 		{id = 738, category = "mop"},                                      -- Geringes Amulett des Glücks
 		{id = 777, category = "mop"},                                      -- Zeitlose Münze
 	},
 
 	RETAIL = {
-		{id = 81, category = "misc", isNew = true},                        -- Feinschmeckerpreis
-		{id = 402, category = "misc", isNew = true},                       -- Eisentatzmarke
+		{id = 81, category = "misc"},                                      -- Feinschmeckerpreis
+		{id = 402, category = "misc"},                                     -- Eisentatzmarke
 		{id = 515, category = "misc"},                                     -- Gewinnlos des Dunkelmond-Jahrmarkts
 		{id = 2588, category = "misc", patch = "10.1.5"},                  -- Abzeichen: Reiter v. Azeroth
-		{id = 3100, category = "misc", patch = "11.0.5", isNew = true},    -- Bronzedrachenfeierabzeichen
+		{id = 3100, category = "misc", patch = "11.0.5"},                  -- Bronzedrachenfeierabzeichen
 		{id = 3309, category = "misc", patch = "11.1.7"},                  -- Höllensteinscherbe
 		{id = 3363, category = "misc", patch = "12.0.0"},                  -- Gemeinschaftscoupons
 
@@ -113,10 +113,10 @@ AUR.CURRENCIES = {
 		{id = 1166, category = "dungeonraid"},                             -- Zeitverzerrtes Abzeichen
 
 		{id = 2803, category = "delves", patch = "11.0.2"},                -- Lorenmünze
-		{id = 3028, category = "delves", patch = "11.0.2", isNew = true},  -- Restaurierter Kastenschlüssel
-		{id = 3356, category = "delves", patch = "11.2.5", isNew = true},  -- Unbesudelte Manakristalle
+		{id = 3028, category = "delves", patch = "11.0.2"},                -- Restaurierter Kastenschlüssel
+		{id = 3356, category = "delves", patch = "11.2.5"},                -- Unbesudelte Manakristalle
 
-		{id = 1704, category = "tbc", isNew = true},                       -- Geistsplitter
+		{id = 1704, category = "tbc"},                                     -- Geistsplitter
 
 		{id = 241, category = "wotlk"},                                    -- Siegel des Champions
 
@@ -235,12 +235,12 @@ AUR.CURRENCIES = {
 	FOREVER = {
 		{id = 515, category = "misc"},                                     -- Dunkelmond-Gewinnlos
 
-		{id = 3402, category = "tradeskills", isNew = true},               -- Händlergunst
+		{id = 3402, category = "tradeskills"},                             -- Händlergunst
 
 		{id = 1792, category = "pvp"},                                     -- Ehrenpunkte
-		{id = 3468, category = "pvp", isNew = true},                       -- Rangpunkte
+		{id = 3468, category = "pvp"},                                     -- Rangpunkte
 
-		{id = 3469, category = "dungeonraid", isNew = true},               -- Tarnished Undermine Real
+		{id = 3469, category = "dungeonraid"},                             -- Tarnished Undermine Real
 	}
 }
 

@@ -24,7 +24,8 @@ local OverviewConfig = AUR.UIConfig.Overview
 local selectedOwner = nil
 local selectedCurrency = "gold"
 local selectedCurrencyIcon = nil
-local lastCharacterKey = nil
+local balanceOwner = nil
+local sectionCurrencies = {balances = "gold", warband = "w-2032", token = "token"}
 local selectedPeriod = ChartData.defaultPeriod
 local history = nil
 local points = nil
@@ -42,11 +43,11 @@ local refreshPending = false
 
 local ChartFrame = nil ---@type AurariumChartWindow
 local PlotFrame = nil ---@type AurariumPlotFrame
-local ScopeGroupFrame = nil ---@type ArcaneWizardLibraryOptionGroup
-local CharacterDropdownFrame = nil ---@type ArcaneWizardLibraryDropdown
+local SectionDropdownFrame = nil ---@type ArcaneWizardLibraryDropdown
+local ViewDropdownFrame = nil ---@type ArcaneWizardLibraryDropdown
 local CurrencyDropdownFrame = nil ---@type ArcaneWizardLibraryDropdown
-local PeriodDropdownFrame = nil
-local CharacterLabel = nil ---@type FontString
+local PeriodDropdownFrame = nil ---@type ArcaneWizardLibraryDropdown
+local ViewLabel = nil ---@type FontString
 local FirstInputFrame = nil ---@type ArcaneWizardLibraryInput
 local LastInputFrame = nil ---@type ArcaneWizardLibraryInput
 local ApplyButtonFrame = nil ---@type ArcaneWizardLibraryActionButton
@@ -54,9 +55,13 @@ local StatusText = nil ---@type FontString
 local CaptionText = nil ---@type FontString
 local CustomPanelFrame = nil ---@type Frame
 local CustomButtonFrame = nil ---@type ArcaneWizardLibraryActionButton
+local HighestCheckboxFrame = nil ---@type ArcaneWizardLibrarySelectionControl
+local LowestCheckboxFrame = nil ---@type ArcaneWizardLibrarySelectionControl
+local HoveredExtremumFrame = nil ---@type Frame|nil
 local SummaryTexts = {}
 local ChartLines, AxisLabels, GridTextures = {}, {}, {}
 local LineJoinTextures = {}
+local ExtremumMarkers = {}
 
 -----------------------
 --- Local Functions ---
@@ -200,13 +205,17 @@ function Chart:GetHistory(scope, characterKey, currencyKey)
 		owners[1] = {key = "Warband", history = AUR.Data.balance.Warband or {}}
 	elseif currencyKey:sub(1, 2) == "w-" then
 		return {}
-	elseif scope == "account" then
-		owners = Utils:GetSortedCharacters()
-	else
+	elseif scope == "character" then
 		local entry = Utils:GetCharacterEntry(characterKey)
 
 		if entry then
 			owners[1] = entry
+		end
+	else
+		for _, entry in ipairs(Utils:GetSortedCharacters()) do
+			if CurrencyMenu:IncludesCharacter(scope, entry) then
+				owners[#owners + 1] = entry
+			end
 		end
 	end
 
@@ -369,11 +378,33 @@ end
 -----------------------
 
 local function Scope()
-	if selectedOwner == "account" or selectedOwner == "warband" or selectedOwner == "token" then
+	if selectedOwner == "warband" or selectedOwner == "token" then
 		return selectedOwner
 	end
 
-	return "character"
+	return CurrencyMenu:GetViewScope(selectedOwner)
+end
+
+local function SelectedSection()
+	local scope = Scope()
+
+	return (scope == "warband" or scope == "token") and scope or "balances"
+end
+
+local function SelectOwner(owner)
+	local previousSection = SelectedSection()
+	sectionCurrencies[previousSection] = selectedCurrency
+	selectedOwner = owner
+
+	local section = SelectedSection()
+
+	if section == "balances" then
+		balanceOwner = owner
+	end
+
+	if section ~= previousSection then
+		selectedCurrency = sectionCurrencies[section]
+	end
 end
 
 local function FormatAmount(value)
@@ -444,26 +475,6 @@ local function GetReadableAxisBounds(lower, upper)
 
 		quantum = nextQuantum
 	end
-end
-
-local function CharacterOptions()
-	local options = {}
-	local previousRealm = nil
-	local children = nil
-
-	for _, entry in ipairs(Utils:GetSortedCharacters()) do
-		if entry.realm ~= previousRealm then
-			children, previousRealm = {}, entry.realm
-			options[#options + 1] = {
-				label = entry.realm ~= "" and entry.realm or L["currency-overview.tab.character"],
-				children = children
-			}
-		end
-
-		children[#children + 1] = {label = entry.name, value = entry.key}
-	end
-
-	return options
 end
 
 local function FindOption(options, value)
@@ -583,8 +594,26 @@ local function ClearHover()
 	end
 end
 
+local function ShowPointTooltip(owner, point, anchor, title)
+	GameTooltip:SetOwner(owner, "ANCHOR_NONE")
+	GameTooltip:ClearAllPoints()
+	GameTooltip:SetPoint("BOTTOMLEFT", anchor, "TOPRIGHT", ChartConfig.tooltipGap, ChartConfig.tooltipGap)
+	GameTooltip:SetClampedToScreen(true)
+	local dateText = Chart:FormatDate(point.date)
+
+	if title then
+		GameTooltip:SetText(title, NORMAL_FONT_COLOR:GetRGB())
+		GameTooltip:AddLine(dateText, 1, 1, 1)
+	else
+		GameTooltip:SetText(dateText, unpack(ChartConfig.normalColor))
+	end
+
+	GameTooltip:AddLine(FormatAmount(point.value), 1, 1, 1)
+	GameTooltip:Show()
+end
+
 local function UpdateHover()
-	if not points or #points == 0 or not rangeDays then
+	if HoveredExtremumFrame or not points or #points == 0 or not rangeDays then
 		return
 	end
 
@@ -617,20 +646,61 @@ local function UpdateHover()
 	PlotFrame.hoverPoint:SetPoint("CENTER", PlotFrame, "BOTTOMLEFT", px, py)
 	PlotFrame.hoverPoint:Show()
 
-	GameTooltip:SetOwner(PlotFrame, "ANCHOR_NONE")
-	GameTooltip:ClearAllPoints()
-	GameTooltip:SetPoint("BOTTOMLEFT", PlotFrame.hoverPoint, "TOPRIGHT", ChartConfig.tooltipGap, ChartConfig.tooltipGap)
-	GameTooltip:SetClampedToScreen(true)
-	GameTooltip:SetText(
-		Chart:FormatDate(point.date), ChartConfig.normalColor[1], ChartConfig.normalColor[2], ChartConfig.normalColor[3]
-	)
-	GameTooltip:AddLine(FormatAmount(point.value), 1, 1, 1)
-	GameTooltip:Show()
+	ShowPointTooltip(PlotFrame, point, PlotFrame.hoverPoint)
+end
+
+local function DrawExtremum(key, point, title)
+	local marker = ExtremumMarkers[key]
+	local x, y = Coordinates(point)
+	marker.data = point
+	marker.point:ClearAllPoints()
+	marker.point:SetPoint("CENTER", PlotFrame, "BOTTOMLEFT", x, y)
+	marker.point:Show()
+	marker.label:SetText(title)
+
+	local gap = ChartConfig.extrema.labelGap
+	local width = math.min(marker.label:GetUnboundedStringWidth(), PlotFrame:GetWidth() - gap * 2)
+	marker.label:SetWidth(width)
+
+	local height = marker.label:GetStringHeight()
+	local labelX = math.max(gap, math.min(x - width / 2, PlotFrame:GetWidth() - width - gap))
+	local labelY = key == "highest" and y + gap or y - gap - height
+	labelY = math.max(gap, math.min(labelY, PlotFrame:GetHeight() - height - gap))
+	marker.label:ClearAllPoints()
+	marker.label:SetPoint("BOTTOMLEFT", PlotFrame, "BOTTOMLEFT", labelX, labelY)
+	marker.label:Show()
+	marker.frame:SetAllPoints(marker.label)
+	marker.frame:Show()
+end
+
+local function DrawExtrema(lowestPoint, highestPoint)
+	local showHighest = HighestCheckboxFrame:GetChecked()
+	local showLowest = LowestCheckboxFrame:GetChecked()
+
+	if showHighest and showLowest and lowestPoint.value == highestPoint.value then
+		DrawExtremum("highest", highestPoint, L["chart.highest"] .. " / " .. L["chart.lowest"])
+
+		return
+	end
+
+	if showHighest then
+		DrawExtremum("highest", highestPoint, L["chart.highest"])
+	end
+
+	if showLowest then
+		DrawExtremum("lowest", lowestPoint, L["chart.lowest"])
+	end
 end
 
 local function DrawChart()
 	ClearHover()
 	rangeDays, seriesStartOffset = nil, nil
+
+	for _, marker in pairs(ExtremumMarkers) do
+		marker.frame:Hide()
+		marker.point:Hide()
+		marker.label:Hide()
+	end
 
 	for _, line in pairs(ChartLines) do
 		line:Hide()
@@ -663,13 +733,19 @@ local function DrawChart()
 
 	rangeDays = Chart:GetDayOffset(rangeFirst, rangeLast)
 	seriesStartOffset = Chart:GetDayOffset(rangeFirst, points[1].date) - points[1].dayIndex
-	minimum, maximum = points[1].value, points[1].value
+	local lowestPoint, highestPoint = points[1], points[1]
 
 	for _, point in ipairs(points) do
-		minimum, maximum = math.min(minimum, point.value), math.max(maximum, point.value)
+		if point.value < lowestPoint.value then
+			lowestPoint = point
+		end
+
+		if point.value > highestPoint.value then
+			highestPoint = point
+		end
 	end
 
-	minimum, maximum = GetReadableAxisBounds(minimum, maximum)
+	minimum, maximum = GetReadableAxisBounds(lowestPoint.value, highestPoint.value)
 
 	local width, height = PlotFrame:GetWidth(), PlotFrame:GetHeight()
 	local gridIndex = 0
@@ -803,6 +879,8 @@ local function DrawChart()
 		PlotFrame.singlePoint:Show()
 	end
 
+	DrawExtrema(lowestPoint, highestPoint)
+
 	local first, last = points[1].value, points[#points].value
 	local change = last - first
 	SummaryTexts[1]:SetText(FormatAmount(first))
@@ -813,31 +891,20 @@ local function DrawChart()
 	))
 end
 
-local function CreateScopeGroup(sidebar)
-	local scopes = {
-		{label = L["currency-overview.tab.character"], value = "character"},
-		{label = L["currency-overview.tab.account"], value = "account"}
-	}
+local function UpdateSections()
+	local options = {{label = L["currency-overview.tab.balances"], value = "balances"}}
 
 	if AWL.GAME_TYPE_RETAIL then
-		scopes[#scopes + 1] = {label = L["currency-overview.tab.warband"], value = "warband"}
+		options[#options + 1] = {label = L["currency-overview.tab.warband"], value = "warband"}
 	end
 
 	if WowToken:IsSupported() then
-		scopes[#scopes + 1] = {label = L["wow-token.title"], value = "token"}
+		options[#options + 1] = {label = L["wow-token.title"], value = "token"}
 	end
 
-	ScopeGroupFrame = AWL.Controls:CreateOptionGroup({
-		parent = sidebar,
-		width = ChartConfig.sidebar.controlWidth,
-		options = scopes,
-		selectedValue = "character",
-		onValueChanged = function(value)
-			selectedOwner = value == "character" and (lastCharacterKey or AWL.Utils:GetCharacterGUID()) or value
-			Chart:Refresh(true)
-		end
-	})
-	ScopeGroupFrame:SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.sidebar.scopeTop)
+	SectionDropdownFrame:SetOptions(options)
+	SectionDropdownFrame:SetValue(SelectedSection())
+	SectionDropdownFrame:SetEnabled(not AWL.GAME_TYPE_FOREVER or #options > 1)
 end
 
 function Chart:Refresh(rebuildHistory)
@@ -849,35 +916,29 @@ function Chart:Refresh(rebuildHistory)
 		or selectedOwner == "token" and not WowToken:IsSupported()
 		or Scope() == "character" and not Utils:GetCharacterEntry(selectedOwner)
 	then
-		selectedOwner = AWL.Utils:GetCharacterGUID()
+		local currentCharacter = AWL.Utils:GetCharacterGUID()
+		local owner = balanceOwner
 
-		if not Utils:GetCharacterEntry(selectedOwner) then
-			selectedOwner = "account"
+		if CurrencyMenu:GetViewScope(owner) == "character" and not Utils:GetCharacterEntry(owner) then
+			owner = currentCharacter
 		end
 
+		if CurrencyMenu:GetViewScope(owner) == "character" and not Utils:GetCharacterEntry(owner) then
+			owner = "account"
+		end
+
+		SelectOwner(owner)
 		rebuildHistory = true
 	end
 
-	if Scope() == "character" then
-		lastCharacterKey = selectedOwner
-	elseif not lastCharacterKey or not Utils:GetCharacterEntry(lastCharacterKey) then
-		local characters = Utils:GetSortedCharacters()
-		lastCharacterKey = Utils:GetCharacterEntry(AWL.Utils:GetCharacterGUID()) and AWL.Utils:GetCharacterGUID()
-			or characters[1] and characters[1].key
-	end
-
-	if WowToken:IsSupported() and not ScopeGroupFrame.buttonsByValue.token then
-		local sidebar = ScopeGroupFrame:GetParent()
-		ScopeGroupFrame:Hide()
-		CreateScopeGroup(sidebar)
-	end
-
-	ScopeGroupFrame:SetValue(Scope())
-	local characterEnabled = Scope() == "character" and lastCharacterKey ~= nil
-	CharacterLabel:SetText(L[Scope() == "token" and "wow-token.region" or "currency-overview.tab.character"])
-	CharacterDropdownFrame:SetDefaultText(Scope() == "token" and L["wow-token.region"] .. ": " .. WowToken:GetRegionName() or "-")
-	CharacterDropdownFrame:SetValue(characterEnabled and lastCharacterKey or nil)
-	CharacterDropdownFrame:SetEnabled(characterEnabled)
+	UpdateSections()
+	local scope = Scope()
+	local isBalances = SelectedSection() == "balances"
+	local viewText = scope == "token" and L["wow-token.region"] .. ": " .. WowToken:GetRegionName()
+		or scope == "warband" and L["currency-overview.tab.warband"] or CurrencyMenu:GetViewLabel(selectedOwner)
+	ViewDropdownFrame:SetDefaultText(viewText)
+	ViewDropdownFrame:SetText(viewText)
+	ViewDropdownFrame:SetEnabled(isBalances)
 
 	local options = CurrencyMenu:GetOptions(Scope())
 
@@ -969,23 +1030,43 @@ local function CreateSidebar(content)
 	sidebar:SetWidth(ChartConfig.sidebar.width)
 	sidebar:SetPoint("TOPLEFT", 0, 0)
 	sidebar:SetPoint("BOTTOMLEFT", 0, 0)
-	Label(sidebar, L["chart.scope"]):SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.margin)
-
-	CreateScopeGroup(sidebar)
-
-	CharacterDropdownFrame = AWL.Controls:CreateDropdown({
+	SectionDropdownFrame = AWL.Controls:CreateDropdown({
 		parent = sidebar,
 		width = ChartConfig.sidebar.controlWidth,
-		options = CharacterOptions,
+		options = {},
 		onValueChanged = function(value)
-			selectedOwner = value
+			ViewDropdownFrame:CloseMenu()
+			CurrencyDropdownFrame:CloseMenu()
+			PeriodDropdownFrame:CloseMenu()
+
+			local owner = value == "balances" and (balanceOwner or AWL.Utils:GetCharacterGUID()) or value
+			SelectOwner(owner)
 			Chart:Refresh(true)
+			SectionDropdownFrame:CloseMenu()
 		end
 	})
-	CharacterDropdownFrame:SetDefaultText(L["currency-overview.tab.character"])
-	CharacterDropdownFrame:SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.sidebar.characterTop)
-	CharacterLabel = Label(sidebar, L["currency-overview.tab.character"])
-	CharacterLabel:SetPoint("BOTTOMLEFT", CharacterDropdownFrame, "TOPLEFT", 0, ChartConfig.labelGap)
+	SectionDropdownFrame:SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.sidebar.sectionTop)
+	Label(sidebar, L["chart.section"]):SetPoint("BOTTOMLEFT", SectionDropdownFrame, "TOPLEFT", 0, ChartConfig.labelGap)
+
+	ViewDropdownFrame = AWL.Controls:CreateDropdown({
+		parent = sidebar,
+		width = ChartConfig.sidebar.controlWidth,
+		options = {}
+	})
+	ViewDropdownFrame:SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.sidebar.viewTop)
+	ViewDropdownFrame:SetupMenu(function(_, root)
+		if SelectedSection() ~= "balances" then return end
+
+		CurrencyMenu:PopulateViews(root, {
+			isSelected = function(value) return value == selectedOwner end,
+			onSelected = function(value)
+				SelectOwner(value)
+				Chart:Refresh(true)
+			end
+		})
+	end)
+	ViewLabel = Label(sidebar, L["chart.scope"])
+	ViewLabel:SetPoint("BOTTOMLEFT", ViewDropdownFrame, "TOPLEFT", 0, ChartConfig.labelGap)
 
 	CurrencyDropdownFrame = AWL.Controls:CreateDropdown({
 		parent = sidebar,
@@ -1105,6 +1186,24 @@ local function CreateSidebar(content)
 	StatusText:SetPoint("TOPLEFT", 0, -ChartConfig.sidebar.statusTop)
 	StatusText:SetWidth(ChartConfig.sidebar.controlWidth)
 	StatusText:SetWordWrap(true)
+
+	HighestCheckboxFrame = AWL.Controls:CreateCheckbox({
+		parent = sidebar,
+		width = ChartConfig.sidebar.controlWidth,
+		label = L["chart.highest"],
+		checked = false,
+		onValueChanged = DrawChart
+	})
+	HighestCheckboxFrame:SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.sidebar.highestTop)
+
+	LowestCheckboxFrame = AWL.Controls:CreateCheckbox({
+		parent = sidebar,
+		width = ChartConfig.sidebar.controlWidth,
+		label = L["chart.lowest"],
+		checked = false,
+		onValueChanged = DrawChart
+	})
+	LowestCheckboxFrame:SetPoint("TOPLEFT", ChartConfig.margin, -ChartConfig.sidebar.lowestTop)
 end
 
 local function CreateSummary(parent)
@@ -1227,6 +1326,45 @@ local function CreateWindow()
 		PlotFrame[key]:Hide()
 	end
 
+	for _, key in ipairs({"highest", "lowest"}) do
+		local frame = CreateFrame("Frame", nil, PlotFrame)
+		frame:EnableMouse(true)
+		frame:Hide()
+
+		local point = CreateLineTexture(ChartConfig.lineJoinTexture)
+		point:SetDrawLayer("OVERLAY")
+		point:SetSize(ChartConfig.extrema.pointSize, ChartConfig.extrema.pointSize)
+		point:SetVertexColor(unpack(ChartConfig.extrema.color))
+		point:Hide()
+
+		local label = Label(PlotFrame, "")
+		label:SetWordWrap(false)
+		label:Hide()
+
+		local marker = {point = point, label = label, frame = frame}
+		ExtremumMarkers[key] = marker
+		frame:SetScript("OnEnter", function(self)
+			if not marker.data then return end
+
+			ClearHover()
+			HoveredExtremumFrame = self
+			ShowPointTooltip(self, marker.data, self, marker.label:GetText())
+		end)
+
+		local function HideTooltip(self)
+			if HoveredExtremumFrame == self then
+				HoveredExtremumFrame = nil
+			end
+
+			if GameTooltip:IsOwned(self) then
+				GameTooltip:Hide()
+			end
+		end
+
+		frame:SetScript("OnLeave", HideTooltip)
+		frame:SetScript("OnHide", HideTooltip)
+	end
+
 	PlotFrame:EnableMouse(true)
 	PlotFrame:SetScript("OnEnter", function(self)
 		self:SetScript("OnUpdate", UpdateHover)
@@ -1258,17 +1396,17 @@ end
 function Chart:Show(config)
 	config = config or {}
 
-	if config.characterKey then
-		lastCharacterKey = config.characterKey
-	end
-
-	if config.scope == "account" or config.scope == "warband" or config.scope == "token" then
-		selectedOwner = config.scope
+	if config.scope == "account" or config.scope == "alliance" or config.scope == "horde"
+		or config.scope == "warband" or config.scope == "token"
+	then
+		SelectOwner(config.scope)
 	elseif config.characterKey then
-		selectedOwner = config.characterKey
+		SelectOwner(config.characterKey)
 	end
 
-	selectedOwner = selectedOwner or AWL.Utils:GetCharacterGUID()
+	if not selectedOwner then
+		SelectOwner(AWL.Utils:GetCharacterGUID())
+	end
 
 	if config.currencyKey then
 		selectedCurrency = config.currencyKey
@@ -1316,7 +1454,7 @@ end
 function Chart:OnTokenUpdated()
 	if not self:IsShown() then return end
 
-	if Scope() == "token" or not ScopeGroupFrame.buttonsByValue.token then
+	if Scope() == "token" or not FindOption(SectionDropdownFrame.optionsSource, "token") then
 		self:Refresh(true)
 	end
 end

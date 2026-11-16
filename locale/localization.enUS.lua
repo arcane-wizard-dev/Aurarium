@@ -83,9 +83,13 @@ L["currency-overview.category.timerunning"] = "Timerunning"
 L["currency-overview.category.profession"] = "Profession"
 L["currency-overview.category.tradeskills"] = "Professions & Tradeskills"
 
-L["currency-overview.tab.character"] = "Character"
-L["currency-overview.tab.account"] = "Account"
+L["currency-overview.tab.balances"] = "Gold & Currencies"
 L["currency-overview.tab.warband"] = "Warband"
+L["currency-overview.view.character"] = "Character"
+L["currency-overview.view.alliance"] = "Alliance"
+L["currency-overview.view.horde"] = "Horde"
+L["currency-overview.view.account"] = "Total"
+L["currency-overview.view.unknown-realm"] = "Unknown realm"
 
 L["currency-overview.table.date"] = "Date"
 L["currency-overview.table.amount"] = "Amount"
@@ -102,6 +106,7 @@ L["currency-overview.delete-character.confirm"] = "Delete all Aurarium data for 
 -- Chart
 
 L["chart.title"] = "Chart"
+L["chart.section"] = "Category"
 L["chart.scope"] = "View"
 L["chart.currency"] = "Currency"
 
@@ -118,6 +123,9 @@ L["chart.period.custom"] = "Custom Range"
 L["chart.from"] = "From"
 L["chart.to"] = "To"
 L["chart.apply"] = "Apply"
+
+L["chart.highest"] = "Highest Value"
+L["chart.lowest"] = "Lowest Value"
 
 L["chart.decimal-separator"] = "."
 L["chart.unit.thousand"] = "k"

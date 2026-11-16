@@ -21,10 +21,10 @@ local TabIndex = OverviewConfig.tabIndices
 
 -- Variables
 local selectedCharacterKey = nil
+local selectedViewScope = "character"
 local currentMonthOffset = {}
 local selectedCurrency = {}
-selectedCurrency[TabIndex.character] = "gold"
-selectedCurrency[TabIndex.account] = "gold"
+selectedCurrency[TabIndex.balances] = "gold"
 selectedCurrency[TabIndex.warband] = "w-2032"
 selectedCurrency[TabIndex.token] = "token"
 
@@ -229,14 +229,16 @@ local function BuildWarbandHistory(currencyKey)
 	return BuildGenericHistory(AUR.Data.balance["Warband"], currencyKey)
 end
 
-local function BuildAccountHistory(currencyKey)
+local function BuildAccountHistory(currencyKey, scope)
 	local dates = AUR.Data.dates
 	local temp = {}
 	local entries = {}
 
 	for _, entry in ipairs(Utils:GetSortedCharacters()) do
-		local characterHistory = BuildGenericHistoryLookup(entry.history, currencyKey)
-		table.insert(temp, {characterHistory = characterHistory})
+		if CurrencyMenu:IncludesCharacter(scope, entry) then
+			local characterHistory = BuildGenericHistoryLookup(entry.history, currencyKey)
+			table.insert(temp, {characterHistory = characterHistory})
+		end
 	end
 
 	local isSorted, lastDate = true, nil
@@ -495,25 +497,27 @@ local function UpdateOverview(config)
 	scrollFrame.nextButton:SetEnabled(HasAnyDataAfterMonth(displayHistory, filterPrefix))
 end
 
-local function UpdateCharacterOverview()
-	SelectFallbackCharacter()
+local function UpdateBalanceOverview()
+	local currency = selectedCurrency[TabIndex.balances]
+	local scrollFrame = OverviewScrollFrames[TabIndex.balances]
+	local history = nil
 
-	local characterHistory = BuildCharacterHistory(selectedCharacterKey, selectedCurrency[TabIndex.character])
-	UpdateOverview({
-		currency = selectedCurrency[TabIndex.character],
-		monthOffset = currentMonthOffset[TabIndex.character],
-		history = characterHistory,
-		tableFrame = OverviewScrollFrames[TabIndex.character]
-	})
-end
+	if selectedViewScope == "character" then
+		SelectFallbackCharacter()
+		history = BuildCharacterHistory(selectedCharacterKey, currency)
+	else
+		history = BuildAccountHistory(currency, selectedViewScope)
+	end
 
-local function UpdateAccountOverview()
-	local accountHistory = BuildAccountHistory(selectedCurrency[TabIndex.account])
+	local owner = selectedViewScope == "character" and selectedCharacterKey or selectedViewScope
+	local label = CurrencyMenu:GetViewLabel(owner)
+	scrollFrame.viewDropdown:SetDefaultText(label)
+	scrollFrame.viewDropdown:SetText(label)
 	UpdateOverview({
-		currency = selectedCurrency[TabIndex.account],
-		monthOffset = currentMonthOffset[TabIndex.account],
-		history = accountHistory,
-		tableFrame = OverviewScrollFrames[TabIndex.account]
+		currency = currency,
+		monthOffset = currentMonthOffset[TabIndex.balances],
+		history = history,
+		tableFrame = scrollFrame
 	})
 end
 
@@ -542,10 +546,8 @@ local function UpdateTokenOverview()
 end
 
 local function UpdateTabOverview(tabIndex)
-	if tabIndex == TabIndex.character then
-		UpdateCharacterOverview()
-	elseif tabIndex == TabIndex.account then
-		UpdateAccountOverview()
+	if tabIndex == TabIndex.balances then
+		UpdateBalanceOverview()
 	elseif tabIndex == TabIndex.warband then
 		UpdateWarbandOverview()
 	else
@@ -570,16 +572,9 @@ local function HandleCharacterDeleteConfirmed(characterKey)
 
 	SelectFallbackCharacter()
 
-	local characterDropdown = OverviewScrollFrames[TabIndex.character] and OverviewScrollFrames[TabIndex.character].characterDropdown
-
-	if characterDropdown and characterDropdown.GenerateMenu then
-		characterDropdown:GenerateMenu()
-	end
-
-	currentMonthOffset[TabIndex.character] = 0
-	currentMonthOffset[TabIndex.account] = 0
-	UpdateCharacterOverview()
-	UpdateAccountOverview()
+	currentMonthOffset[TabIndex.balances] = 0
+	UpdateBalanceOverview()
+	OverviewScrollFrames[TabIndex.balances].viewDropdown:GenerateMenu()
 
 	if AUR.Modules.Chart:IsShown() then
 		AUR.Modules.Chart:Refresh(true)
@@ -627,7 +622,7 @@ local function CreateCurrencyDropdown(scrollFrame, background, tabIndex)
 		end
 
 		CurrencyMenu:Populate(root, {
-			scope = OverviewConfig.tabs[tabIndex].id,
+			scope = tabIndex == TabIndex.balances and selectedViewScope or OverviewConfig.tabs[tabIndex].id,
 			characterKey = selectedCharacterKey,
 			isSelected = IsSelected,
 			onSelected = SetSelected
@@ -639,71 +634,66 @@ local function CreateCurrencyDropdown(scrollFrame, background, tabIndex)
 	return currencyDropdown
 end
 
-local function CreateCharacterDropdown(scrollFrame, background)
-	local characterDropdown = CreateFrame("DropdownButton", nil, scrollFrame, "WowStyle1DropdownTemplate")
-	characterDropdown:SetPoint("BOTTOMLEFT", background, "TOPLEFT", OverviewConfig.dropdown.offset.x, OverviewConfig.dropdown.offset.y)
-	characterDropdown:SetSize(OverviewConfig.dropdown.characterWidth, OverviewConfig.dropdown.height)
+local function InitializeCharacterMenuRow(button, entry)
+	local factionFileID = 0
+	local classColor = WHITE_FONT_COLOR ---@type colorRGB
+	local class = entry.metadata.class
 
-	characterDropdown:SetupMenu(function(self, root)
-		local function IsSelected(value)
-			return value == selectedCharacterKey
+	if type(class) == "string" and class ~= "" then
+		if AWL.GAME_TYPE_RETAIL or AWL.GAME_TYPE_FOREVER then
+			classColor = C_ClassColor.GetClassColor(class) or WHITE_FONT_COLOR
+		else
+			classColor = RAID_CLASS_COLORS[class] or WHITE_FONT_COLOR
 		end
+	end
 
-		local function SetSelected(value)
-			selectedCharacterKey = value
-			currentMonthOffset[TabIndex.character] = 0
-			UpdateCharacterOverview()
-		end
+	if class then
+		local faction = entry.metadata.faction
+		factionFileID = OverviewConfig.menu.factionIcons[faction] or 0
+	end
 
-		local realmButton = nil
-		local lastRealm = nil
+	local rightTexture = button:AttachTexture()
+	rightTexture:SetSize(OverviewConfig.menu.factionIconSize, OverviewConfig.menu.factionIconSize)
+	rightTexture:SetPoint("RIGHT")
 
-		for _, entry in ipairs(Utils:GetSortedCharacters()) do
-			if not realmButton or entry.realm ~= lastRealm then
-				realmButton = root:CreateButton(entry.realm)
-				lastRealm = entry.realm
-			end
+	if factionFileID == 0 then
+		rightTexture:SetAtlas("Warfronts-BaseMapIcons-Empty-Barracks")
+	else
+		rightTexture:SetTexture(factionFileID)
+	end
 
-			local charButton = realmButton:CreateRadio(entry.name, IsSelected, SetSelected, entry.key)
+	local fontString = button.fontString
+	fontString:SetPoint("RIGHT")
+	fontString:SetTextColor(classColor:GetRGB())
 
-			charButton:AddInitializer(function(button, description, menu)
-				local factionFileID = 0
-				local classColor = WHITE_FONT_COLOR ---@type colorRGB
-				local class = entry.metadata.class
+	return fontString:GetUnboundedStringWidth() + rightTexture:GetWidth() + OverviewConfig.menu.characterWidthPadding,
+		rightTexture:GetHeight() + OverviewConfig.menu.rowHeightPadding
+end
 
-				if type(class) == "string" and class ~= "" then
-					if AWL.GAME_TYPE_RETAIL or AWL.GAME_TYPE_FOREVER then
-						classColor = C_ClassColor.GetClassColor(class) or WHITE_FONT_COLOR
-					else
-						classColor = RAID_CLASS_COLORS[class] or WHITE_FONT_COLOR
-					end
+local function CreateViewDropdown(scrollFrame, background)
+	local dropdown = CreateFrame("DropdownButton", nil, scrollFrame, "WowStyle1DropdownTemplate")
+	dropdown:SetPoint("BOTTOMLEFT", background, "TOPLEFT", OverviewConfig.dropdown.offset.x, OverviewConfig.dropdown.offset.y)
+	dropdown:SetSize(OverviewConfig.dropdown.viewWidth, OverviewConfig.dropdown.height)
+
+	dropdown:SetupMenu(function(_, root)
+		CurrencyMenu:PopulateViews(root, {
+			isSelected = function(value)
+				return value == (selectedViewScope == "character" and selectedCharacterKey or selectedViewScope)
+			end,
+			onSelected = function(value)
+				selectedViewScope = CurrencyMenu:GetViewScope(value)
+
+				if selectedViewScope == "character" then
+					selectedCharacterKey = value
 				end
 
-				if class then
-					local faction = entry.metadata.faction
-					factionFileID = OverviewConfig.menu.factionIcons[faction] or 0
-				end
+				currentMonthOffset[TabIndex.balances] = 0
+				UpdateBalanceOverview()
+			end,
+			initializeCharacter = InitializeCharacterMenuRow
+		})
 
-				local rightTexture = button:AttachTexture()
-				rightTexture:SetSize(OverviewConfig.menu.factionIconSize, OverviewConfig.menu.factionIconSize)
-				rightTexture:SetPoint("RIGHT")
-
-				if factionFileID == 0 then
-					rightTexture:SetAtlas("Warfronts-BaseMapIcons-Empty-Barracks")
-				else
-					rightTexture:SetTexture(factionFileID)
-				end
-
-				local fontString = button.fontString
-				fontString:SetPoint("RIGHT")
-				fontString:SetTextColor(classColor:GetRGB())
-
-				return fontString:GetUnboundedStringWidth() + rightTexture:GetWidth() + OverviewConfig.menu.characterWidthPadding,
-					rightTexture:GetHeight() + OverviewConfig.menu.rowHeightPadding
-			end)
-		end
-
-		local entry = Utils:GetCharacterEntry(selectedCharacterKey)
+		local entry = selectedViewScope == "character" and Utils:GetCharacterEntry(selectedCharacterKey)
 
 		if entry then
 			root:CreateDivider()
@@ -716,7 +706,7 @@ local function CreateCharacterDropdown(scrollFrame, background)
 		end
 	end)
 
-	return characterDropdown
+	return dropdown
 end
 
 local function PopulateTableMenu(_, root)
@@ -748,11 +738,11 @@ local function CreateMoreMenu(tabs)
 	button:SetMenuAnchor(AnchorUtil.CreateAnchor("TOPLEFT", button, "TOPRIGHT", MoreMenuConfig.menuGap, 0))
 	button:SetupMenu(function(_, root)
 		local chartButton = root:CreateButton(L["chart.title"], function()
-			local scope = tabs:GetSelectedTab()
+			local tab = tabs:GetSelectedTab()
 			AUR.Modules.Chart:Show({
-				scope = scope,
+				scope = tab == "balances" and selectedViewScope or tab,
 				characterKey = selectedCharacterKey,
-				currencyKey = selectedCurrency[TabIndex[scope]]
+				currencyKey = selectedCurrency[TabIndex[tab]]
 			})
 		end)
 		chartButton:AddInitializer(function(menuButton)
@@ -840,7 +830,7 @@ local function CreateOverviewPage(tabs, tabIndex)
 	else
 		local dropdown = AWL.Controls:CreateDropdown({
 			parent = scrollFrame,
-			width = OverviewConfig.dropdown.characterWidth,
+			width = OverviewConfig.dropdown.viewWidth,
 			options = {}
 		})
 		dropdown:SetHeight(OverviewConfig.dropdown.height)
@@ -850,16 +840,15 @@ local function CreateOverviewPage(tabs, tabIndex)
 		scrollFrame.regionDropdown = dropdown
 	end
 
-	if tabIndex == TabIndex.character then
-		local characterDropdown = CreateCharacterDropdown(scrollFrame, page)
-		scrollFrame.characterDropdown = characterDropdown
+	if tabIndex == TabIndex.balances then
+		scrollFrame.viewDropdown = CreateViewDropdown(scrollFrame, page)
 	end
 
 	OverviewScrollFrames[tabIndex] = scrollFrame
 end
 
 local function InitializeFrames()
-	local lastTabIndex = AWL.GAME_TYPE_RETAIL and TabIndex.warband or TabIndex.account
+	local lastTabIndex = AWL.GAME_TYPE_RETAIL and TabIndex.warband or TabIndex.balances
 	local windowConfig = AWL.Utils:CopyTable(OverviewConfig.window)
 	windowConfig.addonName = addonName
 	windowConfig.title = addonName
@@ -870,7 +859,7 @@ local function InitializeFrames()
 
 	local tabs = AWL.Frames:CreateTabGroup(OverviewFrame)
 
-	for tabIndex = TabIndex.character, lastTabIndex do
+	for tabIndex = TabIndex.balances, lastTabIndex do
 		CreateOverviewPage(tabs, tabIndex)
 	end
 
@@ -921,8 +910,7 @@ end
 function Overview:Refresh()
 	if not OverviewFrame then return end
 
-	UpdateCharacterOverview()
-	UpdateAccountOverview()
+	UpdateBalanceOverview()
 
 	if AWL.GAME_TYPE_RETAIL then
 		UpdateWarbandOverview()
