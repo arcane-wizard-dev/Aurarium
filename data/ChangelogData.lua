@@ -14,6 +14,19 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
+			"Added: A help command lists available slash commands, and unknown commands show a hint in chat",
+			"Added: Alliance and Horde balance views in the overview and chart",
+			"Added: Optional markers for the highest and lowest chart values",
+			"Changed: The Gold & Currencies tab uses one menu to select a character, a faction, or the total",
+			"Changed: Character names now include first and last names [forever]",
+			"Changed: The chart's Category dropdown is disabled when Gold & Currencies is the only option [forever]",
+			"Requires Arcane Wizard: Library revision 6 or later"
+		}
+	},
+	{
+		version = "v2.48",
+		date = "2026-11-14",
+		entries = {
 			"Changed: Reduced repeated calculations when tracking gold and currencies and updating the gold display",
 			"Changed: Reduced repeated sorting, calculations, and layout queries in character lists, currency overviews, charts, and WoW Token price history, and reused table rows when refreshing the overview",
 			"Minor code adjustments"
@@ -88,17 +101,6 @@ AUR.CHANGELOG = {
 		entries = {
 			"Added: TOC version for patch 12.1.7 [retail]",
 			"Removed: TOC version for patch 12.1.0 [retail]"
-		}
-	},
-	{
-		version = "v2.39",
-		date = "2026-10-28",
-		entries = {
-			"Added: Startup check for the minimum required Library revision",
-			"Updated: deDE, enUS, ruRU localizations",
-			"Updated: Addon description",
-			"Adapted to the latest version of Arcane Wizard: Library to ensure full compatibility",
-			"Minor code adjustments"
 		}
 	}
 	-- END GENERATED CHANGELOG
