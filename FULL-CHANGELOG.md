@@ -1,3 +1,12 @@
+**v2.49 (2026-11-17)**
+- Added: A help command lists available slash commands, and unknown commands show a hint in chat
+- Added: Alliance and Horde balance views in the overview and chart
+- Added: Optional markers for the highest and lowest chart values
+- Changed: The Gold & Currencies tab uses one menu to select a character, a faction, or the total
+- Changed: Character names now include first and last names [forever]
+- Changed: The chart's Category dropdown is disabled when Gold & Currencies is the only option [forever]
+- Requires Arcane Wizard: Library revision 6 or later
+
 **v2.48 (2026-11-14)**
 - Changed: Reduced repeated calculations when tracking gold and currencies and updating the gold display
 - Changed: Reduced repeated sorting, calculations, and layout queries in character lists, currency overviews, charts, and WoW Token price history, and reused table rows when refreshing the overview
