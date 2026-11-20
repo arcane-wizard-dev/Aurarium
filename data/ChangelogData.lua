@@ -12,6 +12,16 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
+			"Changed: Each character appears under its ruleset after its next login [forever]",
+			"Removed: Automatic import of gold and currency history from the old data format",
+			"Fixed: A missing realm name no longer prevents startup when the character's ruleset is available [forever]",
+			"Requires Arcane Wizard: Library revision 7 or later"
+		}
+	},
+	{
+		version = "v2.49",
+		date = "2026-11-17",
+		entries = {
 			"Added: A help command lists available slash commands, and unknown commands show a hint in chat",
 			"Added: Alliance and Horde balance views in the overview and chart",
 			"Added: Optional markers for the highest and lowest chart values",
@@ -91,14 +101,6 @@ AUR.CHANGELOG = {
 			"Changed: Limited loading to Retail, Forever, Classic, and Talebound",
 			"Updated: deDE, enUS, ruRU localizations",
 			"Minor code adjustments"
-		}
-	},
-	{
-		version = "v2.40",
-		date = "2026-10-29",
-		entries = {
-			"Added: TOC version for patch 12.1.7 [retail]",
-			"Removed: TOC version for patch 12.1.0 [retail]"
 		}
 	}
 	-- END GENERATED CHANGELOG
