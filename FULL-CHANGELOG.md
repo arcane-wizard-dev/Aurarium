@@ -1,3 +1,9 @@
+**v2.50 (2026-11-20)**
+- Changed: Each character appears under its ruleset after its next login [forever]
+- Removed: Automatic import of gold and currency history from the old data format
+- Fixed: A missing realm name no longer prevents startup when the character's ruleset is available [forever]
+- Requires Arcane Wizard: Library revision 7 or later
+
 **v2.49 (2026-11-17)**
 - Added: A help command lists available slash commands, and unknown commands show a hint in chat
 - Added: Alliance and Horde balance views in the overview and chart
