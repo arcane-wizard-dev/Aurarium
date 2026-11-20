@@ -20,28 +20,31 @@ local function PrintChatMessage(color, prefix, msg)
 	DEFAULT_CHAT_FRAME:AddMessage(color:WrapTextInColorCode(prefix .. ": ") .. tostring(msg))
 end
 
-local function RemoveLegacyEntry(database, realm, name)
-	if not database[realm] then return end
+local function GetForeverRuleset()
+	local rules = Enum.GameRule ---@type AurariumForeverGameRules
 
-	database[realm][name] = nil
-
-	if not next(database[realm]) then
-		database[realm] = nil
-	end
-end
-
-local function MigrateLegacyEntry(config)
-	local realmData = config.legacy[config.realm]
-	local legacyEntry = realmData and realmData[config.name]
-
-	if legacyEntry then
-		AWL.Utils:MergeMissingTableEntries(config.target[config.guid], legacyEntry)
-		RemoveLegacyEntry(config.legacy, config.realm, config.name)
-
-		return true
+	if not C_GameRules or not C_GameRules.IsGameRuleActive or not rules
+		or not rules.HardcoreRuleset or not rules.RPRuleset or not rules.PvPRuleset then
+		return nil
 	end
 
-	return false
+	local isHardcore = C_GameRules.IsGameRuleActive(rules.HardcoreRuleset)
+	local isRP = C_GameRules.IsGameRuleActive(rules.RPRuleset)
+	local isPvP = C_GameRules.IsGameRuleActive(rules.PvPRuleset)
+
+	if isHardcore == nil or isRP == nil or isPvP == nil then
+		return nil
+	end
+
+	if isHardcore then
+		return "Hardcore"
+	end
+
+	if isRP then
+		return isPvP and "RP-PvP" or "RP"
+	end
+
+	return isPvP and "PvP" or "PvE"
 end
 
 local function GetCurrencyBalanceInfo(info)
@@ -290,32 +293,10 @@ function Utils:OpenSettings()
 	return true
 end
 
-function Utils:UpdateCharacterData(characterGUID, refreshMetadata)
-	local name, realm = AWL.Utils:GetCharacterAndRealm()
-
-	local migratedCharacter = MigrateLegacyEntry({
-		legacy = Aurarium_DataCharacter,
-		target = Aurarium_DataCharacter_v2,
-		guid = characterGUID,
-		name = name,
-		realm = realm
-	})
-	local migratedBalance = MigrateLegacyEntry({
-		legacy = Aurarium_DataBalance,
-		target = Aurarium_DataBalance_v2,
-		guid = characterGUID,
-		name = name,
-		realm = realm
-	})
-
-	if Aurarium_DataBalance.Warband then
-		AWL.Utils:MergeMissingTableEntries(Aurarium_DataBalance_v2.Warband, Aurarium_DataBalance.Warband)
-		Aurarium_DataBalance.Warband = nil
-	end
-
-	local metadata = AUR.Data.character[characterGUID]
-
-	if refreshMetadata or migratedCharacter or migratedBalance then
+function Utils:UpdateCharacterData(characterGUID, refreshMetadata, ruleset)
+	if refreshMetadata then
+		local name, realm = AWL.Utils:GetCharacterAndRealm()
+		local metadata = AUR.Data.character[characterGUID]
 		metadata.name = name
 
 		if AWL.GAME_TYPE_FOREVER then
@@ -327,7 +308,7 @@ function Utils:UpdateCharacterData(characterGUID, refreshMetadata)
 			end
 		end
 
-		metadata.realm = realm
+		metadata.realm = ruleset or realm
 		metadata.class = UnitClassBase("player")
 		metadata.faction = UnitFactionGroup("player")
 	end
@@ -413,10 +394,26 @@ function Utils:DeleteCharacterData(characterKey)
 end
 
 function Utils:InitializeDatabase(isLogin)
+	local ruleset
+
+	if AWL.GAME_TYPE_FOREVER then
+		ruleset = GetForeverRuleset()
+
+		if not ruleset then
+			return nil, "Startup aborted because the player's Forever ruleset is unavailable."
+		end
+
+		local name = UnitName("player")
+
+		if not name or name == "" then
+			return nil
+		end
+	end
+
 	local dbInit = Addon:InitializeOptions({
 		databaseName = "Aurarium_Options_v5",
 		defaults = AUR.OPTIONS_DEFAULTS,
-		requireCharacterRealmKey = true,
+		requireCharacterRealmKey = not AWL.GAME_TYPE_FOREVER,
 		onOpenSettings = function() return self:OpenSettings() end
 	})
 
@@ -434,14 +431,6 @@ function Utils:InitializeDatabase(isLogin)
 
 	if not Aurarium_DataDates then
 		Aurarium_DataDates = {}
-	end
-
-	if not Aurarium_DataCharacter then
-		Aurarium_DataCharacter = {}
-	end
-
-	if not Aurarium_DataBalance then
-		Aurarium_DataBalance = {}
 	end
 
 	if not Aurarium_DataCharacter_v2 then
@@ -462,11 +451,11 @@ function Utils:InitializeDatabase(isLogin)
 	AUR.Data.character[characterGUID] = AUR.Data.character[characterGUID] or {}
 	AUR.Data.balance[characterGUID] = AUR.Data.balance[characterGUID] or {}
 
-	if AWL.GAME_TYPE_RETAIL or Aurarium_DataBalance.Warband then
+	if AWL.GAME_TYPE_RETAIL then
 		AUR.Data.balance.Warband = AUR.Data.balance.Warband or {}
 	end
 
-	self:UpdateCharacterData(characterGUID, isLogin or createdCharacter)
+	self:UpdateCharacterData(characterGUID, isLogin or createdCharacter, ruleset)
 
 	return dbInit
 end

@@ -193,10 +193,10 @@ end
 function AurariumFrame:ADDON_LOADED(_, addOnName)
 	if addOnName ~= addonName or isInitialized then return end
 
-	local dbInit = Utils:InitializeDatabase(true)
+	local dbInit, reason = Utils:InitializeDatabase(true)
 
 	if not dbInit then
-		Addon:AbortInitialization(self)
+		Addon:AbortInitialization(self, reason)
 
 		return
 	end

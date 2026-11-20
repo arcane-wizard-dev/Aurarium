@@ -1,5 +1,12 @@
 ---@meta
 
+-- Forever
+
+---@class AurariumForeverGameRules
+---@field HardcoreRuleset? Enum.GameRule
+---@field RPRuleset? Enum.GameRule
+---@field PvPRuleset? Enum.GameRule
+
 -- Chart
 
 ---@class AurariumChartWindow: ArcaneWizardLibraryWindowFrame
