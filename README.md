@@ -55,7 +55,7 @@ Individual features and display options can be configured in the addon settings.
 To manage the addon, type the following commands in chat and press Enter:
 
 * Type `/aur` or `/aurarium` to access the addon options menu.
-* Type `/aur help` or `/aurarium help` to list the available commands.
+* Type `/aur help` or `/aurarium help` to see answers to common questions about the overview and a list of chat commands. You can also select **Help** in the **More Information** row under **About** in the addon settings.
 * Type `/aur changelog` or `/aurarium changelog` to open the changelog.
 * Type `/aur overview` or `/aurarium overview` to manually display the Gold and Currency Overview.
 * Type `/aur chart` or `/aurarium chart` to manually display the Chart.

@@ -209,7 +209,7 @@ function Options:Initialize()
 	})
 
 	-- About Section
-	AWL.Settings:AddAboutSection(layout, addonName, AUR.CHANGELOG)
+	AWL.Settings:AddAboutSection(layout, addonName, AUR.CHANGELOG, Utils.OpenHelp)
 
 	Settings.RegisterAddOnCategory(category)
 

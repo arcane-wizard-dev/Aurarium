@@ -176,7 +176,7 @@ local function SlashCommand(msg)
 	elseif command == "chart" then
 		Chart:Show()
 	elseif command == "help" then
-		Addon:PrintSlashHelp(SLASH_Aurarium1, {"changelog", "overview", "chart"})
+		Utils.OpenHelp()
 	else
 		Addon:PrintSlashHelp(SLASH_Aurarium1)
 	end

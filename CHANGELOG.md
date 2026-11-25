@@ -2,7 +2,6 @@
 ### [@project-version@](https://github.com/arcane-wizard-dev/Aurarium/tree/@project-version@) (@build-date@)
 [Full Changelog](@full-changelog@) - [Previous Releases](https://github.com/arcane-wizard-dev/Aurarium/releases)
 
-- Changed: Each character appears under its ruleset after its next login [forever]
-- Removed: Automatic import of gold and currency history from the old data format
-- Fixed: A missing realm name no longer prevents startup when the character's ruleset is available [forever]
-- Requires Arcane Wizard: Library revision 7 or later
+- Added: In-game help answers common questions about the overview and explains each chat command. Open it from the addon settings or with /aur help
+- Updated: deDE, enUS, ruRU localizations
+- Requires Arcane Wizard: Library revision 8 or later

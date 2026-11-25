@@ -283,6 +283,16 @@ function Utils:PrintDebugAdvanced(msg, ...)
 	Addon:PrintDebug(msg, ...)
 end
 
+function Utils.OpenHelp()
+	AWL.Frames:OpenSlashHelp(addonName, {SLASH_Aurarium1, SLASH_Aurarium2}, {
+		{name = "overview", description = L["help.overview"]},
+		{name = "chart", description = L["help.chart"]}
+	}, {
+		{question = L["help.faq.character.question"], answer = L["help.faq.character.answer"]},
+		{question = L["help.faq.warband.question"], answer = L["help.faq.warband.answer"], available = AWL.GAME_TYPE_RETAIL}
+	})
+end
+
 function Utils:OpenSettings()
 	if not Addon:OpenCategory() then
 		self:PrintDebug("In combat. The options menu cannot be opened.")

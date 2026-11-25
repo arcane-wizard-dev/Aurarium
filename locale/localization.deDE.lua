@@ -6,6 +6,15 @@ if GetLocale() ~= "deDE" then return end
 
 local L = AUR.Localization
 
+-- Help
+
+L["help.overview"] = "Öffnet die Gold- und Währungsübersicht."
+L["help.chart"] = "Zeigt den Verlauf des Goldbestands oder einer Währung im Diagramm."
+L["help.faq.character.question"] = "Warum fehlt ein Charakter in der Übersicht?"
+L["help.faq.character.answer"] = "Ein Charakter erscheint nach dem ersten Einloggen mit aktiviertem Aurarium. Während der Charakter ausgeloggt ist, zeigt die Übersicht seinen zuletzt erfassten Stand."
+L["help.faq.warband.question"] = "Was ist der Unterschied zwischen „Gesamt“ und „Kriegsmeute“?"
+L["help.faq.warband.answer"] = "„Gesamt“ addiert die Bestände der erfassten Charaktere für die gewählte Währung. „Kriegsmeute“ zeigt den gemeinsamen Bestand jeder Kriegsmeutenwährung."
+
 -- Options
 
 L["options.general"] = "Allgemeine Einstellungen"

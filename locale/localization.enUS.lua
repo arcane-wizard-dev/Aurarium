@@ -14,6 +14,15 @@ AUR.Localization = setmetatable({}, {
 
 local L = AUR.Localization
 
+-- Help
+
+L["help.overview"] = "Opens the gold and currency overview."
+L["help.chart"] = "Shows how gold or a currency balance has changed over time."
+L["help.faq.character.question"] = "Why is a character missing from the overview?"
+L["help.faq.character.answer"] = "A character appears after logging in for the first time with Aurarium enabled. While the character is offline, the overview shows the last recorded balance."
+L["help.faq.warband.question"] = "What is the difference between \"Total\" and \"Warband\"?"
+L["help.faq.warband.answer"] = "\"Total\" adds up the balances of all recorded characters for the selected currency. \"Warband\" shows the shared balance for each Warband currency."
+
 -- Options
 
 L["options.general"] = "General Options"
