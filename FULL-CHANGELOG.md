@@ -1,3 +1,8 @@
+**v2.51 (2026-11-25)**
+- Added: In-game help answers common questions and explains each chat command. Open it from the addon settings or type the addon's slash command followed by 'help'
+- Updated: deDE, enUS, ruRU localizations
+- Requires Arcane Wizard: Library revision 8 or later
+
 **v2.50 (2026-11-20)**
 - Changed: Each character appears under its ruleset after its next login [forever]
 - Removed: Automatic import of gold and currency history from the old data format

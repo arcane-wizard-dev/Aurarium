@@ -12,6 +12,15 @@ AUR.CHANGELOG = {
 		version = version,
 		date = buildDate ~= "" and buildDate or nil,
 		entries = {
+			"Added: In-game help answers common questions and explains each chat command. Open it from the addon settings or type the addon's slash command followed by 'help'",
+			"Updated: deDE, enUS, ruRU localizations",
+			"Requires Arcane Wizard: Library revision 8 or later"
+		}
+	},
+	{
+		version = "v2.50",
+		date = "2026-11-20",
+		entries = {
 			"Changed: Each character appears under its ruleset after its next login [forever]",
 			"Removed: Automatic import of gold and currency history from the old data format",
 			"Fixed: A missing realm name no longer prevents startup when the character's ruleset is available [forever]",
@@ -89,17 +98,6 @@ AUR.CHANGELOG = {
 		entries = {
 			"Changed: The TOC no longer restricts loading by game type",
 			"Requires Arcane Wizard: Library revision 3 or later",
-			"Minor code adjustments"
-		}
-	},
-	{
-		version = "v2.41",
-		date = "2026-11-01",
-		entries = {
-			"Added: Currency 'Bound Silver' [retail]",
-			"Changed: Clarified labels in the options menu",
-			"Changed: Limited loading to Retail, Forever, Classic, and Talebound",
-			"Updated: deDE, enUS, ruRU localizations",
 			"Minor code adjustments"
 		}
 	}
